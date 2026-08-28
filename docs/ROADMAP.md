@@ -75,6 +75,34 @@ Acceptance:
 
 V2 is already a broadly useful desktop extension.
 
+## V2A — Semantic-seeded pixel anchor benchmark
+
+**Claim:** selected-device semantics can seed a low-cost, confidence-validated pixel-anchor resolver that locates a known Bitwig visual representation without generic desktop recognition.
+
+The first benchmark may run entirely against locally captured fixture frames before live integration.
+
+Algorithms to compare include:
+
+- flattened normalized grayscale-vector similarity;
+- grayscale normalized cross-correlation;
+- edge-map normalized cross-correlation;
+- coarse-to-fine multi-scale matching;
+- optional feature matching only if simpler methods cannot handle supported scale changes.
+
+Acceptance:
+
+- at least three native Bitwig device targets plus strong negative candidates are represented;
+- semantic device identity selects the correct adapter and anchor constellation;
+- at least two anchors with expected relative geometry are required for a production lock;
+- selection changes and source resize trigger bounded reacquisition;
+- correct-lock, abstention, wrong-lock, localization-error, and confidence-margin metrics are retained;
+- acquisition/reacquisition latency, per-check CPU time, working memory, and optional fixture power delta are measured;
+- zero wrong locks are observed in the retained acceptance matrix, with abstention permitted;
+- ambiguous/unsupported cases fall back to semantic output;
+- one simple algorithm is selected for the first live implementation or the experiment records why anchor matching is not yet viable.
+
+Provisional target bands are documented in [`SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`](SEMANTIC_PIXEL_ANCHOR_RESOLVER.md); they are not current performance claims.
+
 ## V3 — Visual-source and adapter SDK
 
 **Claim:** source discovery and visual profiles are public, testable, and community-extensible.
@@ -82,10 +110,11 @@ V2 is already a broadly useful desktop extension.
 Acceptance:
 
 - platform-neutral `VisualSourceFrame` and resolver contracts exist;
-- adapter schema supports semantic matching, source preference, normalized crop, validation, confidence, compatibility, and fallback;
+- adapter schema supports semantic matching, source preference, normalized crop, anchor constellations, validation, confidence, compatibility, and fallback;
 - one native-device adapter and one plug-in adapter are retained as examples;
 - profiles declare tested versions/scales rather than implying universal compatibility;
-- adapter validation can distinguish a correct source from a wrong/stale source.
+- adapter validation can distinguish a correct source from a wrong/stale source;
+- proprietary UI template pixels are generated locally or otherwise handled without casual redistribution.
 
 ## V4 — Attached-mode embedded Bitwig resolver
 
@@ -95,8 +124,9 @@ Acceptance:
 
 - resolver uses semantic device identity plus Bitwig application-window geometry;
 - panel layout/visibility state is used where the controller API exposes it;
-- normalized geometry and visual anchors replace physical desktop coordinates;
-- source is revalidated after resize, panel movement, display-profile change, and UI-scale change;
+- normalized geometry and confidence-validated anchor constellations replace physical desktop coordinates;
+- source is revalidated after resize, panel movement, display-profile change, UI-scale change, and device selection change;
+- locked-state maintenance uses bounded local validation rather than full-frame search at display cadence;
 - wrong/low-confidence resolution falls back rather than showing unrelated pixels;
 - at least one native Bitwig device is demonstrated across a defined configuration matrix.
 
@@ -107,7 +137,7 @@ Acceptance:
 Acceptance:
 
 - one-time/version-scoped calibration flow exists;
-- records include source identity, normalized region, UI scale/version context, anchors, and invalidation rules;
+- records include source identity, normalized region, UI scale/version context, locally generated anchors/descriptors, and invalidation rules;
 - calibration survives ordinary window movement and monitor changes;
 - invalid records are detected and safely disabled;
 - community profiles can be exported/imported without private screenshots or proprietary assets.
@@ -124,7 +154,8 @@ Acceptance matrix includes, where relevant:
 - at least two display profiles/panel arrangements;
 - single- and multi-monitor placement;
 - source windows moved, resized, hidden, and reopened;
-- compositor/capture restart;
+- selected-device transitions and negative candidates;
+- compositor/capture/resolver restart;
 - permission denial and recovery;
 - multiple hardware hosts, with Steam Deck only one row in the matrix.
 
@@ -141,7 +172,7 @@ Possible backends:
 Acceptance for each operating system:
 
 - window/source discovery works through the platform adapter;
-- existing visual adapters require no compositor changes;
+- existing visual adapters and anchor policies require no compositor changes;
 - relevant permission lifecycle is handled;
 - a portability matrix is retained;
 - semantic fallback remains universal.
