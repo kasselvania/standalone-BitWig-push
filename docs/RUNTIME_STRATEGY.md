@@ -1,64 +1,58 @@
-# Runtime and Plug-in Strategy
+# Runtime and Capture Strategy
 
 ## Purpose
 
-The project must work first on the existing Steam Deck without confusing the core Push/display proof with every Linux plug-in compatibility problem.
+The core visual/controller product must not be defined by the maintainer's Steam Deck, Flatpak installation, plug-in collection, Monome tooling, or prior yabridge experiments.
 
 This document separates:
 
-- the Bitwig host runtime;
-- native Linux plug-in formats;
-- Windows plug-in bridging;
-- standalone Linux audio/OSC services;
-- the canonical visual surface used for capture;
-- the physical monitor or remote client used to view that surface.
+- the maintainer's first tested runtime;
+- universal attached-mode visual behavior;
+- managed appliance runtimes;
+- optional plug-in compatibility experiments;
+- operating-system capture backends.
 
-## Confirmed format boundary
+## Reference fixture, not normative platform
 
-Current Bitwig Studio documentation identifies these plug-in formats on Linux:
+S0 uses:
+
+- Steam Deck / SteamOS-derived Linux;
+- Flatpak Bitwig Studio;
+- Push 3 Controller over external USB;
+- DrivenByMoss.
+
+This fixture is valuable because it exists and already works. Its job is to prove the first display seam and provide real hardware evidence.
+
+It does **not** establish that:
+
+- all users should run SteamOS;
+- Bitwig must be Flatpak-packaged;
+- the product requires a fixed virtual desktop;
+- the user's monitor should match the Deck;
+- yabridge, plugdata, Pure Data, Monome, or serialosc are core dependencies.
+
+## Bitwig plug-in format boundary
+
+Current Bitwig Linux builds directly host:
 
 - VST2.4;
 - VST3;
 - CLAP.
 
-Bitwig does not natively host LV2. Do not describe LV2 as a direct Bitwig plug-in path.
+Bitwig does not directly host LV2.
 
-Project preference:
-
-1. **CLAP** for native Linux plug-ins when available;
-2. **VST3** when CLAP is unavailable or less mature;
-3. **VST2.4** only where a legacy dependency requires it;
-4. **standalone PipeWire/OSC/MIDI service** when hosting inside Bitwig offers no advantage;
-5. **yabridge** only in a non-Flatpak host runtime.
+Native plug-ins are useful visual test sources, but the universal visual architecture must remain source-format-neutral after semantic selection/window discovery.
 
 References:
 
 - Bitwig plug-in formats: <https://www.bitwig.com/modern-foundations/>
-- Bitwig Flatpak plug-in guidance: <https://www.bitwig.com/support/technical_support/installing-bitwig-studio-on-linux-via-flatpak-52/>
-- yabridge compatibility statement: <https://github.com/robbert-vdh/yabridge>
+- Bitwig Flatpak guidance: <https://www.bitwig.com/support/technical_support/installing-bitwig-studio-on-linux-via-flatpak-52/>
 
-## Runtime A — Flatpak reference
+## Runtime R-A — maintainer Flatpak fixture
 
-The existing Steam Deck installation is the primary S0–S4 reference until evidence requires a change.
+Use the existing Flatpak installation for S0 and early Linux proofs until evidence requires another runtime.
 
-Advantages:
-
-- already installed and activated;
-- already known to run on SteamOS;
-- already known to connect to Push;
-- official Bitwig distribution path for modern Linux systems;
-- PipeWire integration;
-- low setup cost for the first display/compositor proof.
-
-Constraints:
-
-- plug-ins installed only under system paths such as `/usr/lib` are not visible inside the sandbox;
-- native plug-ins should be placed in Flatpak-reachable user locations and added to Bitwig’s plug-in locations where necessary;
-- controller/compositor IPC must use a path or transport visible to both the Bitwig sandbox and host services;
-- yabridge explicitly does not support Flatpak DAWs;
-- window capture behavior depends on the actual X11/Wayland/Xwayland session and permissions.
-
-S0 must record:
+Record:
 
 ```text
 flatpak info <Bitwig app id>
@@ -68,219 +62,176 @@ echo "$WAYLAND_DISPLAY"
 echo "$DISPLAY"
 ```
 
-Do not abandon this runtime merely because Windows plug-ins are not yet available. It is sufficient for the first semantic/display/capture proofs and for a substantial native Linux instrument.
+Relevant constraints:
 
-## Native plug-in baseline
+- sandbox-visible IPC paths must be chosen deliberately;
+- host capture permissions differ between X11, Xwayland, and Wayland/portal paths;
+- plug-ins must be visible inside the Flatpak sandbox;
+- direct USB display ownership may remain in a host-side process.
 
-A native plug-in baseline should include at least:
+These are fixture constraints, not universal architecture.
 
-- one known-good CLAP instrument or effect;
-- one known-good VST3 instrument or effect;
-- plugdata as CLAP or VST3 where the tested build supports it;
-- Bitwig native Sampler and one graphically useful native device.
+## Runtime R-B — ordinary desktop/laptop Bitwig
 
-For every candidate retain:
+This is the primary product deployment class.
 
-- exact version/build;
-- installation path;
-- whether Flatpak Bitwig discovers it;
-- whether audio works;
-- whether parameters are visible to Bitwig/DrivenByMoss;
-- whether its editor can be opened, discovered and captured;
-- whether project save/reload restores it.
+The project attaches to a user's existing Bitwig session without taking over their display geometry.
 
-## plugdata and Monome
+Requirements:
 
-plugdata can be built for Linux as standalone, VST3, LV2 and CLAP. For Bitwig:
+- discover Bitwig and editor windows through the operating-system backend;
+- use semantic state and source-relative geometry rather than physical desktop coordinates;
+- tolerate monitor/window/display-profile changes;
+- request only the capture permissions required by the platform;
+- keep semantic fallback available when capture is denied or unsupported.
 
-- prefer the CLAP build when stable in the tested release;
-- use VST3 as the direct fallback;
-- use LV2 only with other LV2-capable hosts;
-- use standalone plugdata when direct PipeWire/OSC routing is preferable.
+Supported packaging may eventually include Flatpak, native Linux packages, Windows, and macOS. Packaging-specific code belongs in adapters, not the compositor.
 
-Monome grid/arc devices use `serialosc`, which converts the USB serial device protocol to OSC. This is a good fit for the appliance because `serialosc` can run as a persistent user service independently of Bitwig and can serve plugdata/Pure Data or other applications.
+## Runtime R-C — managed appliance
 
-Reference:
+A portable/headless appliance may control its own graphical session.
 
-- plugdata: <https://github.com/plugdata-team/plugdata>
-- serialosc: <https://github.com/monome/serialosc>
-- Monome Linux setup: <https://monome.org/docs/serialosc/linux/>
+Possible implementations include:
 
-Required future proof:
+- nested gamescope/Xwayland;
+- dedicated Xorg/Xwayland session;
+- Wayland compositor with portal/PipeWire capture;
+- another controlled desktop/session manager.
 
-```text
-Monome device -> serialosc -> plugdata/Pd patch -> Bitwig audio/MIDI path
-```
+Managed geometry can make window placement and remote viewing deterministic, but it remains a deployment optimization. It must use the same visual-source/resolver/compositor contracts as attached mode.
 
-The visual compositor may later render Monome/plugdata state as another visual source, but that is not required for the first Bitwig lens.
+A managed appliance must prove:
 
-## Runtime B — non-Flatpak Windows plug-in laboratory
+- Bitwig main and child windows work;
+- audio and Push USB remain stable;
+- remote-view scaling does not change source identity;
+- modal dialogs are recoverable;
+- visual services can restart without disrupting music/control.
 
-yabridge supports Windows VST2, VST3 and CLAP plug-ins under Wine, but its upstream documentation explicitly states that it does not work with Flatpak DAWs.
+## Capture backend families
 
-The leading experimental path on SteamOS is therefore:
+### Linux X11/XComposite
 
-```text
-SteamOS host
-   |
-Distrobox / Podman
-   |
-Ubuntu 24.04 userspace
-   +-- native Bitwig DEB
-   +-- Wine Staging
-   +-- yabridge
-   +-- Windows plug-ins
-```
+Useful where Bitwig/editor windows are X11 or Xwayland windows and individual-window enumeration/capture is available.
 
-Distrobox is preferred over an isolated raw Docker setup because its project explicitly integrates graphical applications, audio, the user home, external storage and external USB devices with the host.
+### Linux Wayland portal/PipeWire
 
-This path remains **experimental** until it proves all of the following on the actual Deck:
+Use the XDG ScreenCast/RemoteDesktop portal and PipeWire streams where the compositor/security model requires user authorization.
 
-- Bitwig GUI and child plug-in windows render correctly;
-- PipeWire audio reaches acceptable buffers without recurring xruns;
-- Push USB/MIDI/audio/display access works from the chosen process boundary;
-- DrivenByMoss USB access works;
-- Wine and yabridge plug-in processes survive project reload;
-- the capture service can discover the plug-in windows;
-- filesystem and project paths are portable between Runtime A and Runtime B;
-- shutdown and update behavior are maintainable.
+The permission and stream-restoration lifecycle is part of the backend contract.
 
-Do not move the whole project into a container merely to satisfy one plug-in. Runtime B is an optional compatibility profile, not the basis of S0.
+### Managed nested compositor
 
-Reference: <https://distrobox.it/>
+Useful for appliance/testing geometry, not required for attached desktop use.
 
-## Runtime C — host-native services
+### Windows
 
-Some components should run outside Bitwig regardless of Runtime A or B:
+A future Windows backend may use Windows Graphics Capture or another supported window-capture API.
 
-- display compositor;
-- capture backend where sandbox rules permit;
-- state/intent broker;
-- remote desktop/management service;
-- diagnostics and watchdogs;
-- `serialosc`;
-- optional waveform/spectrum analysis sidecars.
+### macOS
 
-These services must communicate through explicit IPC rather than relying on process memory or undocumented Bitwig internals.
+A future macOS backend may use ScreenCaptureKit or another supported application/window capture API.
 
-## Canonical visual surface
+### Direct sources
 
-The visual system must not depend on the shape or resolution of a user’s physical monitor.
+Project-owned analyzers or companion applications may publish frames directly and bypass screen capture.
 
-Bitwig should be rendered into a controlled **canonical logical desktop**, for example:
+## Platform-neutral frame boundary
 
 ```text
-1920x1080 logical surface
-fixed Bitwig UI scaling
-known panel layout
-known plug-in window placement policy
+VisualSourceFrame
+  source_id
+  source_role
+  width
+  height
+  pixel_format
+  sequence
+  timestamp
+  validity
+  stale_reason
+  confidence
+  frame_data
+  optional_metadata
 ```
 
-The physical Steam Deck screen, an ultrawide desktop monitor, a tablet and a browser client then become viewers of that logical surface rather than authorities over its geometry.
+The compositor consumes this contract. It does not know whether the source came from XComposite, PipeWire, Windows, macOS, a nested surface, or a direct producer.
 
-### Leading backend candidate: gamescope
+## Attached versus managed geometry
 
-Valve’s gamescope can run nested on a normal desktop, provide an application with its own Xwayland sandbox and spoof a desired virtual resolution/refresh rate while scaling the output independently.
+### Attached mode
 
-That makes it a strong Steam Deck candidate for:
+- user's desktop remains authoritative;
+- source windows are discovered dynamically;
+- source-relative/normalized regions are used;
+- calibration is scoped and invalidated by compatibility context;
+- no fixed monitor resolution is required.
 
-- deterministic Bitwig geometry;
-- isolation from arbitrary desktop layouts;
-- fixed capture coordinates;
-- different remote-client aspect ratios;
-- GPU-accelerated composition.
+### Managed mode
 
-This remains a test hypothesis because Bitwig is a multi-window desktop application, not a conventional single-window game. We must prove behavior with Bitwig child windows and plug-in editors.
+- project may choose a logical resolution/UI scale/window policy;
+- useful for appliances and automated tests;
+- remote clients scale/view that managed desktop;
+- not imposed on ordinary users.
 
-Reference: <https://github.com/ValveSoftware/gamescope>
+See [`VISUAL_PORTABILITY.md`](VISUAL_PORTABILITY.md).
 
-### Capture backend abstraction
+## Windows plug-in bridging
 
-Do not make the compositor depend directly on one window system.
+Wine/yabridge is optional compatibility research.
 
-Define an interface equivalent to:
+The maintainer has already observed substantial usability and UI problems with yabridge on the Steam Deck. Those observations should be retained if this track is reopened rather than replaced by an assumption that a container solves them.
+
+Facts/boundaries:
+
+- yabridge does not support Flatpak DAW hosts;
+- another Bitwig runtime would be required for that experiment;
+- Distrobox/Podman/native installation are candidates to test, not prescribed architecture;
+- GUI behavior, project restore, capture, latency, update burden, and plugin-specific quirks must all be characterized;
+- failure of Windows plug-in bridging does not invalidate the visual extension or all-in-one appliance.
+
+Reference: <https://github.com/robbert-vdh/yabridge>
+
+## Independent ecosystem integrations
+
+The maintainer has separate work involving:
+
+- a custom Steam Deck serialosc build and native Monome support;
+- plugdata/Pure Data and Monome devices.
+
+These projects may later implement optional visual-source or semantic adapters, but this repository must not present them as unproven future requirements, duplicate their roadmaps, or use them as acceptance gates for core work.
+
+A stable integration boundary may eventually look like:
 
 ```text
-VisualSource
-  - source identity
-  - source pixel dimensions
-  - timestamp / sequence
-  - validity / stale state
-  - frame data
-  - optional window metadata
+external integration
+      -> semantic/visual-source adapter
+      -> project broker/compositor
 ```
 
-Potential backends:
+## Runtime acceptance records
 
-- X11/XComposite window or ROI capture;
-- Xwayland capture inside a controlled nested surface;
-- PipeWire/XDG Desktop Portal capture;
-- direct plug-in/application-provided frames;
-- custom analyzer frames.
+For each supported runtime/backend combination, publish a matrix containing only claims actually tested:
 
-The compositor receives frames, not desktop implementation details.
-
-## Resolution-independent visual adapters
-
-A device or plug-in profile must not rely only on absolute monitor coordinates.
-
-Profiles should support:
-
-- window identity rules: PID, application ID, class and title patterns;
-- normalized crop rectangles (`0.0`–`1.0`);
-- optional pixel crops for a named canonical source size;
-- expected UI scale/version;
-- semantic anchors supplied by the controller integration;
-- fit mode: contain, cover or exact;
-- minimum useful source size;
-- stale-frame and missing-window behavior;
-- optional calibration checksum/screenshot.
-
-Example:
-
-```yaml
-source:
-  application: bitwig
-  window_role: plugin-editor
-  title_pattern: "Vital*"
-  canonical_size: [1280, 720]
-
-views:
-  oscillator:
-    normalized_crop: [0.02, 0.10, 0.96, 0.30]
-    fit: contain
-    max_fps: 20
-```
-
-The first native Bitwig profile should use a controlled canonical desktop before attempting arbitrary user layouts.
-
-## Runtime acceptance matrix
-
-Each supported runtime should publish a retained matrix:
-
-| Capability | Flatpak reference | Native/container lab | Headless appliance |
+| Capability | Reference fixture | Attached desktop | Managed appliance |
 |---|---|---|---|
-| Bitwig launch | required | required before support | required |
-| Push controls | required | required | required |
+| Bitwig launch | required | required | required |
+| Push semantic control | required | required | required |
 | Push display | required | required | required |
-| Push audio | required | required | required |
-| Native CLAP/VST3 | required | required | required |
-| plugdata/serialosc | target | target | required for Monome profile |
-| yabridge | unsupported by design | experimental/target | optional |
-| canonical visual surface | target | target | required |
-| wireless full desktop | later | later | required |
+| Push audio | fixture evidence | supported profile | supported profile |
+| dedicated-window discovery | later | required | required |
+| embedded-panel resolver | later | supported matrix | supported matrix |
+| arbitrary monitor geometry | not proved by fixture | primary requirement | not applicable/managed |
+| remote desktop | not required | optional | required |
+| yabridge | optional/problematic | optional | optional |
 
 ## Decision rule
 
-Do not let the most difficult Windows plug-in become the gate for the project.
+Do not let a particular computer, packaging format, plug-in bridge, or external music-tool project define whether the adaptive Push visual software succeeds.
 
-The first useful release can be built entirely from:
+The core release is successful when it can:
 
-- Bitwig native devices;
-- native Linux CLAP/VST3 plug-ins;
-- plugdata/Pure Data;
-- Monome/serialosc;
-- DrivenByMoss;
-- the project compositor and remote visual surface.
-
-Windows plug-in support raises compatibility coverage; it does not define whether the instrument succeeds.
+- receive semantic intent from DrivenByMoss/Bitwig;
+- discover or resolve supported visual sources without hard-coded physical coordinates;
+- validate and composite those sources on Push;
+- adapt across its declared desktop/layout test matrix;
+- fall back safely when a visual source is unavailable.

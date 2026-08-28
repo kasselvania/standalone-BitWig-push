@@ -1,164 +1,160 @@
 # Standalone Bitwig Push
 
-An open-source effort to turn **Ableton Push 3 Controller** into a deeply integrated, portable **Bitwig Studio** instrument.
+An open-source effort to make **Ableton Push 3 Controller** a substantially richer controller for **Bitwig Studio**, and to carry that same software into optional portable and native-compute appliances.
 
-The project does not depend on one final hardware conversion being completed before it becomes useful. It has several independent layers of success:
+The primary software question is broader than one Steam Deck or one all-in-one build:
 
-1. improve Push as a Bitwig controller on ordinary Linux desktops;
-2. combine DrivenByMoss semantic UI with selected live Bitwig/plug-in pixels on Push;
-3. run that experience headlessly and expose the full Bitwig desktop wirelessly when needed;
-4. package the existing Steam Deck, battery and angled wooden base as a portable reference appliance;
-5. later replace the external host path with a Framework/mini-PC dock or a custom Intel NUC Compute Element integration;
-6. treat a used NUC Compute Element plus an internal battery as the polished native-bay endgame, not the first proof.
+> Can DrivenByMoss semantic control be combined with useful live Bitwig/native-device/plug-in visuals in a way that adapts to different computers, monitor layouts, window sizes, display profiles, and operating systems?
 
-The core software idea is deliberately hybrid: use controller-native semantic information where Bitwig’s controller API is strong, and mix in selected pixels from the real Bitwig or plug-in UI where the desktop already contains richer visual truth. A project-owned compositor decides what belongs on Push’s 960×160 display.
+That adaptive visual/controller layer is the main open-source product. The all-in-one appliance and Intel NUC connector work are parallel projects that build on it.
 
-> **Status:** S0 external-baseline preparation. The first reference system is a Steam Deck running Bitwig Studio via Flatpak, connected to Push 3 over ordinary USB.
+> **Status:** S0 external-baseline and display-path reconnaissance on the maintainer's Steam Deck reference fixture.
 
-## A reference appliance already exists in parts
+## Three independent project tracks
 
-The initial maintainer rig already includes:
+### Track V — universal visual/controller integration
 
-- a Steam Deck that runs Bitwig and has previously controlled Push;
-- an angled wooden Push base with a substantial protected cavity beneath the controller;
-- a battery capable of powering the current devices for meaningful use;
-- a tested USB-C Power Delivery trigger cable that powers Push through its barrel input;
-- Monome devices and an active plugdata/Pure Data workflow.
-
-That means the first portable all-in-one does **not** require opening Push, designing a new enclosure or buying a Compute Element. It can be built as a headless Steam Deck instrument housed by the existing base, using Push’s normal rear USB and power ports.
-
-Battery operation is a product requirement for the portable appliance. A wall-powered software bench remains useful as an engineering stage, but it is not the final definition of standalone.
-
-## Why this exists
-
-A conventional controller extension gives excellent musical control but cannot expose every waveform, modulation graph, native-device visualization or arbitrary plug-in UI. Shrinking a full desktop onto Push is equally unsatisfying.
-
-This project combines the strengths of both:
+Build a host-agnostic visual extension around DrivenByMoss:
 
 ```text
 Bitwig semantic state ------> controller integration ----+
                                                        |
-Bitwig / plug-in desktop ---> targeted visual capture ---+--> compositor --> Push display
+Bitwig / plug-in visuals ---> adaptive visual source ----+--> compositor --> Push display
                                                        |
-custom analyzers -----------> optional visual layers ---+
+optional direct sources ----> analyzer/adapter frames ---+
 ```
 
-The intended experience is Push-first:
+The software should be useful to ordinary Push/Bitwig users on their existing computers. It must not depend on Steam Deck hardware or one fixed virtual desktop.
 
-- pads, MPE, encoders, sequencing, browsing and transport remain semantic controls;
-- Sampler/native-device/VST/CLAP visuals can appear as useful live lenses;
-- a canonical virtual desktop makes capture independent of the physical monitor’s shape and resolution;
-- the full desktop remains available wirelessly for exceptional editing or recovery;
-- visual failure never blocks musical control;
-- the same software stack survives movement from Steam Deck to another Linux host or a native Compute Element.
+The visual system has two deployment modes:
 
-## Success ladder
+- **attached mode:** adapt to the user's existing Bitwig windows and monitor layout;
+- **managed mode:** use controlled geometry for a headless appliance or reproducible test environment.
 
-### Layer 0 — desktop uplift
+See [`docs/VISUAL_PORTABILITY.md`](docs/VISUAL_PORTABILITY.md) and [`docs/VISUAL_RESEARCH_BASIS.md`](docs/VISUAL_RESEARCH_BASIS.md).
 
-DrivenByMoss plus the compositor is valuable on any supported Linux workstation, even when Push is used as an ordinary tethered controller.
+### Track A — all-in-one appliance
 
-### Layer 1 — portable reference appliance
+Package the proven software as a portable, headless instrument.
 
-The existing Steam Deck, battery and wooden base become a self-contained, headless Bitwig instrument. Push connects through its normal rear USB port and receives power through its normal barrel input. Wireless desktop access handles the rare operations that do not belong on Push.
+The maintainer's first appliance can use hardware already available:
 
-### Layer 2 — reproducible compute dock
+- Steam Deck as one development computer;
+- existing angled wooden base;
+- existing protected battery;
+- tested USB-C PD-to-barrel power cable;
+- Push's stock rear USB connection;
+- wireless access to the full Bitwig desktop.
 
-Replace the Deck with a Framework mainboard or another documented x86 computer mounted in the base, while keeping the same external Push USB contract.
+The Steam Deck is a reference implementation for the maintainer, not a project-wide requirement. A Framework mainboard or another x86 computer can later replace it without changing the controller/visual contracts.
 
-### Layer 3 — internal connector development platform
+### Track H — connector and native-compute research
 
-Build a staged CM11EB-compatible edge-card development board to expose candidate USB and diagnostic signals safely. Use it to characterize the internal carrier, rather than guessing at BIOS, power or mux behavior.
+Investigate Push's CM11EB/Intel NUC Compute Element carrier as its own open-hardware effort:
 
-### Layer 4 — native-bay final form
+- measure and document the bay and carrier;
+- design a safe diagnostic edge card;
+- map internal USB/mux/sideband behavior;
+- use an external host as a development workstation;
+- evaluate used Compute Elements only after the interface is understood;
+- integrate battery, power, and thermals for a native-bay final form.
 
-Run the proven appliance stack on a suitable used Intel NUC Compute Element, with a selected battery and validated thermal/power behavior. This is an endgame packaging target, not the only definition of project success.
+A useful connector development board is a valid project result even before a final NUC conversion exists.
 
-## Linux plug-in strategy
+See [`docs/PROJECT_TRACKS.md`](docs/PROJECT_TRACKS.md).
 
-Bitwig on Linux natively hosts **VST2.4, VST3 and CLAP**. It does not natively host LV2. The project therefore prefers:
+## Why the visual work matters by itself
 
-1. native Linux CLAP where available;
-2. native Linux VST3 when CLAP is unavailable;
-3. standalone PipeWire/OSC applications when they are architecturally cleaner;
-4. Windows plug-ins through yabridge only in a non-Flatpak Bitwig runtime.
+DrivenByMoss already provides deep semantic control, but controller APIs do not expose every waveform, modulation graph, native-device visualization, or arbitrary plug-in editor.
 
-The current Bitwig Flatpak is a strong first reference because it already works on the Deck and can load native plug-ins from reachable user directories. However, yabridge explicitly does not support Flatpak DAWs. Windows plug-in compatibility is therefore a separate runtime track, likely using native Bitwig inside an Ubuntu 24.04 Distrobox/Podman environment after the core display proof works.
+The project should use the strongest source available:
 
-plugdata is particularly useful here because it can run on Linux as a standalone application and can be built as VST3, LV2 or CLAP. For Bitwig integration, CLAP or VST3 is the direct path; LV2 is useful to other Linux hosts but is not required for this project.
+- semantic rendering for control state and compact labels;
+- dedicated plug-in/native-device windows when available;
+- adaptive capture of embedded Bitwig panels where necessary;
+- direct frames from analyzers or companion tools where possible;
+- semantic-only fallback when no valid visual source exists.
+
+The goal is not to shrink the entire desktop onto a 960×160 display. It is to show the right visual information at the right moment while Push controls remain authoritative.
+
+## Visual portability strategy
+
+The project must not identify a visual source by hard-coded physical desktop coordinates.
+
+The preferred acquisition order is:
+
+1. discover and capture a dedicated top-level plug-in or floating native-device window;
+2. resolve an embedded Bitwig region from semantic state, application-window geometry, panel state, normalized coordinates, and visual anchors;
+3. use bounded one-time calibration when automatic resolution cannot be proven;
+4. accept direct project-owned frames from analyzers or companion integrations.
+
+Cross-platform capture backends remain behind a platform-neutral frame contract. Linux is the first implementation target; Windows and macOS backends must remain architecturally possible.
+
+## Valid stopping points
+
+Each of these is a successful deliverable:
+
+1. adaptive Bitwig/native-device/plug-in visuals mixed with DrivenByMoss for ordinary desktop users;
+2. a portable Steam Deck/reference-host appliance using the existing stand and battery;
+3. a reproducible Framework/compact-x86 appliance profile;
+4. an open CM11EB diagnostic/development board;
+5. a used NUC Compute Element native-bay instrument.
+
+Later integrations are larger achievements, not retroactive requirements for earlier ones.
+
+## Runtime and optional integrations
+
+The current Steam Deck Flatpak is only the maintainer's first software fixture.
+
+- Native Linux CLAP/VST3 compatibility is useful for testing visual editors.
+- yabridge/Wine is optional compatibility research and already has known usability/UI problems in the maintainer's Deck experiments.
+- Monome/serialosc and plugdata/Pure Data are independent maintainer projects that may later provide optional visual sources; they are not core dependencies or roadmap gates.
 
 See [`docs/RUNTIME_STRATEGY.md`](docs/RUNTIME_STRATEGY.md).
 
-## Strategy
-
-We prove the project in dependency order.
-
-### Core software
-
-1. **S0 — external baseline:** reproduce and retain the Steam Deck + Bitwig + DrivenByMoss + Push baseline.
-2. **S1 — display ownership:** introduce a project compositor as the single steady-state Push display writer.
-3. **S2 — canonical visual surface:** run/capture Bitwig in a deterministic logical desktop independent of the viewer’s monitor.
-4. **S3 — Bitwig visual lens:** capture a native Bitwig region such as a waveform/graph and composite it with semantic UI.
-5. **S4 — plug-in visual lens:** do the same for a VST/CLAP editor.
-6. **S5/S6 — appliance proof:** boot headlessly, provide wireless desktop/management and package the portable reference rig.
-
-### Runtime compatibility
-
-1. prove native Flatpak-visible CLAP/VST3 plug-ins;
-2. prove plugdata plus Monome/serialosc operation;
-3. characterize a native/containerized Bitwig runtime for yabridge and Windows plug-ins;
-4. keep project/session portability across the supported runtimes.
-
-### Hardware progression
-
-1. integrate and measure the existing Steam Deck/base/battery rig;
-2. optionally replace the Deck with a Framework or compact x86 board;
-3. survey the Push compute bay and CM11EB connector;
-4. build a safe connector development board;
-5. enumerate Push through the internal USB route;
-6. evaluate used Compute Elements only after the software and carrier contracts are proven.
-
-See [`docs/ROADMAP.md`](docs/ROADMAP.md) for acceptance-driven milestones.
-
-## Start here
-
-Contributors and coding agents should read:
-
-1. [`AGENTS.md`](AGENTS.md) — project invariants and execution rules;
-2. [`CURRENT_SLICE.md`](CURRENT_SLICE.md) — the one slice currently authorized;
-3. [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — component boundaries and data flow;
-4. [`docs/RUNTIME_STRATEGY.md`](docs/RUNTIME_STRATEGY.md) — Linux, plug-in and visual-runtime decisions;
-5. [`docs/ROADMAP.md`](docs/ROADMAP.md) — staged software/hardware proofs;
-6. [`docs/HARDWARE_DOSSIER.md`](docs/HARDWARE_DOSSIER.md) — current hardware basis and unknowns;
-7. [`CONTRIBUTING.md`](CONTRIBUTING.md) — contribution/review expectations.
-
 ## Current first slice
 
-S0 is intentionally small: capture the real external baseline and trace the existing DrivenByMoss Push display pipeline down to its USB send path. It also records the current graphical session, Flatpak permissions and native plug-in environment so later capture and compatibility work starts from evidence.
+S0 records the maintainer's real Steam Deck + Bitwig + DrivenByMoss + Push baseline and traces the existing semantic-display path to its USB sender.
 
-The handoff from S0 should make S1 mechanically obvious:
+The Steam Deck is being used because it is available and already works—not because the project is defined around it.
+
+The S0 handoff should identify the narrow seam required for S1:
 
 ```text
 semantic renderer -> frame handoff -> project compositor -> Push USB display
 ```
 
+See [`CURRENT_SLICE.md`](CURRENT_SLICE.md).
+
+## Start here
+
+1. [`AGENTS.md`](AGENTS.md)
+2. [`CURRENT_SLICE.md`](CURRENT_SLICE.md)
+3. [`docs/PROJECT_TRACKS.md`](docs/PROJECT_TRACKS.md)
+4. [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+5. [`docs/VISUAL_PORTABILITY.md`](docs/VISUAL_PORTABILITY.md)
+6. [`docs/VISUAL_RESEARCH_BASIS.md`](docs/VISUAL_RESEARCH_BASIS.md)
+7. [`docs/ROADMAP.md`](docs/ROADMAP.md)
+8. [`docs/RUNTIME_STRATEGY.md`](docs/RUNTIME_STRATEGY.md)
+9. [`docs/HARDWARE_DOSSIER.md`](docs/HARDWARE_DOSSIER.md)
+10. [`CONTRIBUTING.md`](CONTRIBUTING.md)
+
 ## Upstream work
 
-This project expects to build on and collaborate with existing open-source work, particularly:
+The project expects to build on and collaborate with:
 
-- **DrivenByMoss** for Bitwig/Push semantic control;
-- **gamescope** or another controlled visual-surface backend;
-- **plugdata**, Pure Data and Monome/serialosc tooling;
-- **yabridge** for an optional non-Flatpak Windows plug-in runtime;
-- open Push 3 protocol/documentation projects;
-- Push standalone reverse-engineering projects where their findings help bound the internal hardware problem.
+- **DrivenByMoss** for Push/Bitwig semantic control;
+- Bitwig's open controller extension API;
+- platform capture APIs and open capture implementations;
+- open Push 3 display/protocol research;
+- Push standalone and CM11EB reverse-engineering work.
 
-We will keep upstream provenance and licensing explicit. Original project code is MIT licensed; upstream/forked components retain their own licenses.
+Optional external integrations retain their own project boundaries and licenses.
 
 ## Safety and legal notes
 
-Hardware modification can damage equipment and may create electrical, thermal or battery hazards. Power and battery work must be measured and documented rather than guessed. Early integration should use complete protected battery products and tested power-conversion cables before any custom cell pack is considered.
+Hardware modification can damage equipment and create electrical, thermal, or battery hazards. Hardware and power claims require measurements rather than inference.
 
-Do not commit or redistribute proprietary Ableton/Bitwig binaries, activation data, firmware or private assets without redistribution rights.
+Do not commit or redistribute proprietary Ableton/Bitwig binaries, activation data, firmware, or private assets without redistribution rights.
 
-This project is independent and is **not affiliated with or endorsed by Ableton AG, Bitwig GmbH, Intel, Valve, Framework Computer, Monome, or the DrivenByMoss project**.
+This project is independent and is **not affiliated with or endorsed by Ableton AG, Bitwig GmbH, Intel, Valve, Framework Computer, or the DrivenByMoss project**.
