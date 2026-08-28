@@ -31,7 +31,7 @@ The visual system has two deployment modes:
 - **attached mode:** adapt to the user's existing Bitwig windows and monitor layout;
 - **managed mode:** use controlled geometry for a headless appliance or reproducible test environment.
 
-See [`docs/VISUAL_PORTABILITY.md`](docs/VISUAL_PORTABILITY.md).
+See [`docs/VISUAL_PORTABILITY.md`](docs/VISUAL_PORTABILITY.md) and [`docs/VISUAL_RESEARCH_BASIS.md`](docs/VISUAL_RESEARCH_BASIS.md).
 
 ### Track A — all-in-one appliance
 
@@ -133,10 +133,11 @@ See [`CURRENT_SLICE.md`](CURRENT_SLICE.md).
 3. [`docs/PROJECT_TRACKS.md`](docs/PROJECT_TRACKS.md)
 4. [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 5. [`docs/VISUAL_PORTABILITY.md`](docs/VISUAL_PORTABILITY.md)
-6. [`docs/ROADMAP.md`](docs/ROADMAP.md)
-7. [`docs/RUNTIME_STRATEGY.md`](docs/RUNTIME_STRATEGY.md)
-8. [`docs/HARDWARE_DOSSIER.md`](docs/HARDWARE_DOSSIER.md)
-9. [`CONTRIBUTING.md`](CONTRIBUTING.md)
+6. [`docs/VISUAL_RESEARCH_BASIS.md`](docs/VISUAL_RESEARCH_BASIS.md)
+7. [`docs/ROADMAP.md`](docs/ROADMAP.md)
+8. [`docs/RUNTIME_STRATEGY.md`](docs/RUNTIME_STRATEGY.md)
+9. [`docs/HARDWARE_DOSSIER.md`](docs/HARDWARE_DOSSIER.md)
+10. [`CONTRIBUTING.md`](CONTRIBUTING.md)
 
 ## Upstream work
 
