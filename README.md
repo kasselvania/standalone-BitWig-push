@@ -88,6 +88,10 @@ The preferred acquisition order is:
 3. use bounded one-time calibration when automatic resolution cannot be proven;
 4. accept direct project-owned frames from analyzers or companion integrations.
 
+One promising implementation is a **semantic-seeded pixel anchor resolver**: DrivenByMoss supplies the selected device and expected visual role, then a lightweight multi-anchor matcher searches only plausible Bitwig windows/regions, solves translation/scale, validates confidence, and locks the visual crop. This turns generic screen recognition into a bounded registration problem and can be benchmarked explicitly for wrong-lock rate, acquisition latency, and CPU cost.
+
+See [`docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`](docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md).
+
 Cross-platform capture backends remain behind a platform-neutral frame contract. Linux is the first implementation target; Windows and macOS backends must remain architecturally possible.
 
 ## Valid stopping points
@@ -133,11 +137,12 @@ See [`CURRENT_SLICE.md`](CURRENT_SLICE.md).
 3. [`docs/PROJECT_TRACKS.md`](docs/PROJECT_TRACKS.md)
 4. [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 5. [`docs/VISUAL_PORTABILITY.md`](docs/VISUAL_PORTABILITY.md)
-6. [`docs/VISUAL_RESEARCH_BASIS.md`](docs/VISUAL_RESEARCH_BASIS.md)
-7. [`docs/ROADMAP.md`](docs/ROADMAP.md)
-8. [`docs/RUNTIME_STRATEGY.md`](docs/RUNTIME_STRATEGY.md)
-9. [`docs/HARDWARE_DOSSIER.md`](docs/HARDWARE_DOSSIER.md)
-10. [`CONTRIBUTING.md`](CONTRIBUTING.md)
+6. [`docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`](docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md)
+7. [`docs/VISUAL_RESEARCH_BASIS.md`](docs/VISUAL_RESEARCH_BASIS.md)
+8. [`docs/ROADMAP.md`](docs/ROADMAP.md)
+9. [`docs/RUNTIME_STRATEGY.md`](docs/RUNTIME_STRATEGY.md)
+10. [`docs/HARDWARE_DOSSIER.md`](docs/HARDWARE_DOSSIER.md)
+11. [`CONTRIBUTING.md`](CONTRIBUTING.md)
 
 ## Upstream work
 
