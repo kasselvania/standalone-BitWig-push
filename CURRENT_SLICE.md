@@ -2,7 +2,7 @@
 
 ## Status
 
-Ready to start from current `main` after the project-track correction is merged.
+Ready to start from current `main`.
 
 ## Primary claim
 
