@@ -1,0 +1,49 @@
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Java / Gradle
+.gradle/
+build/
+out/
+*.class
+
+# Rust
+/target/
+
+# Go
+/bin/
+
+# Node
+node_modules/
+
+# Local runtime / captures
+.tmp/
+tmp/
+logs/
+*.log
+*.pcap
+*.pcapng
+
+# Proprietary / private material
+*.license
+*.lic
+*.key
+*.pem
+secrets/
+private/
+
+# Large raw media should be deliberately curated before committing
+*.mov
+*.mp4
+*.mkv
+*.wav
+*.flac
