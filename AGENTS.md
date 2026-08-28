@@ -21,10 +21,11 @@ When instructions conflict, use this order:
 3. `docs/PROJECT_TRACKS.md`
 4. `docs/ARCHITECTURE.md`
 5. `docs/VISUAL_PORTABILITY.md`
-6. `docs/ROADMAP.md`
-7. `docs/RUNTIME_STRATEGY.md`
-8. issue / PR scope
-9. implementation convenience
+6. `docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`
+7. `docs/ROADMAP.md`
+8. `docs/RUNTIME_STRATEGY.md`
+9. issue / PR scope
+10. implementation convenience
 
 A contributor or coding agent must stop and surface a conflict rather than quietly widening scope.
 
@@ -39,6 +40,9 @@ A contributor or coding agent must stop and surface a conflict rather than quiet
 - A canonical or virtual desktop is a **managed appliance/test mode**, not a requirement imposed on ordinary desktop users.
 - Physical desktop coordinates must not be the primary identity of a visual source.
 - Prefer dedicated top-level windows, semantic identity, window-relative geometry, normalized regions, anchors, and bounded calibration.
+- Semantic device identity may seed visual matching, but a single template hit is not sufficient for a production lock.
+- Anchor-based resolution must use confidence validation, competing-candidate margin, and preferably multiple anchors with consistent relative geometry.
+- The resolver must prefer abstention and semantic fallback over displaying the wrong visual region.
 - Capture backend and operating-system details do not belong in the compositor frame protocol.
 - Visual failure must fall back safely to semantic control/display behavior.
 - The Steam Deck is one reference host. Do not generalize maintainer-specific hardware, serialosc, plugdata, or yabridge state into universal product requirements.
@@ -50,6 +54,7 @@ A contributor or coding agent must stop and surface a conflict rather than quiet
 - Hardware claims require documentation, measurements, photographs, continuity evidence, or real enumeration. Mark inference as inference.
 - Power and battery claims require measured voltage, current, negotiation, transition, runtime, and thermal evidence.
 - Do not redistribute Bitwig Studio, Ableton software/firmware, proprietary Push assets, activation data, or other third-party binaries without redistribution rights.
+- Do not casually redistribute proprietary UI screenshots/templates; prefer local anchor generation, recipes, hashes, descriptors, or legally distributable fixtures.
 - Upstream forks and dependencies retain their licenses and provenance.
 - Do not copy DrivenByMoss into this repository until the integration boundary and fork strategy are explicitly accepted.
 
@@ -72,6 +77,7 @@ Do not merge separate uncertainty domains merely because they are exciting. Exam
 
 - framebuffer ownership is separate from visual-source discovery;
 - top-level-window capture is separate from embedded-panel resolution;
+- semantic-seeded anchor benchmarking is separate from live resolver integration;
 - attached desktop adaptation is separate from managed headless geometry;
 - cross-platform capture is separate from Linux proof;
 - all-in-one packaging is separate from connector research;
@@ -90,10 +96,23 @@ Portable visual claims require a test matrix appropriate to the source class, in
 - source moved/resized between monitors;
 - source closed/reopened;
 - selected device changed;
-- capture/compositor restart;
+- negative/wrong candidate windows;
+- anchor confidence and competitor margin;
+- capture/compositor/resolver restart;
 - calibration invalidation and semantic fallback.
 
 Do not call a profile portable because it worked at one monitor resolution.
+
+For anchor-based resolvers, retain at minimum:
+
+- correct-lock rate;
+- abstention rate;
+- wrong-lock rate;
+- localization error;
+- acquisition and reacquisition latency;
+- locked-state validation cost;
+- CPU time, memory, and relevant host-power observations;
+- confidence-threshold behavior.
 
 ## Experimental evidence
 
@@ -104,6 +123,7 @@ Retain useful evidence under `evidence/` when practical:
 - framebuffer timing;
 - source-discovery logs and screenshots;
 - visual profile compatibility matrices;
+- anchor benchmark summaries and diagnostics;
 - photographs and continuity maps;
 - battery and power measurements;
 - boot/service logs;
@@ -118,6 +138,8 @@ Do not commit serial numbers, credentials, activation files, personal network de
 - Prefer shared memory or Unix-domain IPC for high-rate local frame/state paths when boundaries allow it.
 - Keep audio/MIDI/control latency independent from capture latency.
 - Prefer window identity and source-relative capture over full-desktop recording.
+- Prefer semantic-seeded, deterministic, explainable pixel/edge methods before introducing trained models.
+- Prefer coarse-to-fine bounded search and low-rate local revalidation over full-frame recognition at display cadence.
 - Prefer confidence-validated automatic resolution; use bounded user calibration rather than silently wrong capture.
 - Never block controller input or audio processing on a display frame.
 - Build semantic fallback and recovery before appliance lock-down.

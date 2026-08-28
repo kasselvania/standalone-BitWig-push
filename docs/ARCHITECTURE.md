@@ -9,7 +9,7 @@ Use the strongest source for each job:
 - **semantic state and control** from Bitwig's controller API and DrivenByMoss;
 - **live visual sources** when Bitwig or a plug-in already renders information the controller API does not expose;
 - **composition** to place the right information on Push's 960×160 display;
-- **semantic fallback** whenever a visual source is missing, stale, or unsupported.
+- **semantic fallback** whenever a visual source is missing, stale, ambiguous, or unsupported.
 
 The primary software product must work for ordinary users on their existing computers. The Steam Deck appliance and the CM11EB/native-compute work are consumers of the same software contracts, not definitions of those contracts.
 
@@ -77,23 +77,29 @@ Push pads/buttons/encoders
 | state / intent broker     |<---------| Bitwig controller API    |
 +-------------+-------------+          +--------------------------+
               |
-              | requested source / selected device / layout state
+              | selected device / requested view / layout state
               v
 +---------------------------+
 | visual source resolver    |
-| identity + confidence     |
+| candidate identity/role   |
 +------+------+-------------+
        |      |
-       |      +---------------- embedded Bitwig panel resolver
+       |      +---------------- dedicated/floating editor discovery
        |
-       +----------------------- dedicated/floating editor discovery
+       +----------------------- embedded Bitwig candidate prediction
                                |
                                v
                     +---------------------------+
                     | capture backend           |
                     | OS/window/direct adapter  |
                     +-------------+-------------+
-                                  |
+                                  | candidate frames
+                                  v
+                    +---------------------------+
+                    | semantic-seeded anchor    |
+                    | registration + confidence |
+                    +-------------+-------------+
+                                  | validated source/region or abstain
 semantic base frame -------------+
 optional direct/analyzer frames --+
                                   v
@@ -105,6 +111,8 @@ optional direct/analyzer frames --+
                                   v
                     Push USB display endpoint
 ```
+
+Dedicated top-level windows may not require anchor-based localization for full-window capture. The same anchor engine can still validate the source or locate a named sub-view inside that window.
 
 ## Component boundaries
 
@@ -135,36 +143,80 @@ Candidate events include:
 - plug-in/device-window desired/open state;
 - Bitwig panel layout and visibility state where observable;
 - transient overlay/notification requests;
-- compositor, resolver, and capture health;
+- compositor, resolver, anchor-engine, and capture health;
 - active deployment and runtime profiles.
 
 The broker must not sit on the audio path.
 
 ### Visual source resolver
 
-The resolver converts semantic intent into a validated source window/region.
+The resolver converts semantic intent into one or more bounded candidate source windows/regions.
 
 It uses an acquisition ladder:
 
 1. dedicated top-level plug-in or floating native-device window;
-2. Bitwig-main-window-relative embedded panel resolution;
+2. Bitwig-main-window-relative embedded panel candidate prediction;
 3. bounded stored calibration;
 4. direct project-owned frame source;
 5. semantic-only fallback.
 
-The resolver returns:
+The resolver does not need to prove the final crop before capture. It may return a bounded candidate source and an adapter-selected anchor policy for visual registration.
+
+Candidate result:
 
 ```text
-source identity
-source role
-source-relative region
-confidence
-validation anchors
+candidate source identity
+candidate source role
+candidate search zone
+semantic adapter identity
+anchor policy / expected geometry
 compatibility context
 fallback behavior
 ```
 
-It must revalidate after source recreation, resize, monitor move, UI-scale change, display-profile change, or Bitwig update.
+It must reconsider candidates after source recreation, resize, monitor move, UI-scale change, display-profile change, device selection, or Bitwig update.
+
+### Semantic-seeded anchor engine
+
+The anchor engine turns a candidate frame plus semantic adapter state into a validated visual lock.
+
+It exploits the fact that the selected device and requested view are already known. Instead of classifying an arbitrary desktop, it searches only plausible windows or panel zones for a small expected anchor constellation.
+
+Responsibilities:
+
+- select a versioned anchor constellation from semantic adapter identity;
+- preprocess candidate frames using bounded grayscale, edge, mask, or pyramid operations;
+- perform coarse-to-fine location at a declared scale range;
+- require multiple anchors with consistent relative geometry for a production lock;
+- solve the minimum useful transform, normally translation plus uniform scale;
+- compute confidence and competing-candidate margin;
+- return a source-relative region or abstain;
+- maintain an existing lock using small-neighborhood, low-rate validation;
+- reacquire after semantic, source, layout, or scale invalidation;
+- expose timing and evidence diagnostics.
+
+Output contract:
+
+```text
+AnchorLock
+  adapter_id
+  source_id
+  source_role
+  transform
+  source_relative_region
+  confidence
+  competitor_margin
+  evidence[]
+  state
+  acquired_at
+  revalidate_by
+```
+
+A single template hit is not enough. Wrong visual content is worse than semantic fallback, so low-confidence or ambiguous results must abstain.
+
+The first implementation should benchmark deterministic flattened-pixel, normalized-correlation, edge, and bounded multi-scale methods before introducing trained models.
+
+See [`SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`](SEMANTIC_PIXEL_ANCHOR_RESOLVER.md).
 
 ### Attached-mode Bitwig resolver
 
@@ -176,16 +228,27 @@ Inputs may include:
 - display profile and panel layout where observable;
 - selected-device semantic state;
 - normalized panel geometry;
-- panel separators, headers, selection outlines, and device-specific visual anchors;
-- adapter compatibility declarations.
+- panel separators, headers, selection outlines, stable corners, and device-specific visual anchors;
+- adapter compatibility declarations;
+- locally generated calibration descriptors where automatic resolution is insufficient.
 
 The primary identity must never be a physical desktop rectangle.
+
+The attached-mode resolver and anchor engine work together:
+
+```text
+semantic/layout state
+      -> bounded panel prediction
+      -> candidate capture
+      -> anchor constellation registration
+      -> confidence-validated region
+```
 
 ### Managed visual surface
 
 A managed deployment may run Bitwig inside controlled logical geometry with known UI scaling and window placement.
 
-This reduces calibration for appliances and testing, but must remain behind the same resolver/capture contracts used by attached mode.
+This reduces calibration for appliances and testing, but must remain behind the same resolver/capture/anchor contracts used by attached mode.
 
 Gamescope, nested Xwayland, dedicated Xorg, or another implementation may be evaluated. No one backend is architectural authority.
 
@@ -194,7 +257,7 @@ Gamescope, nested Xwayland, dedicated Xorg, or another implementation may be eva
 Responsibilities:
 
 - enumerate/discover source windows or authorized screen streams;
-- capture a complete source window or source-relative region;
+- capture a complete source window or candidate source-relative region;
 - retain the last valid frame;
 - publish frames at a bounded cadence;
 - report stale/missing/permission-denied state;
@@ -223,11 +286,11 @@ Potential backend families:
 - macOS ScreenCaptureKit;
 - direct project-owned sources.
 
-The compositor must not contain operating-system window handles.
+The compositor and anchor engine must not contain operating-system window handles.
 
 ### Visual adapters
 
-A visual adapter combines semantic matching, source preferences, crop policy, compatibility, validation, and fallback.
+A visual adapter combines semantic matching, source preferences, crop policy, compatibility, anchor registration, validation, and fallback.
 
 Adapters should support:
 
@@ -236,12 +299,15 @@ Adapters should support:
 - normalized source-relative regions;
 - optional geometry for a named tested source size;
 - Bitwig/plugin version and UI-scale declarations;
-- anchor validation and confidence thresholds;
+- multiple anchor definitions and expected relative geometry;
+- preprocessing, scale range, search zones, confidence thresholds, and competitor margin;
 - fit policy and frame-rate limits;
-- bounded calibration records;
+- bounded calibration records and local template generation;
 - explicit semantic fallback.
 
-See [`VISUAL_PORTABILITY.md`](VISUAL_PORTABILITY.md).
+The repository should not casually ship proprietary UI screenshots as templates. Prefer locally generated templates, recipes, hashes, masks, descriptors, or legally distributable fixtures.
+
+See [`VISUAL_PORTABILITY.md`](VISUAL_PORTABILITY.md) and [`SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`](SEMANTIC_PIXEL_ANCHOR_RESOLVER.md).
 
 ### Display compositor
 
@@ -250,7 +316,7 @@ The steady-state design has exactly one owner of Push USB display interface `0`,
 Responsibilities:
 
 - accept a semantic base frame;
-- accept zero or more visual layers;
+- accept zero or more validated visual layers;
 - crop, scale, and place layers;
 - apply final 960×160 formatting;
 - convert/send frames using the Push display protocol;
@@ -263,6 +329,8 @@ Initial modes:
 2. **Lens** — semantic UI plus a selected visual region.
 3. **Focus** — selected visual source dominates the screen.
 4. **Recovery** — compositor-local diagnostics independent of Bitwig visuals.
+
+The compositor consumes validated frames/regions; it does not perform window discovery or template matching itself.
 
 ### Remote desktop / management
 
@@ -299,10 +367,13 @@ Keep these domains separate:
 1. **audio** — highest priority, never dependent on visual code;
 2. **musical control/MIDI** — immediate and independent of capture;
 3. **semantic display state** — interactive;
-4. **captured/direct visuals** — opportunistic and bounded;
-5. **remote desktop** — management latency, not musical-control latency.
+4. **source acquisition/anchor registration** — event-driven or low-rate, bounded, never on control/audio threads;
+5. **captured/direct visuals** — opportunistic and bounded;
+6. **remote desktop** — management latency, not musical-control latency.
 
-A frozen or denied visual source must never freeze pads, encoders, transport, audio, or semantic display fallback.
+Full anchor acquisition should normally occur after selection/layout/source changes. Locked-state validation should search a small neighborhood at a bounded cadence rather than run at the display frame rate.
+
+A frozen, ambiguous, or denied visual source must never freeze pads, encoders, transport, audio, or semantic display fallback.
 
 ## Repository topology
 
@@ -311,15 +382,15 @@ Planned original components:
 ```text
 controller-integration/   # narrow DrivenByMoss/Bitwig integration seam
 broker/                   # semantic state and visual-intent IPC
-resolver/                 # source discovery, validation, calibration
+resolver/                 # source candidates, anchor registration, calibration
 capture/                  # OS/window/direct frame backends
 compositor/               # Push framebuffer ownership and composition
-visual-adapters/          # tested source/profile declarations
+visual-adapters/          # tested source/profile/anchor declarations
 remote/                   # appliance desktop/management integration
 appliance/                # optional host/boot/power packaging profiles
 hardware/                 # optional connector/dock research
-platform-tests/           # layout/backend compatibility matrices
-diagnostics/              # USB, source, frame and latency tooling
+platform-tests/           # layout/backend/anchor compatibility matrices
+diagnostics/              # USB, source, anchor, frame, and latency tooling
 evidence/                 # retained experimental evidence
 ```
 

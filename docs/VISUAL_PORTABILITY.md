@@ -69,10 +69,43 @@ For these sources, resolve the region from a combination of:
 - current Bitwig panel layout and panel visibility where the API exposes them;
 - application-window bounds;
 - normalized geometry;
-- visual anchors such as panel dividers, headers, selection outlines, and device-specific landmarks;
+- semantic-seeded pixel anchors such as panel dividers, headers, selection outlines, stable corners, and device-specific landmarks;
 - an adapter declaration for the relevant Bitwig/device version.
 
 Do not store a raw desktop rectangle such as `x=1180, y=760, width=630, height=210` as the primary identity.
+
+### Semantic-seeded anchor constellations
+
+DrivenByMoss/Bitwig semantic state can make visual matching dramatically simpler.
+
+When the selected device is already known, the resolver does not need to classify an arbitrary desktop. It can select one adapter, restrict the search to plausible Bitwig windows/panel zones, and look for a small constellation of expected visual anchors.
+
+```text
+selected device / requested view
+        -> adapter and anchor set
+        -> bounded candidate window or panel zone
+        -> coarse pixel/edge match
+        -> second/third anchor geometry validation
+        -> translation/scale lock
+        -> validated source-relative crop
+```
+
+A constellation should use at least two stable anchors with expected relative geometry. One template match alone is not sufficient evidence for a production lock.
+
+Methods worth benchmarking include:
+
+- flattened normalized grayscale vectors;
+- normalized cross-correlation;
+- edge-map template matching;
+- coarse-to-fine multi-scale matching;
+- perceptual hashes for quick candidate rejection;
+- feature descriptors only where simpler methods cannot tolerate supported scaling.
+
+The resolver should search globally only after semantic/layout/source changes. Once locked, it should validate inside a small neighborhood at a bounded cadence rather than scanning every display frame.
+
+The important metrics are wrong-lock rate, abstention rate, localization error, acquisition/reacquisition time, CPU time, memory, and confidence calibration. A wrong visual lock is worse than no visual source, so ambiguous matches must fall back to the semantic display.
+
+See [`SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`](SEMANTIC_PIXEL_ANCHOR_RESOLVER.md) for the detailed design and benchmark plan.
 
 ### Strategy 3 — bounded user calibration
 
@@ -83,7 +116,7 @@ A calibration record may include:
 - target window identity;
 - UI scale and Bitwig version;
 - normalized source rectangle;
-- anchor image/checksum;
+- locally generated anchor templates/descriptors;
 - expected minimum source dimensions;
 - confidence score;
 - invalidation rules.
@@ -161,7 +194,7 @@ Bitwig display profile / panel layout where observable
 window dimensions and scale
 selected-device semantic identity
 candidate floating device/plugin windows
-visual adapter rules
+visual adapter and anchor rules
 ```
 
 Outputs:
@@ -170,7 +203,7 @@ Outputs:
 source window identity
 source-relative region
 confidence
-validation anchors
+anchor evidence / inferred transform
 fallback behavior
 ```
 
@@ -206,11 +239,25 @@ window_match:
   title_patterns:
     - "*Sampler*"
 
+anchors:
+  - id: sampler-header
+    representation: local-template
+    preprocess: grayscale-edge
+    search_zone: predicted-header
+    scale_range: [0.80, 1.60]
+
+  - id: waveform-divider
+    representation: local-template
+    preprocess: grayscale-edge
+    expected_from: sampler-header
+    normalized_offset: [0.00, 0.72]
+    tolerance: [0.04, 0.05]
+
 views:
   waveform:
     crop:
-      mode: normalized
-      rect: [0.03, 0.12, 0.94, 0.60]
+      mode: anchor-derived
+      normalized_rect: [0.03, 0.12, 0.94, 0.60]
     fit: contain
     max_fps: 20
 
@@ -220,13 +267,19 @@ compatibility:
 
 validation:
   minimum_size: [640, 240]
-  required_anchors: ["sampler-header", "waveform-region"]
+  minimum_anchors: 2
+  confidence_min: 0.94
+  competitor_margin_min: 0.08
 
 fallback:
   mode: semantic
 ```
 
+Exact anchor thresholds are empirical and adapter-specific.
+
 Profiles must declare what has actually been tested. They must not imply universal support from one screenshot.
+
+The repository should prefer local template generation, anchor recipes, masks, hashes, or legally distributable descriptors rather than casually shipping proprietary Bitwig or plug-in UI screenshots.
 
 ## Support tiers
 
@@ -243,12 +296,13 @@ Expected experience:
 
 ### Tier B — layout-adaptive automatic
 
-The target is embedded in Bitwig, but the resolver can locate it from panel state and visual anchors.
+The target is embedded in Bitwig, but the resolver can locate it from semantic state, panel geometry, and confidence-validated anchor constellations.
 
 Expected experience:
 
 - no fixed desktop coordinates;
 - compatible across tested display profiles, window sizes, and UI scales;
+- low-cost reacquisition after selection/layout changes;
 - confidence validation and semantic fallback.
 
 ### Tier C — assisted calibration
@@ -258,6 +312,7 @@ The target requires the user to identify or confirm a region once.
 Expected experience:
 
 - calibration stored by Bitwig/device/version/UI-scale identity;
+- local anchor generation where helpful;
 - automatic reuse and invalidation;
 - no repeated manual cropping during ordinary use.
 
@@ -281,11 +336,13 @@ Minimum dimensions:
 - source hidden/reopened;
 - selected device changed;
 - compositor restart;
-- capture permission restart where applicable.
+- capture permission restart where applicable;
+- wrong/negative candidate windows;
+- anchor confidence and competitor margin.
 
 The first Linux implementation may precede Windows/macOS backends, but the core interfaces must not prevent those backends.
 
-## First proof target
+## First proof targets
 
 The preferred first portable visual target is a Bitwig native device with an Expanded Device View that can be made into a floating window, such as Sampler, followed by one ordinary native Linux plug-in editor.
 
@@ -300,7 +357,9 @@ DrivenByMoss selected-device intent
         -> send to Push
 ```
 
-After this works, the embedded Bitwig panel resolver becomes the next major research slice.
+In parallel or immediately afterward, the semantic-seeded anchor engine can be benchmarked offline against captured fixture frames. That benchmark can compare simple flattened-pixel, grayscale, edge, and multi-scale methods before any one algorithm is placed in the live path.
+
+After dedicated-window capture and the anchor benchmark work, the embedded Bitwig panel resolver becomes the next major research slice.
 
 ## Honest product claim
 
