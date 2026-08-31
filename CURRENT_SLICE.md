@@ -1,134 +1,161 @@
-# Current Slice: S0 — macOS Reference Fixture and Display Reconnaissance
+# Current Slice: V1A-0 — DrivenByMoss Derivative Fork and Local Build Baseline
 
 ## Status
 
-Ready to start from current `main` after the Mac-first fixture update is merged.
+Ready to start from current `main` after S0 merge commit `e1e394e99685cfcea953014b07653012cb8183be`.
 
 ## Primary claim
 
-Establish a reproducible, retained baseline for the maintainer's working macOS + Bitwig Studio + Push 3 Controller + DrivenByMoss fixture, and identify the exact existing display ownership path that V1 will replace or interpose.
+Establish the implementation repository and prove that the exact unmodified DrivenByMoss 26.4.1 source pinned by S0 can be built, temporarily installed, loaded by Bitwig Studio, and exercised successfully on the accepted macOS fixture before any frame-pipeline behavior is changed.
 
-The Mac is used because it is currently available and already has the working Bitwig/DrivenByMoss environment. S0 does **not** make macOS, one monitor geometry, or one capture API normative for the project.
+This is a deliberately small pre-implementation gate. S0 proved the official installed artifact, exact source pin, and display seam, but did not perform a local source build. Build/toolchain/install/rollback uncertainty must be separated from V1A's no-op frame-pipeline uncertainty.
 
-S0 is observational and minimally invasive. It does not implement the compositor, adaptive visual resolver, ScreenCaptureKit helper, managed desktop, headless appliance, alternate plug-in runtime, or hardware integration.
+## Repository topology
 
-## Reference fixture
+Two repositories have different ownership roles:
 
-- macOS development computer;
-- Bitwig Studio already installed and activated;
-- Ableton Push 3 Controller;
-- ordinary external USB connection;
-- current compatible DrivenByMoss release/source.
+- `kasselvania/standalone-BitWig-push` remains the project authority, roadmap, evidence, and cross-component integration repository.
+- A GitHub fork of `git-moss/DrivenByMoss` under `kasselvania` becomes the implementation repository for the narrow controller-extension derivative.
 
-The Steam Deck remains the maintainer's first appliance host and a later Linux portability fixture. The wooden base, battery, Monome/serialosc work, plugdata work, and prior yabridge experiments are outside this slice.
+The DrivenByMoss fork must preserve upstream history and LGPL provenance. Do not copy DrivenByMoss source into this repository.
+
+Required upstream basis:
+
+```text
+Upstream repository: git-moss/DrivenByMoss
+Tag:                26.4.1
+Commit:             fd03245ab38fa5149c45934051d937ee9fda6d08
+Tree:               edd2ad636b0aa1f39919f0ffd05c968015450075
+```
+
+Create or verify a stable fork branch equivalent to:
+
+```text
+pushwig/upstream-26.4.1
+```
+
+pointing exactly to that commit. The local checkout must use:
+
+```text
+origin   -> kasselvania fork
+upstream -> git-moss/DrivenByMoss
+```
 
 ## In scope
 
-1. Record macOS, kernel, hardware architecture, Bitwig, and graphical/display versions relevant to reproducing this fixture.
-2. Record Push USB and audio enumeration through macOS tools.
-3. Confirm the Bitwig + DrivenByMoss control baseline:
-   - pads;
-   - MPE/pressure where configured;
+1. Create or verify the `kasselvania/DrivenByMoss` GitHub fork.
+2. Configure `origin` and `upstream` remotes correctly in a clean local checkout.
+3. Create/verify `pushwig/upstream-26.4.1` at the exact S0 source commit.
+4. Record the Mac build toolchain:
+   - Java vendor/version and `JAVA_HOME`;
+   - Maven version;
+   - architecture;
+   - relevant Bitwig extension directory.
+5. Build the **unmodified** pinned source using the upstream macOS build shape:
+
+   ```text
+   mvn clean install package -Dbitwig.extension.directory=target
+   ```
+
+   with a Java 21 toolchain.
+6. Record:
+   - exact source commit/tree;
+   - build command and exit result;
+   - resulting artifact path, size, SHA-256, manifest, and Maven metadata;
+   - whether the locally built artifact is or is not byte-identical to the official artifact, without treating a difference as failure by itself.
+7. Temporarily replace the official installed extension through a reversible process:
+   - stop or safely reload Bitwig as required;
+   - move the official artifact to a backup location outside Bitwig's extension scan path;
+   - install the locally built artifact under the expected filename;
+   - preserve the official artifact hash from S0.
+8. Confirm Bitwig loads the locally built extension and execute the accepted behavioral baseline:
+   - Push connection;
+   - notes;
+   - pressure/MPE where configured;
    - encoders;
    - transport;
-   - semantic Push display;
-   - Push audio-device enumeration and one simple audio result.
-4. Record the current Bitwig window/display state only as fixture evidence:
-   - attached displays and scaling;
-   - Bitwig application-window dimensions;
-   - Bitwig display profile/panel arrangement where observable;
-   - whether native-device expanded/floating views can be opened in this fixture.
-5. Obtain or identify the exact DrivenByMoss source revision corresponding to the tested setup.
-6. Trace the Push 3 semantic-display construction and USB-send path in that revision.
-7. Confirm whether the tested revision follows the expected shape:
+   - semantic display;
+   - Push audio-device presence;
+   - audible master output through Push headphones;
+   - native-device selection;
+   - Expanded Device View open;
+   - Expanded Device View float/undock.
+9. Restore the exact official 26.4.1 artifact at the end of the slice unless an explicit maintainer decision says otherwise.
+10. Verify the restored official artifact SHA-256 is:
+
+   ```text
+   98dc3195ad8d911526e18b1005f09f69a1aedcb965b080565474104654345c5a
+   ```
+11. Retain sanitized evidence under:
+
+   ```text
+   evidence/v1a0-drivenbymoss-build-baseline/
+   ```
+
+12. Leave both repositories and all relevant worktrees clean.
+
+## Expected evidence
+
+Use a structure equivalent to:
 
 ```text
-semantic graphic renderer
-        -> IBitmap
-        -> Push2Display.send(IBitmap)
-        -> PushUsbDisplay.send(IBitmap)
-        -> USB encoding/transport
+evidence/v1a0-drivenbymoss-build-baseline/
+├── README.md
+├── repository-topology.md
+├── toolchain.md
+├── build-result.md
+├── artifact-comparison.md
+├── install-rollback.md
+└── manual-acceptance.md
 ```
 
-8. Produce a V1 design note identifying the narrowest seam for:
-   - a no-op frame-pipeline insertion;
-   - semantic base-frame access;
-   - one steady-state USB display writer;
-   - later external `VisualSourceFrame` ingress.
-9. Retain sanitized evidence under `evidence/s0-macos-reference-fixture/`.
+Every evidence file should state what it proves and what it does not prove.
+
+Sanitize personal paths as `$HOME`, and do not retain serial numbers, hardware UUIDs, account/license data, hostnames, IP addresses, proprietary binaries, or private UI captures.
 
 ## Explicit non-goals
 
-- no claim of universal monitor/layout adaptation;
-- no visual-source capture or resolver implementation;
-- no ScreenCaptureKit code or Screen Recording permission request;
-- no internal Push disassembly or connector probing;
-- no compute-module purchase;
-- no headless boot changes;
-- no Steam Deck or Linux validation;
-- no yabridge repair or alternate Bitwig runtime;
-- no plugdata, Pure Data, Monome, or serialosc integration work;
-- no broad DrivenByMoss redesign;
-- no redesign of existing Push modes;
-- no remote-desktop implementation.
-
-## Required evidence
-
-At minimum retain sanitized outputs equivalent to:
-
-```text
-sw_vers
-uname -a
-uname -m
-system_profiler SPHardwareDataType
-system_profiler SPUSBDataType
-system_profiler SPAudioDataType
-system_profiler SPDisplaysDataType
-```
-
-Where useful, retain a sanitized targeted USB tree or `ioreg` extract for Push rather than committing an unnecessarily broad machine inventory.
-
-Also retain:
-
-- tested Bitwig version/build;
-- tested DrivenByMoss version/revision;
-- whether Push audio was selected in Bitwig and the observed result;
-- a short manual controller acceptance checklist;
-- source-path notes for the semantic display pipeline;
-- current monitor/window/display-profile notes as fixture evidence only;
-- the exact proposed V1A no-op frame seam;
-- any build/install steps needed to reproduce the tested DrivenByMoss derivative locally.
-
-Sanitize serial numbers, account/license data, hostnames, user paths, and other personal identifiers before committing.
+- no `PushFramePipeline` implementation;
+- no `PushDisplayTransport` abstraction;
+- no source behavior change in DrivenByMoss;
+- no version or extension-ID change;
+- no overlay or synthetic pixels;
+- no frame hashing instrumentation inside the extension;
+- no new queue, executor, thread, or USB writer;
+- no IPC, shared memory, or external frame ingress;
+- no ScreenCaptureKit helper or Screen Recording permission request;
+- no visual resolver or pixel-anchor implementation;
+- no Steam Deck/Linux validation;
+- no yabridge, Monome, plugdata, hardware, battery, or CM11EB work;
+- no attempt to make the locally built JAR reproducible byte-for-byte unless the unmodified build naturally is.
 
 ## Acceptance criteria
 
-S0 is complete only when all of the following are true:
+V1A-0 is complete only when all of the following are true:
 
-1. A contributor can reproduce and understand the tested Mac fixture.
-2. Push musical controls demonstrably work in Bitwig through DrivenByMoss.
-3. The semantic Push display demonstrably works in the baseline configuration.
-4. Push audio enumeration and one simple audio result are recorded, whether pass or a clearly characterized blocker.
-5. The macOS/display environment relevant to later visual work is recorded without being generalized into a product requirement.
-6. The exact path from DrivenByMoss semantic rendering to Push USB frame transmission is named and linked to the tested upstream revision.
-7. The V1A no-op frame-pipeline seam is concrete enough to implement without rediscovering the current display path.
-8. The Steam Deck is explicitly preserved as a later Linux/appliance validation fixture rather than treated as abandoned.
+1. The implementation fork exists and retains upstream history.
+2. `pushwig/upstream-26.4.1` resolves exactly to `fd03245ab38fa5149c45934051d937ee9fda6d08` and tree `edd2ad636b0aa1f39919f0ffd05c968015450075`.
+3. The local checkout has correct `origin` and `upstream` remotes and a clean unmodified source tree.
+4. The pinned source builds successfully on the accepted Mac with Java 21 and Maven.
+5. The built extension artifact is cryptographically identified and its metadata retained.
+6. Bitwig loads the locally built artifact.
+7. The full accepted manual baseline passes, or every failure is characterized precisely enough to decide whether build parity is blocked.
+8. The official artifact can be restored safely and its exact S0 SHA-256 is reverified.
+9. No functional source change or V1A implementation enters the slice.
+10. Another agent can start V1A from a proven build/install/fork baseline without rediscovering toolchain or rollback behavior.
 
-## Expected V1 handoff
+## Expected V1A handoff
 
-V1 should begin with a no-op cut equivalent to:
+After V1A-0 closes, V1A may introduce only the identity frame boundary proven by S0:
 
 ```text
-semantic renderer
-        -> PushFramePipeline (no-op first)
-        -> PushDisplayTransport
-        -> Push USB display
+complete semantic IBitmap
+        -> PushFramePipeline identity process
+        -> existing Push USB transport
 ```
 
-The leading current-source hypothesis is to cut at or immediately before `Push2Display.send(IBitmap)` hands the complete semantic frame to `PushUsbDisplay`. S0 must confirm this against the exact tested revision.
-
-The first implementation keeps composition and final USB transmission in one DrivenByMoss-derived process. External capture and platform-specific helpers begin only after synthetic composition and IPC ingress are proven.
+The first functional derivative should then be reviewed independently for object identity, pixel equivalence, call order, timing, allocation behavior, shutdown, reconnect observations, and one-writer preservation.
 
 ## Review standard
 
-Do not mark S0 complete from documentation research alone. The claim is about the maintainer's real Mac + Push 3 + Bitwig fixture, so retained real-device evidence is required.
+Do not mark V1A-0 complete because Maven produced a file. The locally built extension must be loaded and exercised on the real Mac + Bitwig + Push fixture, and the rollback to the exact official artifact must be retained.
