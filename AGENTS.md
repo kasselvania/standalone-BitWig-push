@@ -21,12 +21,13 @@ When instructions conflict, use this order:
 3. `docs/PROJECT_TRACKS.md`
 4. `docs/ARCHITECTURE.md`
 5. `docs/MAC_FIRST_DEVELOPMENT.md`
-6. `docs/VISUAL_PORTABILITY.md`
-7. `docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`
-8. `docs/ROADMAP.md`
-9. `docs/RUNTIME_STRATEGY.md`
-10. issue / PR scope
-11. implementation convenience
+6. `docs/DRIVENBYMOSS_DERIVATIVE_STRATEGY.md`
+7. `docs/VISUAL_PORTABILITY.md`
+8. `docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`
+9. `docs/ROADMAP.md`
+10. `docs/RUNTIME_STRATEGY.md`
+11. issue / PR scope
+12. implementation convenience
 
 A contributor or coding agent must stop and surface a conflict rather than quietly widening scope.
 
@@ -59,7 +60,8 @@ A contributor or coding agent must stop and surface a conflict rather than quiet
 - Do not redistribute Bitwig Studio, Ableton software/firmware, proprietary Push assets, activation data, or other third-party binaries without redistribution rights.
 - Do not casually redistribute proprietary UI screenshots/templates; prefer local anchor generation, recipes, hashes, descriptors, or legally distributable fixtures.
 - Upstream forks and dependencies retain their licenses and provenance.
-- Do not copy DrivenByMoss into this repository until the integration boundary and fork strategy are explicitly accepted.
+- DrivenByMoss source changes live in the `kasselvania/DrivenByMoss` fork and must preserve upstream history and LGPL notices; do not vendor that source into this repository.
+- Every DrivenByMoss implementation slice must name an exact accepted upstream commit/tree and must not silently move to a newer upstream basis.
 
 ## Slice discipline
 
@@ -79,6 +81,7 @@ A slice is complete only when its claim is demonstrably true.
 Do not merge separate uncertainty domains merely because they are exciting. Examples:
 
 - display-path tracing is separate from modifying the display path;
+- fork/toolchain/build/install/rollback proof is separate from the no-op frame-pipeline source change;
 - no-op frame-pipeline insertion is separate from synthetic composition;
 - synthetic composition is separate from external-frame IPC;
 - external-frame IPC is separate from operating-system window capture;
@@ -128,6 +131,7 @@ Retain useful evidence under `evidence/` when practical:
 
 - USB and audio enumeration;
 - operating-system, graphical-session, sandbox, and permission state;
+- upstream basis, build toolchain, artifact hashes, installation, and rollback evidence;
 - framebuffer timing and pixel-equivalence evidence;
 - source-discovery logs and screenshots;
 - visual profile compatibility matrices;
@@ -142,6 +146,7 @@ Do not commit serial numbers, credentials, activation files, personal network de
 ## Engineering preferences
 
 - Use the currently available Mac to shorten the first implementation loop, while keeping core interfaces platform-neutral.
+- Prove a clean unmodified DrivenByMoss source build, reversible installation, real-device parity, and exact rollback before the first source behavior change.
 - Prefer a no-op frame-pipeline seam before changing visible output.
 - Prefer in-process final composition/USB transport initially so two processes do not fight over Push's display interface.
 - Keep platform capture in a separate helper/backend and publish only `VisualSourceFrame`-style data across the boundary.
@@ -173,9 +178,9 @@ A CM11EB development card is staged open hardware:
 
 ## Current reference fixture
 
-S0 uses the maintainer's macOS computer, Bitwig Studio, Push 3, and DrivenByMoss because that system is available for real-device evidence and rapid source-level iteration.
+S0 has accepted the maintainer's macOS computer, Bitwig Studio, Push 3, and DrivenByMoss 26.4.1 as the first real-device fixture and has pinned the display handoff seam.
 
-The purpose of S0 is to establish the tested Mac fixture and the display handoff seam—not to define macOS as the universal platform.
+V1A-0 now uses that same fixture to prove the DrivenByMoss fork, Java/Maven build, reversible extension installation, behavioral parity, and exact official-artifact rollback.
 
 The Steam Deck remains the named second-host/Linux portability and appliance fixture when it becomes available.
 
