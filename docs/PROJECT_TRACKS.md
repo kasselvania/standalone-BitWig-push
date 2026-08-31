@@ -12,6 +12,17 @@ The three primary tracks are:
 
 A fourth category contains optional ecosystem integrations such as Windows plug-in bridging, plugdata, Pure Data, Monome devices, custom analyzers, and other visual sources. Those integrations may use the core interfaces, but they are not prerequisites for the core project.
 
+## Reference fixtures versus product requirements
+
+The project may use different computers for different proof jobs.
+
+Current maintainer fixtures:
+
+- **macOS software fixture** — active V0/V1/V2 development host for tracing DrivenByMoss, inserting the frame pipeline, and implementing the first capture backend;
+- **Steam Deck appliance/Linux fixture** — later second-host portability proof and the first Track A all-in-one host.
+
+Neither fixture is normative. The Mac does not make the product macOS-only, and the Deck does not make the product SteamOS-only.
+
 ## Track V — Universal visual/controller integration
 
 This is the primary open-source software product.
@@ -24,8 +35,12 @@ The target is ordinary Bitwig users first:
 
 - desktop and laptop computers;
 - arbitrary monitor positions and aspect ratios;
-- Linux first, with capture backends designed for later Windows and macOS support;
+- macOS as the first available implementation fixture;
+- Linux/Steam Deck as the named second-host and portability checkpoint;
+- later Windows support through another capture backend;
 - Push connected through its normal controller-mode USB contract.
+
+Platform order is an implementation schedule, not an architectural priority. Core frame, resolver, adapter, and compositor contracts remain platform-neutral.
 
 The visual system must support two operating modes:
 
@@ -35,7 +50,7 @@ Bitwig remains in the user's existing desktop layout. The project discovers wind
 
 Attached mode must not require:
 
-- a Steam Deck;
+- a Mac or Steam Deck specifically;
 - a headless desktop;
 - a fixed monitor resolution;
 - a forced display profile;
@@ -58,7 +73,7 @@ A canonical virtual surface is a managed-mode technique. It is not the universal
 
 This track packages the proven visual/controller software into a portable instrument.
 
-The maintainer's Steam Deck is the first development host because it already exists and proves that the host can be standardized. It is not a project-wide hardware requirement or the only intended appliance computer.
+The maintainer's Steam Deck is the first appliance host because it already exists and proves that the host can be standardized. It is not the current V0 software-development blocker, a project-wide hardware requirement, or the only intended appliance computer.
 
 Potential appliance hosts include:
 
