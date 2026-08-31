@@ -1,63 +1,74 @@
-# Current Slice: S0 — Reference Fixture Baseline and Display Reconnaissance
+# Current Slice: S0 — macOS Reference Fixture and Display Reconnaissance
 
 ## Status
 
-Ready to start from current `main`.
+Ready to start from current `main` after the Mac-first fixture update is merged.
 
 ## Primary claim
 
-Establish a reproducible, retained baseline for the maintainer's working Bitwig Studio + Push 3 Controller + DrivenByMoss fixture, and identify the exact existing display ownership path that S1 will replace or interpose.
+Establish a reproducible, retained baseline for the maintainer's working macOS + Bitwig Studio + Push 3 Controller + DrivenByMoss fixture, and identify the exact existing display ownership path that V1 will replace or interpose.
 
-The Steam Deck is used because it is the available real-device development host. S0 does **not** make Steam Deck, Flatpak, one monitor geometry, or one appliance layout normative for the project.
+The Mac is used because it is currently available and already has the working Bitwig/DrivenByMoss environment. S0 does **not** make macOS, one monitor geometry, or one capture API normative for the project.
 
-S0 is observational and minimally invasive. It does not implement the compositor, adaptive visual resolver, managed desktop, headless appliance, alternate plug-in runtime, or hardware integration.
+S0 is observational and minimally invasive. It does not implement the compositor, adaptive visual resolver, ScreenCaptureKit helper, managed desktop, headless appliance, alternate plug-in runtime, or hardware integration.
 
 ## Reference fixture
 
-- Steam Deck running Linux / SteamOS-derived environment;
-- Bitwig Studio already installed via Flatpak;
+- macOS development computer;
+- Bitwig Studio already installed and activated;
 - Ableton Push 3 Controller;
 - ordinary external USB connection;
 - current compatible DrivenByMoss release/source.
 
-The maintainer's wooden base, battery, Monome/serialosc work, plugdata work, and prior yabridge experiments are outside this slice.
+The Steam Deck remains the maintainer's first appliance host and a later Linux portability fixture. The wooden base, battery, Monome/serialosc work, plugdata work, and prior yabridge experiments are outside this slice.
 
 ## In scope
 
-1. Record host, kernel, Flatpak, Bitwig, and graphical-session versions relevant to reproducing this fixture.
-2. Record Bitwig Flatpak permissions relevant to later USB, capture, and IPC work.
-3. Record Push USB enumeration and descriptors.
-4. Record ALSA and PipeWire device/port enumeration.
-5. Confirm the Bitwig + DrivenByMoss control baseline:
+1. Record macOS, kernel, hardware architecture, Bitwig, and graphical/display versions relevant to reproducing this fixture.
+2. Record Push USB and audio enumeration through macOS tools.
+3. Confirm the Bitwig + DrivenByMoss control baseline:
    - pads;
    - MPE/pressure where configured;
    - encoders;
    - transport;
    - semantic Push display;
    - Push audio-device enumeration and one simple audio result.
-6. Record the current Bitwig window/display state only as fixture evidence:
-   - session type;
-   - current monitor resolution/scaling;
+4. Record the current Bitwig window/display state only as fixture evidence:
+   - attached displays and scaling;
+   - Bitwig application-window dimensions;
    - Bitwig display profile/panel arrangement where observable;
    - whether native-device expanded/floating views can be opened in this fixture.
-7. Obtain or identify the exact DrivenByMoss source revision corresponding to the tested setup.
-8. Trace the Push 3 semantic-display construction and USB-send path in that revision.
-9. Produce an S1 design note identifying the narrowest seam for:
-   - semantic base-frame export or interception;
-   - single compositor ownership of the Push display endpoint.
-10. Retain sanitized evidence under `evidence/s0-reference-fixture/`.
+5. Obtain or identify the exact DrivenByMoss source revision corresponding to the tested setup.
+6. Trace the Push 3 semantic-display construction and USB-send path in that revision.
+7. Confirm whether the tested revision follows the expected shape:
+
+```text
+semantic graphic renderer
+        -> IBitmap
+        -> Push2Display.send(IBitmap)
+        -> PushUsbDisplay.send(IBitmap)
+        -> USB encoding/transport
+```
+
+8. Produce a V1 design note identifying the narrowest seam for:
+   - a no-op frame-pipeline insertion;
+   - semantic base-frame access;
+   - one steady-state USB display writer;
+   - later external `VisualSourceFrame` ingress.
+9. Retain sanitized evidence under `evidence/s0-macos-reference-fixture/`.
 
 ## Explicit non-goals
 
 - no claim of universal monitor/layout adaptation;
 - no visual-source capture or resolver implementation;
-- no fixed/canonical desktop implementation;
+- no ScreenCaptureKit code or Screen Recording permission request;
 - no internal Push disassembly or connector probing;
 - no compute-module purchase;
-- no persistent headless boot changes;
+- no headless boot changes;
+- no Steam Deck or Linux validation;
 - no yabridge repair or alternate Bitwig runtime;
 - no plugdata, Pure Data, Monome, or serialosc integration work;
-- no large DrivenByMoss fork;
+- no broad DrivenByMoss redesign;
 - no redesign of existing Push modes;
 - no remote-desktop implementation.
 
@@ -66,55 +77,58 @@ The maintainer's wooden base, battery, Monome/serialosc work, plugdata work, and
 At minimum retain sanitized outputs equivalent to:
 
 ```text
+sw_vers
 uname -a
-cat /etc/os-release
-flatpak info <Bitwig app id>
-flatpak info --show-permissions <Bitwig app id>
-echo "$XDG_SESSION_TYPE"
-echo "$WAYLAND_DISPLAY"
-echo "$DISPLAY"
-lsusb
-lsusb -v -d 2982:1969
-aconnect -l   # or equivalent ALSA sequencer enumeration
-wpctl status  # or equivalent PipeWire graph/device summary
+uname -m
+system_profiler SPHardwareDataType
+system_profiler SPUSBDataType
+system_profiler SPAudioDataType
+system_profiler SPDisplaysDataType
 ```
+
+Where useful, retain a sanitized targeted USB tree or `ioreg` extract for Push rather than committing an unnecessarily broad machine inventory.
 
 Also retain:
 
-- tested Bitwig version;
+- tested Bitwig version/build;
 - tested DrivenByMoss version/revision;
-- whether Push audio was selected through Bitwig/PipeWire and the observed result;
+- whether Push audio was selected in Bitwig and the observed result;
 - a short manual controller acceptance checklist;
-- source-path notes for the display pipeline;
+- source-path notes for the semantic display pipeline;
 - current monitor/window/display-profile notes as fixture evidence only;
-- host/Flatpak paths that appear suitable for a later broker/frame handoff.
+- the exact proposed V1A no-op frame seam;
+- any build/install steps needed to reproduce the tested DrivenByMoss derivative locally.
 
-Sanitize serial numbers, account/license data, hostnames, IP addresses, and other personal identifiers before committing.
+Sanitize serial numbers, account/license data, hostnames, user paths, and other personal identifiers before committing.
 
 ## Acceptance criteria
 
 S0 is complete only when all of the following are true:
 
-1. A contributor can reproduce and understand the tested maintainer fixture.
+1. A contributor can reproduce and understand the tested Mac fixture.
 2. Push musical controls demonstrably work in Bitwig through DrivenByMoss.
 3. The semantic Push display demonstrably works in the baseline configuration.
 4. Push audio enumeration and one simple audio result are recorded, whether pass or a clearly characterized blocker.
-5. The graphical and sandbox environment relevant to later visual work is recorded without being generalized into a product requirement.
+5. The macOS/display environment relevant to later visual work is recorded without being generalized into a product requirement.
 6. The exact path from DrivenByMoss semantic rendering to Push USB frame transmission is named and linked to the tested upstream revision.
-7. S1 can begin without rediscovering how the current display pipeline works.
+7. The V1A no-op frame-pipeline seam is concrete enough to implement without rediscovering the current display path.
+8. The Steam Deck is explicitly preserved as a later Linux/appliance validation fixture rather than treated as abandoned.
 
-## Expected S1 handoff
+## Expected V1 handoff
 
-S1 should be able to state a concrete interface such as:
+V1 should begin with a no-op cut equivalent to:
 
 ```text
-semantic renderer -> frame handoff -> project compositor -> Push USB display
+semantic renderer
+        -> PushFramePipeline (no-op first)
+        -> PushDisplayTransport
+        -> Push USB display
 ```
 
-with the compositor as the sole steady-state owner of the Push display endpoint.
+The leading current-source hypothesis is to cut at or immediately before `Push2Display.send(IBitmap)` hands the complete semantic frame to `PushUsbDisplay`. S0 must confirm this against the exact tested revision.
 
-Adaptive source discovery, attached-mode portability, managed appliance geometry, and operating-system capture backends begin in later slices.
+The first implementation keeps composition and final USB transmission in one DrivenByMoss-derived process. External capture and platform-specific helpers begin only after synthetic composition and IPC ingress are proven.
 
 ## Review standard
 
-Do not mark S0 complete from documentation research alone. The claim is about the maintainer's real Steam Deck + Push 3 + Bitwig fixture, so retained real-device evidence is required.
+Do not mark S0 complete from documentation research alone. The claim is about the maintainer's real Mac + Push 3 + Bitwig fixture, so retained real-device evidence is required.
