@@ -10,7 +10,7 @@ The repository coordinates three independent tracks:
 2. all-in-one appliance packaging;
 3. CM11EB connector and native-compute research.
 
-The Steam Deck is the maintainer's first reference fixture. It is not a project-wide hardware requirement or the definition of the software product.
+The active Track V reference fixture is the maintainer's macOS Bitwig/DrivenByMoss/Push system because it is currently available for rapid software work. The Steam Deck remains the first Track A appliance host and a later Linux portability fixture. Neither computer defines the universal product.
 
 ## Authority order
 
@@ -20,12 +20,13 @@ When instructions conflict, use this order:
 2. `CURRENT_SLICE.md`
 3. `docs/PROJECT_TRACKS.md`
 4. `docs/ARCHITECTURE.md`
-5. `docs/VISUAL_PORTABILITY.md`
-6. `docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`
-7. `docs/ROADMAP.md`
-8. `docs/RUNTIME_STRATEGY.md`
-9. issue / PR scope
-10. implementation convenience
+5. `docs/MAC_FIRST_DEVELOPMENT.md`
+6. `docs/VISUAL_PORTABILITY.md`
+7. `docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`
+8. `docs/ROADMAP.md`
+9. `docs/RUNTIME_STRATEGY.md`
+10. issue / PR scope
+11. implementation convenience
 
 A contributor or coding agent must stop and surface a conflict rather than quietly widening scope.
 
@@ -35,6 +36,7 @@ A contributor or coding agent must stop and surface a conflict rather than quiet
 - DrivenByMoss, or a compatible derivative, is the semantic Push/controller authority unless a slice explicitly proves a replacement.
 - The Push display is a composited output. Semantic UI and captured pixels are different source classes and must remain distinguishable.
 - Exactly one component owns the Push USB display endpoint in steady state.
+- The first implementation may keep composition and final USB transport inside the DrivenByMoss derivative; process boundaries are not architectural authority.
 - Visual capture is visualization first. Do not make fragile mouse automation the primary control path when the Bitwig controller API can perform the operation.
 - The universal visual product must support **attached mode**, adapting to a user's existing Bitwig windows and monitor layout.
 - A canonical or virtual desktop is a **managed appliance/test mode**, not a requirement imposed on ordinary desktop users.
@@ -44,8 +46,9 @@ A contributor or coding agent must stop and surface a conflict rather than quiet
 - Anchor-based resolution must use confidence validation, competing-candidate margin, and preferably multiple anchors with consistent relative geometry.
 - The resolver must prefer abstention and semantic fallback over displaying the wrong visual region.
 - Capture backend and operating-system details do not belong in the compositor frame protocol.
+- macOS capture types such as `SCWindow`, `CGWindowID`, and `CVPixelBuffer` must remain inside the macOS backend/helper.
 - Visual failure must fall back safely to semantic control/display behavior.
-- The Steam Deck is one reference host. Do not generalize maintainer-specific hardware, serialosc, plugdata, or yabridge state into universal product requirements.
+- The Mac and Steam Deck are reference hosts. Do not generalize maintainer-specific hardware, serialosc, plugdata, or yabridge state into universal product requirements.
 - yabridge/Wine compatibility is optional research and not a gate for the visual product or appliance.
 - Monome/serialosc and plugdata/Pure Data are independent integrations that may consume project interfaces but do not own the core roadmap.
 - The ordinary rear Push USB path is first-class and remains a valid appliance architecture.
@@ -75,11 +78,15 @@ A slice is complete only when its claim is demonstrably true.
 
 Do not merge separate uncertainty domains merely because they are exciting. Examples:
 
+- display-path tracing is separate from modifying the display path;
+- no-op frame-pipeline insertion is separate from synthetic composition;
+- synthetic composition is separate from external-frame IPC;
+- external-frame IPC is separate from operating-system window capture;
 - framebuffer ownership is separate from visual-source discovery;
 - top-level-window capture is separate from embedded-panel resolution;
 - semantic-seeded anchor benchmarking is separate from live resolver integration;
 - attached desktop adaptation is separate from managed headless geometry;
-- cross-platform capture is separate from Linux proof;
+- macOS proof is separate from Linux portability validation;
 - all-in-one packaging is separate from connector research;
 - yabridge experimentation is separate from native Bitwig/Push operation;
 - external battery integration is separate from custom native-bay battery engineering.
@@ -99,9 +106,10 @@ Portable visual claims require a test matrix appropriate to the source class, in
 - negative/wrong candidate windows;
 - anchor confidence and competitor margin;
 - capture/compositor/resolver restart;
+- permission denial/revocation and recovery;
 - calibration invalidation and semantic fallback.
 
-Do not call a profile portable because it worked at one monitor resolution.
+Do not call a profile portable because it worked on one Mac or one monitor resolution.
 
 For anchor-based resolvers, retain at minimum:
 
@@ -118,9 +126,9 @@ For anchor-based resolvers, retain at minimum:
 
 Retain useful evidence under `evidence/` when practical:
 
-- USB, ALSA, and PipeWire enumeration;
-- graphical-session and sandbox permissions;
-- framebuffer timing;
+- USB and audio enumeration;
+- operating-system, graphical-session, sandbox, and permission state;
+- framebuffer timing and pixel-equivalence evidence;
 - source-discovery logs and screenshots;
 - visual profile compatibility matrices;
 - anchor benchmark summaries and diagnostics;
@@ -129,21 +137,25 @@ Retain useful evidence under `evidence/` when practical:
 - boot/service logs;
 - benchmark summaries.
 
-Do not commit serial numbers, credentials, activation files, personal network details, or proprietary binaries.
+Do not commit serial numbers, credentials, activation files, personal network details, user-specific paths, or proprietary binaries.
 
 ## Engineering preferences
 
-- Linux-first implementation, platform-neutral core interfaces.
-- Prefer observable IPC boundaries over hidden in-process coupling.
+- Use the currently available Mac to shorten the first implementation loop, while keeping core interfaces platform-neutral.
+- Prefer a no-op frame-pipeline seam before changing visible output.
+- Prefer in-process final composition/USB transport initially so two processes do not fight over Push's display interface.
+- Keep platform capture in a separate helper/backend and publish only `VisualSourceFrame`-style data across the boundary.
+- Prefer observable IPC boundaries over hidden cross-process coupling.
 - Prefer shared memory or Unix-domain IPC for high-rate local frame/state paths when boundaries allow it.
+- Use latest-frame-wins behavior rather than unbounded queues.
 - Keep audio/MIDI/control latency independent from capture latency.
 - Prefer window identity and source-relative capture over full-desktop recording.
 - Prefer semantic-seeded, deterministic, explainable pixel/edge methods before introducing trained models.
 - Prefer coarse-to-fine bounded search and low-rate local revalidation over full-frame recognition at display cadence.
 - Prefer confidence-validated automatic resolution; use bounded user calibration rather than silently wrong capture.
-- Never block controller input or audio processing on a display frame.
+- Never block controller input or audio processing on a display or capture frame.
 - Build semantic fallback and recovery before appliance lock-down.
-- Preserve acceptance suites across reference hosts without making one host normative.
+- Preserve acceptance suites across Mac, Linux/Steam Deck, Framework/mini-PC, and NUC hosts without making one host normative.
 
 ## Connector-development rules
 
@@ -161,8 +173,10 @@ A CM11EB development card is staged open hardware:
 
 ## Current reference fixture
 
-S0 uses the maintainer's Steam Deck, Flatpak Bitwig, Push 3, and DrivenByMoss because that working system is available for real-device evidence.
+S0 uses the maintainer's macOS computer, Bitwig Studio, Push 3, and DrivenByMoss because that system is available for real-device evidence and rapid source-level iteration.
 
-The purpose of S0 is to establish a first tested fixture and the display handoff seam—not to define Steam Deck, Flatpak, Monome, plugdata, or yabridge as universal requirements.
+The purpose of S0 is to establish the tested Mac fixture and the display handoff seam—not to define macOS as the universal platform.
+
+The Steam Deck remains the named second-host/Linux portability and appliance fixture when it becomes available.
 
 See `CURRENT_SLICE.md` before changing code.
