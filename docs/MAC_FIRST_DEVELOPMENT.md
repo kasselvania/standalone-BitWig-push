@@ -11,7 +11,9 @@ This changes the order of implementation, not the product definition:
 - the universal visual/controller contracts remain operating-system neutral;
 - no macOS-specific type is allowed to leak into the compositor, resolver, or visual-adapter contracts.
 
-The Deck being temporarily unavailable is not a blocker for V0, V1, the first dedicated-window visual proof, or the offline pixel-anchor benchmark.
+S0 is now accepted and merged. The active V1A-0 gate establishes the DrivenByMoss fork and proves a clean local build, reversible installation, real-device parity, and exact rollback before the first behavioral source change.
+
+The Deck being temporarily unavailable is not a blocker for V1A-0, V1, the first dedicated-window visual proof, or the offline pixel-anchor benchmark.
 
 ## Why macOS is a strong first implementation host
 
@@ -26,20 +28,21 @@ The maintainer already has a working Bitwig + DrivenByMoss + Push setup on macOS
 - developing a native window-capture helper;
 - collecting visual fixtures for the resolver benchmark.
 
-Current DrivenByMoss source contains macOS Push 3 MIDI discovery and uses the same Push USB device claim as the other desktop platforms. The exact tested revision still must be retained by S0.
+S0 cryptographically identified the installed DrivenByMoss 26.4.1 artifact, matched it byte-for-byte to the official distribution, and pinned upstream tag `26.4.1`, commit `fd03245ab38fa5149c45934051d937ee9fda6d08`, tree `edd2ad636b0aa1f39919f0ffd05c968015450075`.
 
 ## What can be proven before returning to the Deck
 
 The Mac fixture can establish:
 
 1. the exact semantic-renderer-to-USB path;
-2. a no-op frame-pipeline seam with pixel-equivalent output;
-3. a synthetic overlay mixed into the live DrivenByMoss display;
-4. a platform-neutral external-frame ingress contract;
-5. a macOS dedicated-window capture backend;
-6. a floating Bitwig native-device or plug-in visual lens;
-7. a local fixture corpus and pixel-anchor benchmark;
-8. most of the user-facing visual-mode behavior.
+2. a clean fork/build/install/rollback baseline for the pinned upstream source;
+3. a no-op frame-pipeline seam with pixel-equivalent output;
+4. a synthetic overlay mixed into the live DrivenByMoss display;
+5. a platform-neutral external-frame ingress contract;
+6. a macOS dedicated-window capture backend;
+7. a floating Bitwig native-device or plug-in visual lens;
+8. a local fixture corpus and pixel-anchor benchmark;
+9. most of the user-facing visual-mode behavior.
 
 The Mac fixture cannot by itself establish:
 
@@ -51,29 +54,29 @@ The Mac fixture cannot by itself establish:
 
 Those become explicit later validation slices rather than prerequisites for the first software cut.
 
-## Current upstream display path and leading cut
+## Confirmed upstream display path and leading cut
 
-The current upstream shape is approximately:
+S0 confirmed this exact shape for DrivenByMoss 26.4.1:
 
 ```text
 DrivenByMoss modes/views
         -> semantic graphic display rendering
-        -> IBitmap (960x160)
+        -> persistent IBitmap (960x160 ARGB32)
         -> Push2Display.send(IBitmap)
         -> PushUsbDisplay.send(IBitmap)
-        -> bitmap encode / pixel conversion / scan-line padding
+        -> bitmap encode / 16-bit pixel conversion / scan-line padding
         -> XOR signal shaping
-        -> Push USB endpoint
+        -> Push USB interface 0 / endpoint 0x01
 ```
 
-Push 3 currently reuses the graphic-display path named for Push 2. S0 must confirm the exact classes and revision installed on the Mac before implementation begins.
+Push 3 intentionally uses the modern graphic-display branch implemented by `Push2Display` and `PushUsbDisplay`.
 
-The leading narrow cut is immediately before transport-specific encoding:
+The accepted narrow cut is inside `Push2Display.send(IBitmap)`, immediately before transport-specific encoding:
 
 ```text
 semantic IBitmap
         -> PushFramePipeline
-             +-- semantic/base frame snapshot
+             +-- semantic/base frame
              +-- optional validated visual layer snapshot
              +-- composition policy
         -> PushDisplayTransport
@@ -96,6 +99,23 @@ It creates:
 - a place to mix synthetic or captured pixels;
 - a platform-neutral frame contract;
 - a path to later move capture outside Bitwig without moving USB ownership immediately.
+
+## DrivenByMoss implementation repository
+
+The controller-extension delta belongs in a proper `kasselvania/DrivenByMoss` fork, not as copied source inside the central project repository.
+
+Before V1A changes behavior, V1A-0 must prove:
+
+```text
+exact accepted upstream commit
+        -> clean Java 21 / Maven build
+        -> locally built .bwextension
+        -> reversible temporary installation
+        -> full S0 behavioral parity
+        -> exact official-artifact restoration
+```
+
+See [`DRIVENBYMOSS_DERIVATIVE_STRATEGY.md`](DRIVENBYMOSS_DERIVATIVE_STRATEGY.md).
 
 ## First implementation posture: in-process composition, external capture
 
@@ -153,9 +173,15 @@ The exact IPC implementation is a slice decision. The contract, not POSIX or mac
 
 ## Proposed slice sequence
 
-### M0 / current S0 — Mac fixture and display trace
+### M0 / S0 — Mac fixture and display trace — complete
 
-Prove the working Mac setup and identify the exact frame handoff.
+The working Mac setup, exact artifact/source pin, real Push baseline, concrete frame path, and identity seam are retained under `evidence/s0-macos-reference-fixture/`.
+
+### V1A-0 — Fork and local build baseline — active
+
+Create/verify the DrivenByMoss fork, build the exact unmodified 26.4.1 source, install it reversibly, rerun the accepted hardware checklist, and restore the exact official artifact.
+
+This isolates source-build and installation uncertainty from frame-pipeline uncertainty.
 
 ### V1A — No-op frame pipeline
 
@@ -163,6 +189,7 @@ Insert the frame-pipeline abstraction without changing visible output.
 
 Acceptance includes:
 
+- exact object-identity pass-through;
 - before/after frame hashes or retained pixel-equivalence evidence;
 - no control/audio regression;
 - no additional USB owner;
@@ -233,6 +260,7 @@ The Mac can carry the project through the most important early software work:
 
 ```text
 understand the existing renderer
+        -> prove the derivative build/install baseline
         -> insert a safe frame pipeline
         -> mix project-owned pixels
         -> accept external frames
