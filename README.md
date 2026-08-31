@@ -8,7 +8,7 @@ The primary software question is broader than one computer or one all-in-one bui
 
 That adaptive visual/controller layer is the main open-source product. The all-in-one appliance and Intel NUC connector work are parallel projects that build on it.
 
-> **Status:** S0 is accepted and merged. The active slice is V1A-0: establish the DrivenByMoss implementation fork and prove an unmodified local 26.4.1 build/install/rollback baseline on the Mac before inserting the no-op frame pipeline.
+> **Status:** S0 and V1A-0 are accepted and merged. The active slice is V1A: insert an allocation-free identity frame-pipeline seam into the proven DrivenByMoss Push display path, verify the exact source/build/runtime delta, pass the real Push baseline, and restore the official extension.
 
 ## Three independent project tracks
 
@@ -82,9 +82,9 @@ The goal is not to shrink the entire desktop onto a 960×160 display. It is to s
 The currently available Mac can carry the project through the most important early software work:
 
 ```text
-trace the existing semantic renderer
-        -> prove the exact fork/build/install baseline
-        -> insert a no-op frame pipeline
+trace the existing semantic renderer                 proven
+        -> establish fork/build/install baseline     proven
+        -> insert a no-op frame pipeline              active
         -> mix synthetic project-owned pixels
         -> accept an external test frame
         -> capture a real Bitwig/editor window
@@ -95,9 +95,9 @@ The leading implementation keeps final composition and USB transport inside the 
 
 This is an implementation order, not a Mac-only product decision. The compositor, resolver, adapter schema, and frame contract must remain free of macOS-specific window or image types. Steam Deck/Linux becomes an explicit second-host portability and appliance checkpoint.
 
-The controller-extension source lives in a proper DrivenByMoss fork that preserves upstream history and LGPL provenance; this repository remains the authority and evidence hub. See [`docs/DRIVENBYMOSS_DERIVATIVE_STRATEGY.md`](docs/DRIVENBYMOSS_DERIVATIVE_STRATEGY.md).
+The controller-extension source lives in the true [`kasselvania/DrivenByMoss`](https://github.com/kasselvania/DrivenByMoss) fork, preserving upstream history and LGPL provenance. The immutable `pushwig/upstream-26.4.1` branch records the accepted upstream basis; `pushwig/main` is the project integration branch. This repository remains the authority and evidence hub.
 
-See [`docs/MAC_FIRST_DEVELOPMENT.md`](docs/MAC_FIRST_DEVELOPMENT.md).
+See [`docs/DRIVENBYMOSS_DERIVATIVE_STRATEGY.md`](docs/DRIVENBYMOSS_DERIVATIVE_STRATEGY.md) and [`docs/MAC_FIRST_DEVELOPMENT.md`](docs/MAC_FIRST_DEVELOPMENT.md).
 
 ## Visual portability strategy
 
@@ -139,22 +139,22 @@ The active Mac is the first software-development fixture. The Steam Deck Flatpak
 
 See [`docs/RUNTIME_STRATEGY.md`](docs/RUNTIME_STRATEGY.md).
 
-## Current first slice
+## Current first source-change slice
 
-S0 is complete and retained under `evidence/s0-macos-reference-fixture/`. It proved the accepted Mac + Bitwig + Push baseline, pinned the exact DrivenByMoss 26.4.1 source, and located the lawful V1A identity seam inside `Push2Display.send(IBitmap)` immediately before `PushUsbDisplay.send(IBitmap)`.
+S0 is retained under `evidence/s0-macos-reference-fixture/`. It proved the accepted Mac + Bitwig + Push baseline, pinned the exact DrivenByMoss 26.4.1 source, and located the lawful frame seam inside `Push2Display.send(IBitmap)` immediately before `PushUsbDisplay.send(IBitmap)`.
 
-The active V1A-0 slice now proves a separate uncertainty domain:
+V1A-0 is retained under `evidence/v1a0-drivenbymoss-build-baseline/`. It proved the true fork, exact source custody, explicit Java 21/Maven build, reversible local installation, full real-device parity, and exact official-artifact rollback.
+
+V1A now makes the first functional change:
 
 ```text
-exact upstream source
-        -> kasselvania DrivenByMoss fork
-        -> clean Java 21 / Maven build
-        -> reversible local installation
-        -> real Push behavioral parity
-        -> exact official-artifact rollback
+complete semantic IBitmap
+        -> project-owned identity pipeline
+        -> exact same IBitmap reference
+        -> unchanged PushUsbDisplay
 ```
 
-No frame-pipeline source change is authorized until that build/install baseline passes.
+No visible pixels, transport behavior, capture path, or external frame source are added in V1A. Those remain separately reviewable later slices.
 
 See [`CURRENT_SLICE.md`](CURRENT_SLICE.md).
 

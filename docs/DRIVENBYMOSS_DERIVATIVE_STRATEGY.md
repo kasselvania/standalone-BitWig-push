@@ -4,7 +4,7 @@
 
 Track V needs a narrow DrivenByMoss derivative, but this repository should not absorb or rewrite the upstream project.
 
-This document defines the repository, branch, build, install, and upstream-maintenance boundary before the first source modification.
+This document defines the repository, branch, build, install, evidence, review, and upstream-maintenance boundary for controller-extension source work.
 
 ## Repository roles
 
@@ -25,13 +25,13 @@ It does **not** vendor the DrivenByMoss source tree.
 
 ### Controller-extension implementation repository
 
-`kasselvania/DrivenByMoss`, as a GitHub fork of `git-moss/DrivenByMoss`.
+`kasselvania/DrivenByMoss`, a true GitHub fork of `git-moss/DrivenByMoss`.
 
 Owns:
 
 - the minimal controller-extension source delta;
 - buildable extension artifacts;
-- unit or focused source tests added by this project;
+- focused source tests or external verification harnesses where authorized;
 - upstream synchronization and contribution-ready commits;
 - LGPL-preserving source history and notices.
 
@@ -46,19 +46,20 @@ Commit:  fd03245ab38fa5149c45934051d937ee9fda6d08
 Tree:    edd2ad636b0aa1f39919f0ffd05c968015450075
 ```
 
-The fork should retain a stable branch:
+The fork retains two distinct branches:
 
 ```text
-pushwig/upstream-26.4.1
+pushwig/upstream-26.4.1  # immutable accepted upstream basis
+pushwig/main             # project integration branch
 ```
 
-at that exact commit. This branch is immutable project basis, not a development branch.
+Both branches began at the exact accepted commit. The immutable basis branch must never receive project implementation merges. Feature pull requests target `pushwig/main`.
 
-Feature branches start from the accepted basis or from the newest separately accepted rebased basis. Do not silently rebase active work onto upstream `master` merely because upstream moved.
+Feature branches start from the currently accepted `pushwig/main` head or from a newer basis accepted through a separate basis-upgrade decision. Do not silently rebase active work onto upstream `master` merely because upstream moved.
 
 ## Local remote topology
 
-A development checkout should use:
+A development checkout uses:
 
 ```text
 origin   git@github.com:kasselvania/DrivenByMoss.git
@@ -78,16 +79,16 @@ git rev-parse <basis>^{tree}
 git status --short
 ```
 
-## Branch conventions
+## Branch and pull-request conventions
 
-Recommended stable branches:
+Stable branches:
 
 ```text
-pushwig/upstream-26.4.1     # immutable accepted upstream basis
-pushwig/main                # optional integration branch after first implementation acceptance
+pushwig/upstream-26.4.1
+pushwig/main
 ```
 
-Recommended feature branches:
+Feature branches:
 
 ```text
 pushwig/v1a-no-op-frame-pipeline
@@ -97,30 +98,50 @@ pushwig/v1c-external-frame-ingress
 
 Do not use a long-lived feature branch for multiple roadmap claims.
 
-## Build baseline
+Each implementation slice should normally produce:
 
-Upstream 26.4.1 declares Java 21 and Maven 3.8.1 or newer. Its macOS release script uses a Temurin 21 JDK and runs:
+1. one narrow source branch and PR in `kasselvania/DrivenByMoss`, targeting `pushwig/main`;
+2. one narrow evidence PR in `kasselvania/standalone-BitWig-push`;
+3. exact cross-references between both PRs and the active central issue.
+
+The source PR and central evidence PR remain unmerged until technical-lead review of the exact heads.
+
+## Accepted V1A-0 build baseline
+
+V1A-0 proved the exact unmodified 26.4.1 source on the accepted Mac.
+
+Accepted toolchain:
 
 ```text
-mvn clean install package -Dbitwig.extension.directory=target
+Java:  Homebrew OpenJDK 21.0.11
+Maven: 3.9.16
 ```
 
-V1A-0 must prove this or an exactly documented equivalent on the accepted Mac before source behavior changes.
+The host default Java selection is not authoritative. DrivenByMoss builds must continue to select Java 21 explicitly:
 
-A successful Maven exit is necessary but not sufficient. The artifact must be:
+```text
+env \
+  JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home \
+  PATH=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin \
+  mvn clean install package -Dbitwig.extension.directory=target
+```
 
-- hashed;
-- inspected for version/manifest metadata;
-- installed through a reversible process;
-- loaded by Bitwig;
-- exercised on the real Push fixture;
-- removed or replaced by the exact official artifact during rollback.
+V1A-0 retained:
 
-A locally built artifact is not expected to be byte-identical to the official distribution unless evidence demonstrates reproducibility. Differences in ZIP/JAR ordering, timestamps, dependency packaging, or build environment are not automatically defects. Behavioral parity and source identity are the V1A-0 claims.
+- a clean source build at the exact accepted commit/tree;
+- local artifact SHA-256 `61ff21e5f21d96ee64bfe1b09c5971116f1f5075d5805bc015f0a168fe00b8f9`;
+- bounded official-versus-local archive differences;
+- sole-artifact temporary installation;
+- eleven-row real Push behavioral parity;
+- exact restoration of the official artifact.
+
+A successful Maven exit remains necessary but never substitutes for artifact inspection, Bitwig loading, real-device acceptance, and rollback.
+
+A locally built artifact is not expected to be byte-identical to the official distribution unless evidence demonstrates reproducibility. Differences in ZIP/JAR ordering, timestamps, line endings, dependency packaging, or build environment are not automatically defects. Source identity, bounded payload comparison, and behavioral parity are the relevant claims.
 
 ## Safe installation and rollback
 
-The installed extension path proven by S0 is:
+The installed extension path proven by S0 and V1A-0 is:
 
 ```text
 $HOME/Documents/Bitwig Studio/Extensions/DrivenByMoss.bwextension
@@ -128,33 +149,47 @@ $HOME/Documents/Bitwig Studio/Extensions/DrivenByMoss.bwextension
 
 Before replacing it:
 
-1. Stop Bitwig or use a proven safe extension-reload procedure.
+1. Stop Bitwig or use a separately proven safe extension-reload procedure.
 2. Recompute the installed official artifact SHA-256.
 3. Move the official file to a backup directory outside Bitwig's extension scan path.
 4. Never overwrite the only copy of the official artifact.
 5. Install exactly one `DrivenByMoss.bwextension` in the scan path.
-6. Start/reload Bitwig and verify which artifact is active through retained version/hash/install-state evidence.
-7. Execute the relevant real-device acceptance checklist.
-8. At slice completion, restore the official artifact unless the maintainer explicitly authorizes leaving the derivative installed.
+6. Start/reload Bitwig and prove which artifact is active through retained hash/install-state evidence plus real behavior.
+7. Execute the slice-specific real-device acceptance checklist.
+8. At slice completion, restore the official artifact unless the maintainer explicitly authorizes leaving a derivative installed.
 9. Recompute and verify the restored official SHA-256:
 
 ```text
 98dc3195ad8d911526e18b1005f09f69a1aedcb965b080565474104654345c5a
 ```
 
-Do not leave duplicate DrivenByMoss extension files in directories Bitwig scans.
+10. Confirm exactly one DrivenByMoss extension remains in every scanned directory.
 
-## Source-change discipline
+## V1A source-change discipline
 
-The first implementation delta is intentionally narrow.
+V1A is the first functional source change and is intentionally narrower than the complete future compositor architecture.
 
-For V1A:
+V1A must:
 
 - insert a synchronous identity frame-pipeline seam at the accepted `Push2Display.send(IBitmap)` boundary;
-- preserve the same `IBitmap` object in the no-op path;
+- preserve the same `IBitmap` object reference in the production no-op path;
+- keep the existing shutdown/null guard;
+- call the pipeline once and the existing USB display once per eligible send;
 - retain exactly one USB transport owner;
-- do not alter USB encoding, buffers, endpoint matching, or transfer scheduling;
-- do not introduce capture, IPC, overlays, raw frame copies, new queues, or platform-specific types.
+- leave `PushUsbDisplay` source, encoding, buffers, endpoint matching, signal shaping, executor, and transfer scheduling unchanged;
+- avoid per-frame allocation, bitmap retention, pixel copies, queues, threads, timers, IPC, and platform-specific types.
+
+Expected source envelope:
+
+```text
+Push2Display.java
+PushFramePipeline.java
+PassThroughPushFramePipeline.java
+```
+
+Do not introduce a `PushDisplayTransport` abstraction in V1A. Transport extraction can be considered only when a later claim actually needs it.
+
+The first proof should use source/bytecode and same-toolchain base/head artifact comparison rather than permanent per-frame debug instrumentation. A temporary external identity harness is acceptable when it does not modify the project POM or production source.
 
 Later source changes must remain separable so that useful generic improvements can be proposed upstream without requiring adoption of the entire appliance project.
 
@@ -193,21 +228,21 @@ Build and implementation evidence belongs in the central repository because it s
 
 Source changes belong in the DrivenByMoss fork.
 
-A controller-extension implementation PR should therefore be paired, when needed, with a narrow central evidence/status PR rather than committing generated extension binaries into either repository.
+A controller-extension implementation PR is paired, when needed, with a narrow central evidence PR. Generated extension binaries are not committed into either repository.
 
 ## Initial sequence
 
 ```text
-S0
+S0     accepted
   official artifact + exact source + display seam proven
         |
         v
-V1A-0
+V1A-0  accepted
   fork + exact source build + temporary install + rollback proven
         |
         v
-V1A
-  identity PushFramePipeline implemented and measured
+V1A    active
+  identity PushFramePipeline implemented and proven
         |
         v
 V1B
