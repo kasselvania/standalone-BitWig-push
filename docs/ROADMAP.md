@@ -20,14 +20,16 @@ See [`PROJECT_TRACKS.md`](PROJECT_TRACKS.md).
 
 This is the primary open-source software track.
 
-## V0 / current S0 — Reference fixture baseline
+The active implementation fixture is macOS because the maintainer's working Mac + Bitwig + DrivenByMoss + Push system is currently available. Steam Deck/Linux remains an explicit second-host portability and appliance checkpoint.
 
-**Claim:** the maintainer's known-good Push/Bitwig fixture is reproducible and the existing semantic-display path is understood.
+## V0 / current S0 — macOS reference fixture baseline
+
+**Claim:** the maintainer's known-good Mac Push/Bitwig fixture is reproducible and the existing semantic-display path is understood.
 
 Reference fixture:
 
-- Steam Deck / Linux;
-- Flatpak Bitwig Studio;
+- macOS computer;
+- Bitwig Studio;
 - Push 3 Controller over ordinary external USB;
 - current compatible DrivenByMoss integration.
 
@@ -35,51 +37,94 @@ Acceptance:
 
 - Bitwig launches;
 - Push controls, audio enumeration, and semantic display are exercised;
-- USB/ALSA/PipeWire/graphical-session evidence is retained;
+- macOS/USB/audio/display evidence is retained;
 - the tested DrivenByMoss revision is identified;
 - the semantic-renderer-to-USB path is traced;
-- the narrow compositor handoff seam is named.
+- the narrow no-op frame-pipeline seam is named;
+- the Steam Deck is retained as the later Linux/appliance fixture rather than treated as abandoned.
 
-This proves one test fixture. It does not define universal hardware, packaging, or monitor geometry.
+This proves one test fixture. It does not define universal hardware, packaging, capture backend, or monitor geometry.
 
-## V1 — Independent framebuffer ownership
+## V1A — No-op frame pipeline
 
-**Claim:** a project-owned compositor can own Push's display without degrading semantic control.
+**Claim:** a project-owned frame-pipeline abstraction can be inserted into the DrivenByMoss Push display path without changing visible output.
+
+Leading seam:
+
+```text
+semantic IBitmap
+        -> PushFramePipeline
+        -> PushDisplayTransport
+        -> existing Push USB implementation
+```
 
 Acceptance:
 
-- valid 960×160 frames reach Push;
-- a synthetic layer can be mixed with the semantic/base frame;
-- only one steady-state process owns the display endpoint;
+- before/after semantic frames are pixel-equivalent or differences are fully characterized;
+- only one process owns the Push display endpoint;
 - pads, encoders, transport, MIDI/MPE, and audio remain independent;
-- compositor failure has semantic/recovery fallback;
-- frame cadence, CPU use, and reconnect behavior are measured.
+- no unbounded allocation or queue is introduced;
+- frame cadence, CPU time, shutdown, and reconnect behavior are measured;
+- the transport remains replaceable without exposing USB details to the compositor contract.
 
-## V2 — Portable dedicated-window visual lens
+## V1B — Synthetic composition
 
-**Claim:** the system can discover and display a useful source without relying on physical desktop coordinates.
+**Claim:** the frame pipeline can mix project-owned pixels over the live semantic frame.
+
+Acceptance:
+
+- a moving shape, diagnostic strip, or generated overlay appears on Push;
+- semantic rendering remains intact beneath/around the overlay;
+- the composition mode can be disabled immediately;
+- compositor failure falls back to semantic output;
+- performance and allocation behavior remain bounded.
+
+V1B is the first proof of the core invention and does not require screen capture.
+
+## V1C — External frame ingress
+
+**Claim:** a process outside Bitwig can publish a generated `VisualSourceFrame` that the in-process compositor consumes safely.
+
+Acceptance:
+
+- control/status and latest-frame transport are explicit;
+- no unbounded frame queue exists;
+- helper absence, restart, stale frames, and malformed metadata produce semantic fallback;
+- the compositor never waits for the helper;
+- no operating-system capture API is required for this slice;
+- the public frame contract contains no macOS-specific types.
+
+## V2 — macOS dedicated-window visual lens
+
+**Claim:** the first capture backend can discover and display a useful Bitwig/native-device/plug-in source without relying on physical desktop coordinates.
 
 Preferred first target:
 
 - a Bitwig native Expanded Device View opened or undocked as a floating window, preferably Sampler;
-- followed by one ordinary native plug-in editor window.
+- followed by one ordinary plug-in editor window.
+
+Leading backend:
+
+- a normal macOS helper application using ScreenCaptureKit;
+- platform-neutral `VisualSourceFrame` output over the V1C boundary.
 
 Acceptance:
 
 - DrivenByMoss/Bitwig semantic state identifies the selected target;
-- resolver discovers the correct top-level source window;
+- the helper discovers the correct top-level source window;
 - moving/resizing the source or moving it to another monitor does not break identity;
 - a source-relative crop appears usefully on Push;
 - closing/reopening the source recovers automatically;
-- semantic fallback remains available.
+- permission denial/revocation produces semantic fallback;
+- macOS window/image handles do not enter the compositor or adapter contracts.
 
-V2 is already a broadly useful desktop extension.
+V2 is already a broadly useful desktop extension on the first platform.
 
 ## V2A — Semantic-seeded pixel anchor benchmark
 
 **Claim:** selected-device semantics can seed a low-cost, confidence-validated pixel-anchor resolver that locates a known Bitwig visual representation without generic desktop recognition.
 
-The first benchmark may run entirely against locally captured fixture frames before live integration.
+The first benchmark may run entirely against locally captured Mac fixture frames before live integration.
 
 Algorithms to compare include:
 
@@ -103,6 +148,26 @@ Acceptance:
 
 Provisional target bands are documented in [`SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`](SEMANTIC_PIXEL_ANCHOR_RESOLVER.md); they are not current performance claims.
 
+## V2P — Linux/Steam Deck second-host portability checkpoint
+
+**Claim:** the core frame, composition, semantic, and adapter contracts survive movement from the Mac implementation fixture to a Linux host.
+
+Preferred host when available:
+
+- the maintainer's Steam Deck/Flatpak Bitwig fixture.
+
+Acceptance:
+
+- Push semantic control and display behavior reproduce on Linux;
+- the frame pipeline and adapter schema require no macOS-specific changes;
+- a Linux capture backend or bounded test producer satisfies the same `VisualSourceFrame` contract;
+- Flatpak/host IPC constraints are characterized;
+- at least one dedicated-window visual lens reproduces where the Linux UI/backend permits;
+- CPU and power behavior are measured on the Deck;
+- failures are localized to backend/runtime integration rather than hidden by architecture changes.
+
+V2P is required before claiming Linux support, but it does not block the first Mac implementation.
+
 ## V3 — Visual-source and adapter SDK
 
 **Claim:** source discovery and visual profiles are public, testable, and community-extensible.
@@ -114,7 +179,8 @@ Acceptance:
 - one native-device adapter and one plug-in adapter are retained as examples;
 - profiles declare tested versions/scales rather than implying universal compatibility;
 - adapter validation can distinguish a correct source from a wrong/stale source;
-- proprietary UI template pixels are generated locally or otherwise handled without casual redistribution.
+- proprietary UI template pixels are generated locally or otherwise handled without casual redistribution;
+- both Mac and Linux fixture results can be represented without schema forks.
 
 ## V4 — Attached-mode embedded Bitwig resolver
 
@@ -142,13 +208,13 @@ Acceptance:
 - invalid records are detected and safely disabled;
 - community profiles can be exported/imported without private screenshots or proprietary assets.
 
-## V6 — Linux attached-mode portability release
+## V6 — Attached-mode portability release
 
-**Claim:** the visual extension is supportable for ordinary Linux users rather than only the maintainer fixture.
+**Claim:** the visual extension is supportable for ordinary users rather than only the maintainer fixtures.
 
 Acceptance matrix includes, where relevant:
 
-- X11 and/or Wayland capture backend(s);
+- macOS ScreenCaptureKit and at least one Linux backend;
 - multiple Bitwig window sizes;
 - supported UI scales;
 - at least two display profiles/panel arrangements;
@@ -157,19 +223,17 @@ Acceptance matrix includes, where relevant:
 - selected-device transitions and negative candidates;
 - compositor/capture/resolver restart;
 - permission denial and recovery;
-- multiple hardware hosts, with Steam Deck only one row in the matrix.
+- multiple hardware hosts, with Mac and Steam Deck each only one row in the matrix.
 
-## V7 — Additional operating-system backends
+## V7 — Additional operating-system backend
 
-**Claim:** the platform-neutral core can support non-Linux Bitwig users.
+**Claim:** the platform-neutral core can support another Bitwig platform without compositor or adapter redesign.
 
-Possible backends:
+Leading additional target:
 
-- Windows Graphics Capture;
-- macOS ScreenCaptureKit;
-- other supported APIs where needed.
+- Windows Graphics Capture or another supported Windows capture API.
 
-Acceptance for each operating system:
+Acceptance:
 
 - window/source discovery works through the platform adapter;
 - existing visual adapters and anchor policies require no compositor changes;
@@ -177,7 +241,7 @@ Acceptance for each operating system:
 - a portability matrix is retained;
 - semantic fallback remains universal.
 
-V7 is incremental platform coverage, not a prerequisite for the Linux release.
+V7 is incremental platform coverage, not a prerequisite for the Mac/Linux release.
 
 # Track A — All-in-one appliance
 
@@ -282,13 +346,14 @@ Acceptance:
 
 ## H3 — Internal USB enumeration
 
-**Claim:** an external Linux host can enumerate useful Push functions through the internal carrier path.
+**Claim:** an external development host can enumerate useful Push functions through the internal carrier path.
 
 Acceptance:
 
 - actual USB functions enumerate;
 - MIDI/control, display, and audio behavior are compared with the external USB baseline;
 - mux/enable/sideband requirements are retained;
+- power is handled deliberately;
 - failures are characterized rather than inferred away.
 
 H3 makes the development board useful even before a Compute Element is purchased.

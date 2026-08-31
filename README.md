@@ -2,13 +2,13 @@
 
 An open-source effort to make **Ableton Push 3 Controller** a substantially richer controller for **Bitwig Studio**, and to carry that same software into optional portable and native-compute appliances.
 
-The primary software question is broader than one Steam Deck or one all-in-one build:
+The primary software question is broader than one computer or one all-in-one build:
 
 > Can DrivenByMoss semantic control be combined with useful live Bitwig/native-device/plug-in visuals in a way that adapts to different computers, monitor layouts, window sizes, display profiles, and operating systems?
 
 That adaptive visual/controller layer is the main open-source product. The all-in-one appliance and Intel NUC connector work are parallel projects that build on it.
 
-> **Status:** S0 external-baseline and display-path reconnaissance on the maintainer's Steam Deck reference fixture.
+> **Status:** S0 display-path reconnaissance on the maintainer's working macOS + Bitwig + DrivenByMoss + Push fixture. The Steam Deck remains the first appliance and Linux-portability target, but it is not required for the initial software cut.
 
 ## Three independent project tracks
 
@@ -39,14 +39,14 @@ Package the proven software as a portable, headless instrument.
 
 The maintainer's first appliance can use hardware already available:
 
-- Steam Deck as one development computer;
+- Steam Deck as the first appliance computer;
 - existing angled wooden base;
 - existing protected battery;
 - tested USB-C PD-to-barrel power cable;
 - Push's stock rear USB connection;
 - wireless access to the full Bitwig desktop.
 
-The Steam Deck is a reference implementation for the maintainer, not a project-wide requirement. A Framework mainboard or another x86 computer can later replace it without changing the controller/visual contracts.
+The Steam Deck is an appliance implementation for the maintainer, not a requirement for Track V. A Framework mainboard or another x86 computer can later replace it without changing the controller/visual contracts.
 
 ### Track H — connector and native-compute research
 
@@ -77,6 +77,25 @@ The project should use the strongest source available:
 
 The goal is not to shrink the entire desktop onto a 960×160 display. It is to show the right visual information at the right moment while Push controls remain authoritative.
 
+## Mac-first development, portable architecture
+
+The currently available Mac can carry the project through the most important early software work:
+
+```text
+trace the existing semantic renderer
+        -> insert a no-op frame pipeline
+        -> mix synthetic project-owned pixels
+        -> accept an external test frame
+        -> capture a real Bitwig/editor window
+        -> benchmark semantic-seeded anchors
+```
+
+The leading implementation keeps final composition and USB transport inside the DrivenByMoss derivative at first, while a separate native macOS helper later handles window capture and publishes platform-neutral `VisualSourceFrame` data.
+
+This is an implementation order, not a Mac-only product decision. The compositor, resolver, adapter schema, and frame contract must remain free of macOS-specific window or image types. Steam Deck/Linux becomes an explicit second-host portability and appliance checkpoint.
+
+See [`docs/MAC_FIRST_DEVELOPMENT.md`](docs/MAC_FIRST_DEVELOPMENT.md).
+
 ## Visual portability strategy
 
 The project must not identify a visual source by hard-coded physical desktop coordinates.
@@ -92,7 +111,7 @@ One promising implementation is a **semantic-seeded pixel anchor resolver**: Dri
 
 See [`docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`](docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md).
 
-Cross-platform capture backends remain behind a platform-neutral frame contract. Linux is the first implementation target; Windows and macOS backends must remain architecturally possible.
+Cross-platform capture backends remain behind a platform-neutral frame contract. macOS is the first implementation fixture because it is currently available; Linux and later Windows backends remain explicit portability targets.
 
 ## Valid stopping points
 
@@ -108,9 +127,10 @@ Later integrations are larger achievements, not retroactive requirements for ear
 
 ## Runtime and optional integrations
 
-The current Steam Deck Flatpak is only the maintainer's first software fixture.
+The active Mac is the first software-development fixture. The Steam Deck Flatpak remains a later Linux and appliance fixture.
 
-- Native Linux CLAP/VST3 compatibility is useful for testing visual editors.
+- Native plug-ins and Bitwig native devices provide useful visual test sources on the Mac.
+- Native Linux CLAP/VST3 compatibility remains relevant to the later Deck/Linux port.
 - yabridge/Wine is optional compatibility research and already has known usability/UI problems in the maintainer's Deck experiments.
 - Monome/serialosc and plugdata/Pure Data are independent maintainer projects that may later provide optional visual sources; they are not core dependencies or roadmap gates.
 
@@ -118,15 +138,20 @@ See [`docs/RUNTIME_STRATEGY.md`](docs/RUNTIME_STRATEGY.md).
 
 ## Current first slice
 
-S0 records the maintainer's real Steam Deck + Bitwig + DrivenByMoss + Push baseline and traces the existing semantic-display path to its USB sender.
+S0 records the maintainer's real Mac + Bitwig + DrivenByMoss + Push baseline and traces the existing semantic-display path to its USB sender.
 
-The Steam Deck is being used because it is available and already works—not because the project is defined around it.
+The Mac is being used because it is available and already works—not because the project is defined around it.
 
-The S0 handoff should identify the narrow seam required for S1:
+The S0 handoff should identify the narrow seam required for V1:
 
 ```text
-semantic renderer -> frame handoff -> project compositor -> Push USB display
+semantic renderer
+        -> PushFramePipeline (no-op first)
+        -> PushDisplayTransport
+        -> Push USB display
 ```
+
+The leading source-level hypothesis is to cut at or immediately before `Push2Display.send(IBitmap)` hands the complete semantic frame to `PushUsbDisplay`; S0 must confirm this on the exact tested revision.
 
 See [`CURRENT_SLICE.md`](CURRENT_SLICE.md).
 
@@ -136,13 +161,14 @@ See [`CURRENT_SLICE.md`](CURRENT_SLICE.md).
 2. [`CURRENT_SLICE.md`](CURRENT_SLICE.md)
 3. [`docs/PROJECT_TRACKS.md`](docs/PROJECT_TRACKS.md)
 4. [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
-5. [`docs/VISUAL_PORTABILITY.md`](docs/VISUAL_PORTABILITY.md)
-6. [`docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`](docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md)
-7. [`docs/VISUAL_RESEARCH_BASIS.md`](docs/VISUAL_RESEARCH_BASIS.md)
-8. [`docs/ROADMAP.md`](docs/ROADMAP.md)
-9. [`docs/RUNTIME_STRATEGY.md`](docs/RUNTIME_STRATEGY.md)
-10. [`docs/HARDWARE_DOSSIER.md`](docs/HARDWARE_DOSSIER.md)
-11. [`CONTRIBUTING.md`](CONTRIBUTING.md)
+5. [`docs/MAC_FIRST_DEVELOPMENT.md`](docs/MAC_FIRST_DEVELOPMENT.md)
+6. [`docs/VISUAL_PORTABILITY.md`](docs/VISUAL_PORTABILITY.md)
+7. [`docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`](docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md)
+8. [`docs/VISUAL_RESEARCH_BASIS.md`](docs/VISUAL_RESEARCH_BASIS.md)
+9. [`docs/ROADMAP.md`](docs/ROADMAP.md)
+10. [`docs/RUNTIME_STRATEGY.md`](docs/RUNTIME_STRATEGY.md)
+11. [`docs/HARDWARE_DOSSIER.md`](docs/HARDWARE_DOSSIER.md)
+12. [`CONTRIBUTING.md`](CONTRIBUTING.md)
 
 ## Upstream work
 
@@ -162,4 +188,4 @@ Hardware modification can damage equipment and create electrical, thermal, or ba
 
 Do not commit or redistribute proprietary Ableton/Bitwig binaries, activation data, firmware, or private assets without redistribution rights.
 
-This project is independent and is **not affiliated with or endorsed by Ableton AG, Bitwig GmbH, Intel, Valve, Framework Computer, or the DrivenByMoss project**.
+This project is independent and is **not affiliated with or endorsed by Ableton AG, Bitwig GmbH, Intel, Apple, Valve, Framework Computer, or the DrivenByMoss project**.
