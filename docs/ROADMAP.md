@@ -22,284 +22,204 @@ This is the primary open-source software track.
 
 The active implementation fixture is macOS because the maintainer's working Mac + Bitwig + DrivenByMoss + Push system is currently available. Steam Deck/Linux remains an explicit second-host portability and appliance checkpoint.
 
-## V0 / current S0 — macOS reference fixture baseline
+## V0 / S0 — macOS reference fixture baseline — accepted
 
-**Claim:** the maintainer's known-good Mac Push/Bitwig fixture is reproducible and the existing semantic-display path is understood.
+**Claim:** the working Mac + Bitwig + Push fixture and the existing semantic-display path are reproducibly understood.
 
-Reference fixture:
+Accepted evidence includes:
 
-- macOS computer;
-- Bitwig Studio;
-- Push 3 Controller over ordinary external USB;
-- current compatible DrivenByMoss integration.
+- real Push control, display, and audio behavior;
+- official DrivenByMoss artifact identity;
+- exact upstream source tag/commit/tree;
+- complete semantic-renderer-to-USB trace;
+- lawful frame seam inside `Push2Display.send(IBitmap)`.
 
-Acceptance:
+Retained under `evidence/s0-macos-reference-fixture/`.
 
-- Bitwig launches;
-- Push controls, audio enumeration, and semantic display are exercised;
-- macOS/USB/audio/display evidence is retained;
-- the tested DrivenByMoss revision is identified;
-- the semantic-renderer-to-USB path is traced;
-- the narrow no-op frame-pipeline seam is named;
-- the Steam Deck is retained as the later Linux/appliance fixture rather than treated as abandoned.
+## V1A-0 — derivative fork and build baseline — accepted
 
-This proves one test fixture. It does not define universal hardware, packaging, capture backend, or monitor geometry.
+**Claim:** the exact accepted DrivenByMoss source is under correct fork custody and can be built, installed, exercised, and rolled back safely.
 
-## V1A — No-op frame pipeline
+Accepted evidence includes:
 
-**Claim:** a project-owned frame-pipeline abstraction can be inserted into the DrivenByMoss Push display path without changing visible output.
+- true `kasselvania/DrivenByMoss` fork;
+- immutable `pushwig/upstream-26.4.1` basis;
+- explicit Java 21/Maven build;
+- bounded local-vs-official artifact comparison;
+- sole-artifact installation;
+- eleven-row real Push parity;
+- exact official rollback.
 
-Leading seam:
+Retained under `evidence/v1a0-drivenbymoss-build-baseline/`.
+
+## V1A — identity frame pipeline — accepted
+
+**Claim:** a project-owned synchronous frame seam can be inserted without changing the semantic bitmap or USB transport behavior.
+
+Accepted path:
 
 ```text
 semantic IBitmap
-        -> PushFramePipeline
-        -> PushDisplayTransport
-        -> existing Push USB implementation
+        -> PassThroughPushFramePipeline
+        -> exact same IBitmap
+        -> unchanged PushUsbDisplay
 ```
 
+Accepted evidence includes:
+
+- direct-reference bytecode and harness proof;
+- one guarded pipeline call followed by one existing USB send;
+- no project per-frame allocation, pixel access, queue, thread, or platform dependency;
+- byte-identical `PushUsbDisplay.class`;
+- bounded executable delta;
+- eleven-row real Push parity;
+- no visual change;
+- ordinary shutdown and exact rollback.
+
+Merged into DrivenByMoss `pushwig/main` at `033ccef8c64f08e8d8d41fa90d48fa06b326a1a1` and retained under `evidence/v1a-identity-frame-pipeline/`.
+
+## V1B — startup-scoped static synthetic overlay — active
+
+**Claim:** the accepted frame pipeline can add one bounded project-owned visual mark to the persistent semantic bitmap without changing pixels outside its declared region or changing USB transport ownership.
+
+Default path remains pass-through. The preferred diagnostic activation is:
+
+```text
+-Dpushwig.syntheticOverlay=true
+```
+
+The first mark is fixed and opaque. V1B intentionally does not animate or hot-toggle because the persistent bitmap and semantic dirty-suppression lifecycle do not yet provide damage restoration.
+
+Acceptance includes:
+
+- exact startup property selection;
+- fixed two-color mark at declared bounds;
+- one reusable renderer and one additional render callback per enabled send;
+- same `IBitmap` reference returned;
+- outside-region pixel preservation;
+- no whole-frame clear, coordinate error, expansion, or trail;
+- representative semantic mode updates remain correct;
+- property-off restart removes the mark;
+- timing percentiles and allocation observations retained;
+- unchanged `PushUsbDisplay` and one writer;
+- all eleven real Push checks while enabled;
+- exact official rollback.
+
+If a second render callback clears or unpredictably damages the semantic image, stop and retain the failure rather than widening the slice.
+
+See [`V1B_SYNTHETIC_COMPOSITION.md`](V1B_SYNTHETIC_COMPOSITION.md).
+
+## V1C — external generated-frame ingress
+
+**Claim:** a process outside Bitwig can publish a generated immutable `VisualSourceFrame` that the in-process compositor consumes safely.
+
 Acceptance:
 
-- before/after semantic frames are pixel-equivalent or differences are fully characterized;
-- only one process owns the Push display endpoint;
-- pads, encoders, transport, MIDI/MPE, and audio remain independent;
-- no unbounded allocation or queue is introduced;
-- frame cadence, CPU time, shutdown, and reconnect behavior are measured;
-- the transport remains replaceable without exposing USB details to the compositor contract.
+- platform-neutral frame contract;
+- explicit control/status and latest-frame transport;
+- no unbounded queue;
+- helper absence, restart, stale data, and malformed metadata produce semantic fallback;
+- compositor never waits for the helper;
+- no operating-system capture API is required;
+- no second Push USB owner.
 
-## V1B — Synthetic composition
-
-**Claim:** the frame pipeline can mix project-owned pixels over the live semantic frame.
-
-Acceptance:
-
-- a moving shape, diagnostic strip, or generated overlay appears on Push;
-- semantic rendering remains intact beneath/around the overlay;
-- the composition mode can be disabled immediately;
-- compositor failure falls back to semantic output;
-- performance and allocation behavior remain bounded.
-
-V1B is the first proof of the core invention and does not require screen capture.
-
-## V1C — External frame ingress
-
-**Claim:** a process outside Bitwig can publish a generated `VisualSourceFrame` that the in-process compositor consumes safely.
-
-Acceptance:
-
-- control/status and latest-frame transport are explicit;
-- no unbounded frame queue exists;
-- helper absence, restart, stale frames, and malformed metadata produce semantic fallback;
-- the compositor never waits for the helper;
-- no operating-system capture API is required for this slice;
-- the public frame contract contains no macOS-specific types.
-
-## V2 — macOS dedicated-window visual lens
+## V2M — macOS dedicated-window visual lens
 
 **Claim:** the first capture backend can discover and display a useful Bitwig/native-device/plug-in source without relying on physical desktop coordinates.
 
 Preferred first target:
 
-- a Bitwig native Expanded Device View opened or undocked as a floating window, preferably Sampler;
+- a floating Bitwig Expanded Device View, preferably Sampler;
 - followed by one ordinary plug-in editor window.
 
 Leading backend:
 
-- a normal macOS helper application using ScreenCaptureKit;
+- normal macOS helper application using ScreenCaptureKit;
 - platform-neutral `VisualSourceFrame` output over the V1C boundary.
 
-Acceptance:
+Acceptance includes source identity, resize/move/reopen behavior, useful Push crop, permission denial/revocation fallback, and no macOS handles in core contracts.
 
-- DrivenByMoss/Bitwig semantic state identifies the selected target;
-- the helper discovers the correct top-level source window;
-- moving/resizing the source or moving it to another monitor does not break identity;
-- a source-relative crop appears usefully on Push;
-- closing/reopening the source recovers automatically;
-- permission denial/revocation produces semantic fallback;
-- macOS window/image handles do not enter the compositor or adapter contracts.
+## V2A — semantic-seeded pixel-anchor benchmark
 
-V2 is already a broadly useful desktop extension on the first platform.
+**Claim:** selected-device semantics can seed a low-cost, confidence-validated anchor resolver for known visual regions.
 
-## V2A — Semantic-seeded pixel anchor benchmark
+Compare at minimum:
 
-**Claim:** selected-device semantics can seed a low-cost, confidence-validated pixel-anchor resolver that locates a known Bitwig visual representation without generic desktop recognition.
-
-The first benchmark may run entirely against locally captured Mac fixture frames before live integration.
-
-Algorithms to compare include:
-
-- flattened normalized grayscale-vector similarity;
+- normalized flattened grayscale vectors;
 - grayscale normalized cross-correlation;
 - edge-map normalized cross-correlation;
 - coarse-to-fine multi-scale matching;
-- optional feature matching only if simpler methods cannot handle supported scale changes.
+- optional feature matching only if simpler methods cannot support required scaling.
 
-Acceptance:
+Acceptance includes at least three native-device targets, strong negatives, multi-anchor geometry, zero wrong locks in the retained matrix, abstention, localization error, acquisition/revalidation timing, memory, and confidence margins.
 
-- at least three native Bitwig device targets plus strong negative candidates are represented;
-- semantic device identity selects the correct adapter and anchor constellation;
-- at least two anchors with expected relative geometry are required for a production lock;
-- selection changes and source resize trigger bounded reacquisition;
-- correct-lock, abstention, wrong-lock, localization-error, and confidence-margin metrics are retained;
-- acquisition/reacquisition latency, per-check CPU time, working memory, and optional fixture power delta are measured;
-- zero wrong locks are observed in the retained acceptance matrix, with abstention permitted;
-- ambiguous/unsupported cases fall back to semantic output;
-- one simple algorithm is selected for the first live implementation or the experiment records why anchor matching is not yet viable.
+See [`SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`](SEMANTIC_PIXEL_ANCHOR_RESOLVER.md).
 
-Provisional target bands are documented in [`SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`](SEMANTIC_PIXEL_ANCHOR_RESOLVER.md); they are not current performance claims.
+## V2P — Linux/Steam Deck second-host checkpoint
 
-## V2P — Linux/Steam Deck second-host portability checkpoint
+**Claim:** frame, composition, semantic, and adapter contracts survive movement from the Mac implementation fixture to Linux.
 
-**Claim:** the core frame, composition, semantic, and adapter contracts survive movement from the Mac implementation fixture to a Linux host.
+Acceptance includes:
 
-Preferred host when available:
+- Push control/display reproduction;
+- no macOS-specific core changes;
+- Linux producer/capture backend satisfying the same frame contract;
+- Flatpak/host IPC characterization;
+- at least one visual lens where supported;
+- Deck CPU/power observations;
+- failures localized to backend/runtime integration.
 
-- the maintainer's Steam Deck/Flatpak Bitwig fixture.
-
-Acceptance:
-
-- Push semantic control and display behavior reproduce on Linux;
-- the frame pipeline and adapter schema require no macOS-specific changes;
-- a Linux capture backend or bounded test producer satisfies the same `VisualSourceFrame` contract;
-- Flatpak/host IPC constraints are characterized;
-- at least one dedicated-window visual lens reproduces where the Linux UI/backend permits;
-- CPU and power behavior are measured on the Deck;
-- failures are localized to backend/runtime integration rather than hidden by architecture changes.
-
-V2P is required before claiming Linux support, but it does not block the first Mac implementation.
-
-## V3 — Visual-source and adapter SDK
+## V3 — visual-source and adapter SDK
 
 **Claim:** source discovery and visual profiles are public, testable, and community-extensible.
 
-Acceptance:
+Acceptance includes platform-neutral frame/resolver contracts, semantic matching, source preference, normalized crops, anchors, compatibility declarations, confidence, fallback, locally generated proprietary-UI descriptors, and shared Mac/Linux schema.
 
-- platform-neutral `VisualSourceFrame` and resolver contracts exist;
-- adapter schema supports semantic matching, source preference, normalized crop, anchor constellations, validation, confidence, compatibility, and fallback;
-- one native-device adapter and one plug-in adapter are retained as examples;
-- profiles declare tested versions/scales rather than implying universal compatibility;
-- adapter validation can distinguish a correct source from a wrong/stale source;
-- proprietary UI template pixels are generated locally or otherwise handled without casual redistribution;
-- both Mac and Linux fixture results can be represented without schema forks.
-
-## V4 — Attached-mode embedded Bitwig resolver
+## V4 — attached-mode embedded Bitwig resolver
 
 **Claim:** a useful visual embedded in Bitwig's main window can be found adaptively across supported layouts.
 
-Acceptance:
+Acceptance includes semantic identity, application-window geometry, panel state where available, normalized geometry, confidence-validated anchors, revalidation after layout/scale/device changes, bounded maintenance cost, safe fallback, and a defined compatibility matrix.
 
-- resolver uses semantic device identity plus Bitwig application-window geometry;
-- panel layout/visibility state is used where the controller API exposes it;
-- normalized geometry and confidence-validated anchor constellations replace physical desktop coordinates;
-- source is revalidated after resize, panel movement, display-profile change, UI-scale change, and device selection change;
-- locked-state maintenance uses bounded local validation rather than full-frame search at display cadence;
-- wrong/low-confidence resolution falls back rather than showing unrelated pixels;
-- at least one native Bitwig device is demonstrated across a defined configuration matrix.
+## V5 — bounded calibration and profile portability
 
-## V5 — Bounded calibration and profile portability
+**Claim:** unsupported layouts can be enabled without repeated manual cropping.
 
-**Claim:** unsupported layouts can be enabled without requiring users to crop the screen every session.
+Acceptance includes version-scoped calibration, normalized region, local anchors/descriptors, invalidation rules, survival across monitor movement, safe disabling, and profile export without proprietary screenshots.
 
-Acceptance:
-
-- one-time/version-scoped calibration flow exists;
-- records include source identity, normalized region, UI scale/version context, locally generated anchors/descriptors, and invalidation rules;
-- calibration survives ordinary window movement and monitor changes;
-- invalid records are detected and safely disabled;
-- community profiles can be exported/imported without private screenshots or proprietary assets.
-
-## V6 — Attached-mode portability release
+## V6 — attached-mode portability release
 
 **Claim:** the visual extension is supportable for ordinary users rather than only the maintainer fixtures.
 
-Acceptance matrix includes, where relevant:
+Acceptance matrix includes macOS and Linux backends, multiple Bitwig sizes/scales/layouts, single and multi-monitor placement, source recreation, selected-device transitions, permission/restart recovery, and multiple hardware hosts.
 
-- macOS ScreenCaptureKit and at least one Linux backend;
-- multiple Bitwig window sizes;
-- supported UI scales;
-- at least two display profiles/panel arrangements;
-- single- and multi-monitor placement;
-- source windows moved, resized, hidden, and reopened;
-- selected-device transitions and negative candidates;
-- compositor/capture/resolver restart;
-- permission denial and recovery;
-- multiple hardware hosts, with Mac and Steam Deck each only one row in the matrix.
+## V7 — additional operating-system backend
 
-## V7 — Additional operating-system backend
+**Claim:** another Bitwig platform can use existing compositor and adapter contracts without redesign.
 
-**Claim:** the platform-neutral core can support another Bitwig platform without compositor or adapter redesign.
-
-Leading additional target:
-
-- Windows Graphics Capture or another supported Windows capture API.
-
-Acceptance:
-
-- window/source discovery works through the platform adapter;
-- existing visual adapters and anchor policies require no compositor changes;
-- relevant permission lifecycle is handled;
-- a portability matrix is retained;
-- semantic fallback remains universal.
-
-V7 is incremental platform coverage, not a prerequisite for the Mac/Linux release.
+Leading target: Windows Graphics Capture or another supported Windows capture API.
 
 # Track A — All-in-one appliance
 
 Track A consumes Track V. It does not define Track V.
 
-## A0 — Maintainer hardware survey
+## A0 — maintainer hardware survey
 
-**Claim:** document the already-owned appliance parts.
+Document the existing wooden stand, Deck/dock/cables, protected battery, PD profiles, Push power cable, representative draw, airflow, strain relief, and service access.
 
-Retain:
+## A1 — managed/headless Steam Deck profile
 
-- wooden-base internal dimensions and mounting opportunities;
-- Steam Deck/dock/cable topology;
-- battery model, capacity, PD profiles, and simultaneous-output behavior;
-- tested PD-to-barrel voltage, polarity, current behavior, and temperature;
-- Push/host representative power draw;
-- airflow, strain relief, and service access.
+Prove unattended service start, ordinary Push-only workflow, controlled geometry without core-contract changes, restart/recovery, and safe shutdown.
 
-## A1 — Managed/headless Steam Deck profile
+## A2 — battery-powered portable maintainer appliance
 
-**Claim:** the maintainer's Deck can run the visual/controller stack without using its built-in screen during ordinary operation.
+Prove the Deck, existing battery, stand, Push, and stock rear ports form a portable all-in-one instrument with stable USB/audio/display, wireless full desktop, measured runtime/thermals, protected components, charging transitions, and low-battery shutdown.
 
-Acceptance:
+A2 is a complete project success, not scaffolding.
 
-- boot/start services without manual desktop setup;
-- Push can perform a representative create/open/play/record/save workflow;
-- managed geometry may be used without changing attached-mode contracts;
-- services restart cleanly;
-- safe shutdown/recovery exists;
-- remote client is not required for ordinary musical control.
+## A3 — reproducible alternate-host appliance
 
-## A2 — Battery-powered portable maintainer appliance
-
-**Claim:** the Deck, existing battery, stand, Push, and stock rear ports form a portable all-in-one instrument.
-
-Acceptance:
-
-- battery powers host and Push through characterized protected paths;
-- USB/control/audio/display remain stable through the chosen dock/hub topology;
-- full Bitwig desktop is available wirelessly for exceptional work;
-- representative runtime and thermal behavior are measured;
-- components/cables are retained and protected by the stand;
-- charging transitions and low-battery shutdown are safe.
-
-A2 is a complete project success for the maintainer, not merely scaffolding.
-
-## A3 — Reproducible alternate-host appliance
-
-**Claim:** another builder can assemble a documented Framework or compact-x86 version without requiring the maintainer's exact Deck or stand.
-
-Acceptance:
-
-- public BOM and mechanical/power topology;
-- supported Linux/runtime profile;
-- same Track V acceptance suite;
-- documented battery/runtime/thermal behavior;
-- service and recovery procedure;
-- ordinary rear Push USB remains supported.
+Publish a Framework/compact-x86 BOM, mechanical/power topology, supported Linux profile, Track V acceptance suite, battery/runtime/thermal behavior, service/recovery procedure, and ordinary rear-USB option.
 
 # Track H — Internal connector and native compute
 
@@ -307,93 +227,35 @@ Track H is a parallel open-hardware/reverse-engineering effort.
 
 ## H0 — Push bay and carrier survey
 
-**Claim:** document the empty standalone bay and carrier reproducibly.
+Retain calibrated photographs, markings, connector geometry, compute/SSD/thermal/antenna/battery keep-outs, continuity points, and measured power/hub/mux/sideband observations separated from inference.
 
-Retain:
+## H1 — passive CM11EB diagnostic edge card
 
-- calibrated photographs;
-- PCB/IC/connector markings;
-- connector geometry, keying, and mounting dimensions;
-- compute, SSD, thermal, antenna, and battery keep-outs;
-- accessible continuity points;
-- power, hub, mux, and sideband observations separated from inference.
+Publish a mechanically correct male edge card exposing only proven grounds, candidate USB 2 pairs, and purpose-bound low-speed observations, with power contacts disconnected by default.
 
-## H1 — CM11EB diagnostic edge card D0
+## H2 — protected USB development card
 
-**Claim:** create a mechanically correct passive diagnostic card.
+Add selectable candidate USB paths, ESD protection, strain relief, explicit VBUS isolation/injection, current/voltage observation, and clear host/device orientation.
 
-Acceptance:
+## H3 — internal USB enumeration
 
-- male edge geometry and pin map independently reviewed;
-- proven grounds and candidate USB 2 pairs exposed;
-- selected low-speed observations exposed only with a stated purpose;
-- power contacts disconnected by default;
-- public schematic/layout/manufacturing notes;
-- board usable while Push remains on the stand/open bench.
+Prove an external host can enumerate useful Push functions through the internal carrier path and compare MIDI/control, display, and audio behavior with the external-USB baseline.
 
-## H2 — Protected USB development card D1
+## H4 — targeted high-speed/sideband tooling
 
-**Claim:** make internal-host enumeration experiments repeatable and electrically bounded.
+Add USB 3, PCIe, eSPI, or other signals only for a specific justified experiment with proper high-speed design. Do not fan all 300 contacts to generic headers.
 
-Acceptance:
+## H5 — used Compute Element bring-up
 
-- selectable candidate USB paths;
-- ESD protection and strain relief;
-- explicit VBUS isolation/injection controls;
-- voltage/current observation;
-- clear host/device orientation;
-- no uncontrolled connection of Push and host power sources.
+Prove a suitable surplus CM11EB-family element can boot the accepted Linux/Bitwig stack, network, enumerate Push hardware, meet thermal bounds, and run Track V acceptance unchanged.
 
-## H3 — Internal USB enumeration
+## H6 — native-bay battery/thermal final form
 
-**Claim:** an external development host can enumerate useful Push functions through the internal carrier path.
-
-Acceptance:
-
-- actual USB functions enumerate;
-- MIDI/control, display, and audio behavior are compared with the external USB baseline;
-- mux/enable/sideband requirements are retained;
-- power is handled deliberately;
-- failures are characterized rather than inferred away.
-
-H3 makes the development board useful even before a Compute Element is purchased.
-
-## H4 — Targeted high-speed/sideband tooling
-
-Only add USB 3, PCIe, eSPI, or other signals when a specific experiment justifies controlled-impedance routing, reference planes, length treatment, or active carrier support.
-
-Do not treat a generic all-300-pin fanout as a valid development plan.
-
-## H5 — Used Compute Element bring-up
-
-**Claim:** a suitable surplus CM11EB-family Compute Element can boot the proven Linux/Bitwig stack on the Push carrier.
-
-Acceptance:
-
-- UEFI/BIOS and carrier-EC requirements are understood;
-- Linux boots from serviceable storage;
-- networking works;
-- Push hardware enumerates;
-- thermal behavior is bounded;
-- Track V acceptance tests run unchanged.
-
-## H6 — Native-bay battery/thermal final form
-
-**Claim:** Compute Element, selected protected battery/power path, storage, antennas, and cooling form a serviceable portable instrument.
-
-Acceptance includes:
-
-- no external compute host;
-- validated charging and play-while-charging behavior;
-- low-voltage warning, save, and clean shutdown;
-- representative thermal/load limits;
-- battery replacement/service procedure;
-- external recovery path;
-- acceptable audio/control/display latency.
+Integrate Compute Element, protected battery/power path, storage, antennas, cooling, charging, low-voltage save/shutdown, serviceability, recovery, and acceptable latency.
 
 # Optional compatibility and ecosystem work
 
-These efforts may proceed in separate repositories or issues but are not gates for Track V, A, or H:
+These may proceed separately but are not gates for Track V, A, or H:
 
 - Wine/yabridge experiments, including known Deck UI/usability problems;
 - plugdata/Pure Data integration;
@@ -401,4 +263,4 @@ These efforts may proceed in separate repositories or issues but are not gates f
 - device-specific analyzers and direct visual sources;
 - alternative controller integrations.
 
-The core project should make these integrations possible through public semantic, visual-source, and compositor contracts without absorbing their independent roadmaps.
+The core project should expose stable semantic, visual-source, and compositor contracts without absorbing those independent roadmaps.

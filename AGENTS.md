@@ -22,12 +22,13 @@ When instructions conflict, use this order:
 4. `docs/ARCHITECTURE.md`
 5. `docs/MAC_FIRST_DEVELOPMENT.md`
 6. `docs/DRIVENBYMOSS_DERIVATIVE_STRATEGY.md`
-7. `docs/VISUAL_PORTABILITY.md`
-8. `docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`
-9. `docs/ROADMAP.md`
-10. `docs/RUNTIME_STRATEGY.md`
-11. issue / PR scope
-12. implementation convenience
+7. `docs/V1B_SYNTHETIC_COMPOSITION.md`
+8. `docs/VISUAL_PORTABILITY.md`
+9. `docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`
+10. `docs/ROADMAP.md`
+11. `docs/RUNTIME_STRATEGY.md`
+12. issue / PR scope
+13. implementation convenience
 
 A contributor or coding agent must stop and surface a conflict rather than quietly widening scope.
 
@@ -35,9 +36,9 @@ A contributor or coding agent must stop and surface a conflict rather than quiet
 
 - Bitwig remains the DAW and audio-engine authority.
 - DrivenByMoss, or a compatible derivative, is the semantic Push/controller authority unless a slice explicitly proves a replacement.
-- The Push display is a composited output. Semantic UI and captured pixels are different source classes and must remain distinguishable.
+- The Push display is a composited output. Semantic UI and project/captured pixels are different source classes and must remain distinguishable.
 - Exactly one component owns the Push USB display endpoint in steady state.
-- The first implementation may keep composition and final USB transport inside the DrivenByMoss derivative; process boundaries are not architectural authority.
+- The first implementation keeps final composition and USB transport inside the DrivenByMoss derivative; process boundaries are not architectural authority.
 - Visual capture is visualization first. Do not make fragile mouse automation the primary control path when the Bitwig controller API can perform the operation.
 - The universal visual product must support **attached mode**, adapting to a user's existing Bitwig windows and monitor layout.
 - A canonical or virtual desktop is a **managed appliance/test mode**, not a requirement imposed on ordinary desktop users.
@@ -65,6 +66,29 @@ A contributor or coding agent must stop and surface a conflict rather than quiet
 - `pushwig/upstream-26.4.1` is the immutable accepted upstream basis. Project feature PRs target `pushwig/main`; do not merge implementation work into the immutable basis branch or upstream `master`.
 - Central evidence/status work and DrivenByMoss source work are separate PRs with exact cross-references.
 
+## Accepted source posture
+
+Accepted DrivenByMoss integration branch:
+
+```text
+branch: pushwig/main
+commit: 033ccef8c64f08e8d8d41fa90d48fa06b326a1a1
+tree:   9aec7429ff093addee001a62a5a07309708fd592
+```
+
+This merge contains the exact accepted V1A source head `6e1e4cbd2e725a7951e5b4dc1278fbb6e7b5d61c`.
+
+Accepted V1A path:
+
+```text
+complete semantic IBitmap
+        -> PassThroughPushFramePipeline.INSTANCE
+        -> exact same IBitmap reference
+        -> unchanged PushUsbDisplay
+```
+
+`PushUsbDisplay` remains the sole transport owner.
+
 ## Slice discipline
 
 Work in small, independently reviewable slices.
@@ -85,6 +109,8 @@ Do not merge separate uncertainty domains merely because they are exciting. Exam
 - display-path tracing is separate from modifying the display path;
 - fork/toolchain/build/install/rollback proof is separate from the no-op frame-pipeline source change;
 - no-op frame-pipeline insertion is separate from synthetic composition;
+- second-render preservation is separate from moving-overlay damage restoration;
+- static composition is separate from runtime hot switching;
 - synthetic composition is separate from external-frame IPC;
 - external-frame IPC is separate from operating-system window capture;
 - framebuffer ownership is separate from visual-source discovery;
@@ -95,6 +121,28 @@ Do not merge separate uncertainty domains merely because they are exciting. Exam
 - all-in-one packaging is separate from connector research;
 - yabridge experimentation is separate from native Bitwig/Push operation;
 - external battery integration is separate from custom native-bay battery engineering.
+
+## V1B synthetic-composition rules
+
+V1B is a bounded diagnostic experiment.
+
+- The exact artifact must remain pass-through by default.
+- The preferred activation is the startup Java property `pushwig.syntheticOverlay=true`, read once during `Push2Display` construction.
+- Do not poll activation per frame.
+- Do not add a user-facing configuration setting in V1B.
+- The enabled pipeline may draw only one fixed opaque mark within the declared rectangle.
+- Do not animate or move the mark.
+- Do not hot-toggle it at runtime.
+- Use one reusable renderer; do not allocate a renderer/lambda per send.
+- Invoke at most one additional `IBitmap.render` callback per eligible enabled send.
+- Return the exact same `IBitmap` reference.
+- Do not retain the bitmap after the call.
+- Do not copy/read raw pixels in committed production source.
+- Do not add an off-screen final bitmap, frame snapshot, queue, thread, executor, timer, IPC channel, capture object, or platform type.
+- Do not modify `PushUsbDisplay`, `AbstractGraphicDisplay`, `BitmapImpl`, `IBitmap`, `PushConfiguration`, or `PushControllerSetup`.
+- If the second render callback clears or unpredictably damages semantic pixels, stop, restore the official artifact, and retain the failure. Do not widen into transport replacement or raw bitmap copying.
+- If the startup property cannot reach the extension process, stop before proposing another activation mechanism.
+- Property-off restart is the V1B removal/recovery boundary. Runtime damage restoration is a later claim.
 
 ## Visual portability evidence
 
@@ -136,6 +184,10 @@ Retain useful evidence under `evidence/` when practical:
 - upstream basis, build toolchain, artifact hashes, installation, and rollback evidence;
 - framebuffer timing and pixel/object-equivalence evidence;
 - source and bytecode diffs that bound controller-extension changes;
+- declared overlay geometry and colors;
+- target/outside-region mismatch counts and hashes;
+- property-off/on/recovery results;
+- pipeline timing percentiles and allocation observations;
 - source-discovery logs and screenshots;
 - visual profile compatibility matrices;
 - anchor benchmark summaries and diagnostics;
@@ -144,15 +196,17 @@ Retain useful evidence under `evidence/` when practical:
 - boot/service logs;
 - benchmark summaries.
 
-Do not commit serial numbers, credentials, activation files, personal network details, user-specific paths, proprietary binaries, or generated DrivenByMoss extension artifacts.
+Do not commit serial numbers, credentials, activation files, personal network details, user-specific paths, proprietary binaries, generated DrivenByMoss extension artifacts, proprietary screenshots, or raw Bitwig/Push frames.
 
 ## Engineering preferences
 
 - Use the currently available Mac to shorten the first implementation loop, while keeping core interfaces platform-neutral.
-- Treat the accepted V1A-0 fork/build/install/rollback evidence as the baseline; do not repeat or silently replace its source/toolchain authority.
+- Treat accepted S0, V1A-0, and V1A evidence as authority; do not repeat or silently replace their source/toolchain claims.
 - Use the explicitly pinned Java 21 environment for DrivenByMoss builds; do not rely on the host's default Java selection.
-- Prefer a no-op frame-pipeline seam before changing visible output.
-- For V1A, preserve the exact `IBitmap` reference and leave `PushUsbDisplay` unchanged; do not extract transport merely because a future design may need it.
+- Keep the accepted pass-through pipeline as the default path.
+- Prove direct static in-place composition before adding external frames or a general compositor.
+- Prefer a fixed opaque diagnostic mark over animation in V1B.
+- Measure actual render cost now that V1B introduces pixel work, but keep instrumentation temporary and uncommitted.
 - Prefer in-process final composition/USB transport initially so two processes do not fight over Push's display interface.
 - Keep platform capture in a separate helper/backend and publish only `VisualSourceFrame`-style data across the boundary.
 - Prefer observable IPC boundaries over hidden cross-process coupling.
@@ -181,13 +235,15 @@ A CM11EB development card is staged open hardware:
 
 `Standalone Bitwig Push` is a working repository/project description, not a claim of affiliation. Internal software may use the provisional `pushwig-*` prefix.
 
-## Current reference fixture and source posture
+## Current reference fixture and active posture
 
 S0 accepted the maintainer's macOS computer, Bitwig Studio 6.1, Push 3, and official DrivenByMoss 26.4.1 as the first real-device fixture and pinned the display handoff seam.
 
-V1A-0 accepted the true `kasselvania/DrivenByMoss` fork, exact upstream basis, explicit Java 21/Maven build, reversible installation, full behavioral parity, and exact official-artifact rollback.
+V1A-0 accepted the true fork, exact upstream basis, explicit Java 21/Maven build, reversible installation, full behavioral parity, and exact official-artifact rollback.
 
-V1A now makes the first source change on `pushwig/v1a-no-op-frame-pipeline`, targeting `pushwig/main`. It must add only the synchronous identity frame boundary while preserving the same semantic bitmap and unchanged USB writer.
+V1A accepted the synchronous identity frame boundary and merged it into `pushwig/main` while preserving the same semantic bitmap and unchanged USB writer.
+
+V1B now tests one startup-scoped static synthetic mark on that accepted path. It must prove outside-region preservation, repeated-send stability, representative semantic updates, bounded timing, property-off recovery, real Push behavior, and exact official rollback.
 
 The Steam Deck remains the named second-host/Linux portability and appliance fixture when it becomes available.
 

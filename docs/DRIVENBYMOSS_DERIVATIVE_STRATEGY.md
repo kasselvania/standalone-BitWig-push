@@ -53,9 +53,18 @@ pushwig/upstream-26.4.1  # immutable accepted upstream basis
 pushwig/main             # project integration branch
 ```
 
-Both branches began at the exact accepted commit. The immutable basis branch must never receive project implementation merges. Feature pull requests target `pushwig/main`.
+The immutable basis branch must never receive project implementation merges.
 
-Feature branches start from the currently accepted `pushwig/main` head or from a newer basis accepted through a separate basis-upgrade decision. Do not silently rebase active work onto upstream `master` merely because upstream moved.
+Current accepted integration state:
+
+```text
+pushwig/main commit: 033ccef8c64f08e8d8d41fa90d48fa06b326a1a1
+pushwig/main tree:   9aec7429ff093addee001a62a5a07309708fd592
+```
+
+That merge contains the exact reviewed V1A source head `6e1e4cbd2e725a7951e5b4dc1278fbb6e7b5d61c`.
+
+Feature branches start from the current accepted `pushwig/main` head or from a newer basis accepted through a separate basis-upgrade decision. Do not silently rebase active work onto upstream `master` merely because upstream moved.
 
 ## Local remote topology
 
@@ -92,7 +101,7 @@ Feature branches:
 
 ```text
 pushwig/v1a-no-op-frame-pipeline
-pushwig/v1b-synthetic-composition
+pushwig/v1b-static-synthetic-overlay
 pushwig/v1c-external-frame-ingress
 ```
 
@@ -106,7 +115,7 @@ Each implementation slice should normally produce:
 
 The source PR and central evidence PR remain unmerged until technical-lead review of the exact heads.
 
-## Accepted V1A-0 build baseline
+## Accepted build baseline
 
 V1A-0 proved the exact unmodified 26.4.1 source on the accepted Mac.
 
@@ -126,22 +135,13 @@ env \
   mvn clean install package -Dbitwig.extension.directory=target
 ```
 
-V1A-0 retained:
-
-- a clean source build at the exact accepted commit/tree;
-- local artifact SHA-256 `61ff21e5f21d96ee64bfe1b09c5971116f1f5075d5805bc015f0a168fe00b8f9`;
-- bounded official-versus-local archive differences;
-- sole-artifact temporary installation;
-- eleven-row real Push behavioral parity;
-- exact restoration of the official artifact.
-
 A successful Maven exit remains necessary but never substitutes for artifact inspection, Bitwig loading, real-device acceptance, and rollback.
 
 A locally built artifact is not expected to be byte-identical to the official distribution unless evidence demonstrates reproducibility. Differences in ZIP/JAR ordering, timestamps, line endings, dependency packaging, or build environment are not automatically defects. Source identity, bounded payload comparison, and behavioral parity are the relevant claims.
 
 ## Safe installation and rollback
 
-The installed extension path proven by S0 and V1A-0 is:
+The installed extension path proven by S0, V1A-0, and V1A is:
 
 ```text
 $HOME/Documents/Bitwig Studio/Extensions/DrivenByMoss.bwextension
@@ -165,31 +165,94 @@ Before replacing it:
 
 10. Confirm exactly one DrivenByMoss extension remains in every scanned directory.
 
-## V1A source-change discipline
+## Accepted V1A frame seam
 
-V1A is the first functional source change and is intentionally narrower than the complete future compositor architecture.
+V1A is merged and accepted.
 
-V1A must:
+Accepted path:
 
-- insert a synchronous identity frame-pipeline seam at the accepted `Push2Display.send(IBitmap)` boundary;
-- preserve the same `IBitmap` object reference in the production no-op path;
-- keep the existing shutdown/null guard;
-- call the pipeline once and the existing USB display once per eligible send;
-- retain exactly one USB transport owner;
-- leave `PushUsbDisplay` source, encoding, buffers, endpoint matching, signal shaping, executor, and transfer scheduling unchanged;
-- avoid per-frame allocation, bitmap retention, pixel copies, queues, threads, timers, IPC, and platform-specific types.
+```text
+complete semantic IBitmap
+        -> PushFramePipeline.process
+        -> exact same IBitmap reference
+        -> unchanged PushUsbDisplay.send
+```
 
-Expected source envelope:
+Accepted source types:
+
+```text
+PushFramePipeline.java
+PassThroughPushFramePipeline.java
+Push2Display.java
+```
+
+V1A proved:
+
+- one synchronous identity operation;
+- no per-frame project allocation;
+- no bitmap retention or pixel access;
+- unchanged `PushUsbDisplay` source and bytecode;
+- exact one-writer preservation;
+- Java 21/Maven build success;
+- all eleven real Push checks;
+- no visible change;
+- ordinary shutdown;
+- exact official rollback.
+
+Do not repeat V1A's identity proof in later slices except as regression evidence.
+
+## V1B source-change discipline
+
+V1B is the first visible-pixel experiment.
+
+The project is testing in-place post-semantic drawing on the persistent bitmap. The test must remain bounded because a second `IBitmap.render` callback has not yet been proven to preserve existing pixels.
+
+V1B must:
+
+- branch from accepted `pushwig/main` at `033ccef8c64f08e8d8d41fa90d48fa06b326a1a1`;
+- preserve pass-through behavior by default;
+- use startup-scoped property `pushwig.syntheticOverlay=true` as the preferred diagnostic activation;
+- read activation once at display construction;
+- select one static synthetic-overlay pipeline when enabled;
+- draw one fixed opaque two-color mark inside the declared rectangle;
+- use one reusable renderer rather than allocate a renderer per frame;
+- invoke one additional synchronous `IBitmap.render` callback per enabled send;
+- return the same `IBitmap` reference;
+- retain no bitmap/frame after the call;
+- leave `PushUsbDisplay`, its endpoint, buffers, encoding, padding, XOR shaping, executor, and lifecycle unchanged;
+- prove outside-region preservation and repeated-send stability;
+- measure processing cost with temporary, uncommitted instrumentation;
+- prove property-off startup, property-on startup, property-off recovery, real Push behavior, and exact official rollback.
+
+Expected production delta:
 
 ```text
 Push2Display.java
-PushFramePipeline.java
-PassThroughPushFramePipeline.java
+SyntheticOverlayPushFramePipeline.java
 ```
 
-Do not introduce a `PushDisplayTransport` abstraction in V1A. Transport extraction can be considered only when a later claim actually needs it.
+The accepted V1A interface and pass-through implementation should not require behavioral change.
 
-The first proof should use source/bytecode and same-toolchain base/head artifact comparison rather than permanent per-frame debug instrumentation. A temporary external identity harness is acceptable when it does not modify the project POM or production source.
+V1B must not introduce:
+
+- moving/animated pixels;
+- runtime hot switching;
+- damage restoration;
+- a second output bitmap;
+- raw pixel snapshots/copies in committed code;
+- `PushDisplayTransport`;
+- `PushConfiguration` or UI settings;
+- queues, threads, executors, timers, IPC, sockets, shared memory;
+- ScreenCaptureKit or platform types;
+- external frames or visual-source contracts.
+
+If the second render callback clears or unpredictably damages semantic pixels, stop and retain the failure. Do not widen the slice into transport encoding or raw-frame copying.
+
+See [`V1B_SYNTHETIC_COMPOSITION.md`](V1B_SYNTHETIC_COMPOSITION.md).
+
+## Later source-change discipline
+
+V1C may introduce a platform-neutral immutable `VisualSourceFrame` ingress only after V1B proves the local composition primitive.
 
 Later source changes must remain separable so that useful generic improvements can be proposed upstream without requiring adoption of the entire appliance project.
 
@@ -228,7 +291,7 @@ Build and implementation evidence belongs in the central repository because it s
 
 Source changes belong in the DrivenByMoss fork.
 
-A controller-extension implementation PR is paired, when needed, with a narrow central evidence PR. Generated extension binaries are not committed into either repository.
+A controller-extension implementation PR is paired with a narrow central evidence PR. Generated extension binaries are not committed into either repository.
 
 ## Initial sequence
 
@@ -241,12 +304,16 @@ V1A-0  accepted
   fork + exact source build + temporary install + rollback proven
         |
         v
-V1A    active
-  identity PushFramePipeline implemented and proven
+V1A    accepted
+  identity PushFramePipeline merged and proven
         |
         v
-V1B
-  synthetic project-owned pixels composed
+V1B    active
+  startup-scoped static synthetic mark + preservation proof
+        |
+        v
+V1C
+  external generated frame ingress
 ```
 
-This sequence isolates build/install failures from frame-pipeline failures and keeps the first behavioral source change small enough to review rigorously.
+The sequence isolates each uncertainty domain: source custody, identity seam, direct composition, and external ingress.
