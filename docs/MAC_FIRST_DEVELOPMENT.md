@@ -2,47 +2,76 @@
 
 ## Decision
 
-The active Track V development fixture is the maintainer's macOS computer running Bitwig Studio, DrivenByMoss, and Push 3 Controller over ordinary USB.
+The active Track V development fixture is the maintainer's macOS computer running Bitwig Studio, the project DrivenByMoss derivative, and Push 3 Controller over ordinary USB.
 
 This changes the order of implementation, not the product definition:
 
-- macOS becomes the fastest available environment for tracing and cutting the display pipeline;
+- macOS is the fastest available environment for source-level display work;
 - the Steam Deck remains the maintainer's first Track A appliance host and a later Linux portability fixture;
-- the universal visual/controller contracts remain operating-system neutral;
+- universal visual/controller contracts remain operating-system neutral;
 - no macOS-specific type is allowed to leak into the compositor, resolver, or visual-adapter contracts.
 
-S0 is now accepted and merged. The active V1A-0 gate establishes the DrivenByMoss fork and proves a clean local build, reversible installation, real-device parity, and exact rollback before the first behavioral source change.
+The Mac has now carried the project through the real baseline, exact source/build custody, and first functional frame seam. It can also prove bounded synthetic composition, external generated-frame ingress, the first dedicated-window capture backend, and the offline pixel-anchor benchmark before the Deck becomes available.
 
-The Deck being temporarily unavailable is not a blocker for V1A-0, V1, the first dedicated-window visual proof, or the offline pixel-anchor benchmark.
+## Accepted fixture and source state
 
-## Why macOS is a strong first implementation host
+### S0 — accepted
 
-The maintainer already has a working Bitwig + DrivenByMoss + Push setup on macOS. That provides a shorter loop for:
+S0 retained:
 
-- building and installing a DrivenByMoss derivative;
-- attaching debuggers and profilers;
-- tracing frame construction;
-- testing USB reconnect and shutdown behavior;
-- iterating on the compositor seam;
-- generating deterministic test frames;
-- developing a native window-capture helper;
-- collecting visual fixtures for the resolver benchmark.
+- macOS 26.4.1 / arm64 fixture;
+- Bitwig Studio 6.1;
+- real Push 3 control, display, and audio behavior;
+- official DrivenByMoss 26.4.1 artifact SHA-256;
+- exact upstream tag, commit, and tree;
+- complete semantic-renderer-to-USB path;
+- lawful cut inside `Push2Display.send(IBitmap)`.
 
-S0 cryptographically identified the installed DrivenByMoss 26.4.1 artifact, matched it byte-for-byte to the official distribution, and pinned upstream tag `26.4.1`, commit `fd03245ab38fa5149c45934051d937ee9fda6d08`, tree `edd2ad636b0aa1f39919f0ffd05c968015450075`.
+### V1A-0 — accepted
 
-## What can be proven before returning to the Deck
+V1A-0 retained:
+
+- true `kasselvania/DrivenByMoss` fork;
+- immutable `pushwig/upstream-26.4.1` basis;
+- explicit Java 21/Maven build;
+- bounded local-vs-official artifact differences;
+- reversible sole-artifact installation;
+- all eleven real Push checks;
+- exact official rollback.
+
+### V1A — accepted
+
+V1A merged the first project-owned source seam into `pushwig/main`:
+
+```text
+integration commit: 033ccef8c64f08e8d8d41fa90d48fa06b326a1a1
+integration tree:   9aec7429ff093addee001a62a5a07309708fd592
+```
+
+Accepted path:
+
+```text
+complete semantic IBitmap
+        -> PassThroughPushFramePipeline.INSTANCE
+        -> exact same IBitmap
+        -> unchanged PushUsbDisplay
+```
+
+The real fixture passed without any visible change, and the official artifact was restored exactly.
+
+## What the Mac can prove before returning to the Deck
 
 The Mac fixture can establish:
 
-1. the exact semantic-renderer-to-USB path;
-2. a clean fork/build/install/rollback baseline for the pinned upstream source;
-3. a no-op frame-pipeline seam with pixel-equivalent output;
-4. a synthetic overlay mixed into the live DrivenByMoss display;
-5. a platform-neutral external-frame ingress contract;
-6. a macOS dedicated-window capture backend;
-7. a floating Bitwig native-device or plug-in visual lens;
-8. a local fixture corpus and pixel-anchor benchmark;
-9. most of the user-facing visual-mode behavior.
+1. the exact semantic-renderer-to-USB path — complete;
+2. derivative fork/build/install/rollback baseline — complete;
+3. identity frame-pipeline seam — complete;
+4. bounded synthetic overlay on the semantic bitmap — active;
+5. platform-neutral external-frame ingress;
+6. macOS dedicated-window capture backend;
+7. floating Bitwig native-device or plug-in visual lens;
+8. local fixture corpus and pixel-anchor benchmark;
+9. most user-facing visual-mode behavior.
 
 The Mac fixture cannot by itself establish:
 
@@ -52,86 +81,105 @@ The Mac fixture cannot by itself establish:
 - managed appliance geometry on SteamOS;
 - Linux portability claims.
 
-Those become explicit later validation slices rather than prerequisites for the first software cut.
+Those remain explicit later validation slices rather than prerequisites for the first software implementation.
 
-## Confirmed upstream display path and leading cut
+## Confirmed display path
 
-S0 confirmed this exact shape for DrivenByMoss 26.4.1:
+The accepted DrivenByMoss line is:
 
 ```text
 DrivenByMoss modes/views
         -> semantic graphic display rendering
-        -> persistent IBitmap (960x160 ARGB32)
+        -> persistent IBitmap (960×160 ARGB32)
         -> Push2Display.send(IBitmap)
+        -> PushFramePipeline
         -> PushUsbDisplay.send(IBitmap)
-        -> bitmap encode / 16-bit pixel conversion / scan-line padding
-        -> XOR signal shaping
+        -> 16-bit conversion / scan-line padding / XOR shaping
         -> Push USB interface 0 / endpoint 0x01
 ```
 
-Push 3 intentionally uses the modern graphic-display branch implemented by `Push2Display` and `PushUsbDisplay`.
+The project seam is after semantic rendering and before transport-specific encoding. `PushUsbDisplay` remains the single endpoint owner.
 
-The accepted narrow cut is inside `Push2Display.send(IBitmap)`, immediately before transport-specific encoding:
+## V1B: the first visible-pixel proof
 
-```text
-semantic IBitmap
-        -> PushFramePipeline
-             +-- semantic/base frame
-             +-- optional validated visual layer snapshot
-             +-- composition policy
-        -> PushDisplayTransport
-        -> existing Push USB protocol implementation
-```
+V1B tests a second render callback against the persistent semantic bitmap.
 
-### Why this cut
-
-It preserves:
-
-- all existing DrivenByMoss semantic rendering;
-- the current working MIDI/control model;
-- the known USB transport;
-- one steady-state display writer;
-- a small upstream fork delta.
-
-It creates:
-
-- a testable frame boundary;
-- a place to mix synthetic or captured pixels;
-- a platform-neutral frame contract;
-- a path to later move capture outside Bitwig without moving USB ownership immediately.
-
-## DrivenByMoss implementation repository
-
-The controller-extension delta belongs in a proper `kasselvania/DrivenByMoss` fork, not as copied source inside the central project repository.
-
-Before V1A changes behavior, V1A-0 must prove:
+Default startup:
 
 ```text
-exact accepted upstream commit
-        -> clean Java 21 / Maven build
-        -> locally built .bwextension
-        -> reversible temporary installation
-        -> full S0 behavioral parity
-        -> exact official-artifact restoration
+property absent
+        -> PassThroughPushFramePipeline.INSTANCE
 ```
 
-See [`DRIVENBYMOSS_DERIVATIVE_STRATEGY.md`](DRIVENBYMOSS_DERIVATIVE_STRATEGY.md).
+Diagnostic startup:
+
+```text
+-Dpushwig.syntheticOverlay=true
+        -> SyntheticOverlayPushFramePipeline.INSTANCE
+        -> one fixed bounded two-color mark
+        -> same IBitmap
+        -> unchanged PushUsbDisplay
+```
+
+The exact same artifact must support both startup states.
+
+### Why the mark is fixed
+
+DrivenByMoss reuses one bitmap and only rebuilds semantic pixels when its model changes. A moving mark could leave stale pixels when the previous location is not redrawn. A runtime-off toggle has the same erasure problem.
+
+V1B therefore proves one fact at a time:
+
+- a second callback can paint;
+- the rest of the semantic bitmap is preserved;
+- repeated sends are stable;
+- semantic mode changes remain correct;
+- restarting without the property removes the mark.
+
+Animation, hot switching, frame restoration, and external pixels remain separate.
+
+### Why startup activation is preferred
+
+A Java system property is:
+
+- read once;
+- platform-neutral inside the extension;
+- absent in ordinary operation;
+- reversible through process restart;
+- narrower than adding a new DrivenByMoss settings surface.
+
+If the property cannot reach the controller-extension process, the experiment must stop before choosing another mechanism.
+
+### Evidence available on the Mac
+
+The Mac fixture supports:
+
+- the physical Push display;
+- DrivenByMoss's existing debug bitmap window;
+- local screen/image analysis without committing proprietary frames;
+- Java bytecode inspection;
+- temporary uncommitted timing or bitmap-observation instrumentation;
+- process launch with controlled environment;
+- precise extension installation and rollback.
+
+V1B should use those capabilities to prove that only the declared target rectangle changes and to measure the additional render cost.
+
+See [`V1B_SYNTHETIC_COMPOSITION.md`](V1B_SYNTHETIC_COMPOSITION.md).
 
 ## First implementation posture: in-process composition, external capture
 
-The lowest-risk first proof keeps final display composition and USB transmission inside the DrivenByMoss derivative.
+The lowest-risk architecture keeps final display composition and USB transmission inside the DrivenByMoss derivative.
 
 ```text
-macOS capture helper --------------------+
-                                         |
-DrivenByMoss semantic IBitmap             v
-        -> in-process PushFramePipeline <- external VisualSourceFrame snapshot
+future macOS capture helper ---------------+
+                                           |
+DrivenByMoss semantic IBitmap               v
+        -> in-process PushFramePipeline <- latest VisualSourceFrame
         -> existing Push USB transport
 ```
 
 This avoids two processes fighting over the Push display interface.
 
-The capture helper should be a normal macOS application/service, likely written in Swift, responsible for:
+The later capture helper should be a normal macOS application/service responsible for:
 
 - Screen Recording permission lifecycle;
 - enumerating Bitwig and editor windows;
@@ -141,9 +189,9 @@ The capture helper should be a normal macOS application/service, likely written 
 
 The helper must not control Bitwig parameters and must not sit on the audio or controller-input path.
 
-## Frame and IPC boundary
+## Future frame and IPC boundary
 
-The first external-frame contract should remain simple:
+The first external-frame contract should remain platform-neutral:
 
 ```text
 VisualSourceFrame
@@ -161,7 +209,7 @@ VisualSourceFrame
   optional_metadata
 ```
 
-Recommended early transport:
+Recommended early transport remains:
 
 - control/status over a Unix-domain socket;
 - latest-frame storage in shared memory or a memory-mapped file;
@@ -169,63 +217,41 @@ Recommended early transport:
 - no unbounded queue;
 - compositor never waits for a capture frame.
 
-The exact IPC implementation is a slice decision. The contract, not POSIX or macOS handles, is architectural authority.
+The exact IPC implementation belongs to V1C. V1B adds no IPC or external frame.
 
-## Proposed slice sequence
+## Slice sequence
 
-### M0 / S0 — Mac fixture and display trace — complete
+### S0 — Mac fixture and display trace — complete
 
-The working Mac setup, exact artifact/source pin, real Push baseline, concrete frame path, and identity seam are retained under `evidence/s0-macos-reference-fixture/`.
+Retained under `evidence/s0-macos-reference-fixture/`.
 
-### V1A-0 — Fork and local build baseline — active
+### V1A-0 — fork and local build baseline — complete
 
-Create/verify the DrivenByMoss fork, build the exact unmodified 26.4.1 source, install it reversibly, rerun the accepted hardware checklist, and restore the exact official artifact.
+Retained under `evidence/v1a0-drivenbymoss-build-baseline/`.
 
-This isolates source-build and installation uncertainty from frame-pipeline uncertainty.
+### V1A — identity frame pipeline — complete
 
-### V1A — No-op frame pipeline
+Retained under `evidence/v1a-identity-frame-pipeline/` and merged into `pushwig/main`.
 
-Insert the frame-pipeline abstraction without changing visible output.
+### V1B — static synthetic composition — active
 
-Acceptance includes:
+Prove one startup-scoped fixed mark, outside-region preservation, repeated-send stability, representative semantic updates, bounded cost, property-off recovery, real Push behavior, and exact rollback.
 
-- exact object-identity pass-through;
-- before/after frame hashes or retained pixel-equivalence evidence;
-- no control/audio regression;
-- no additional USB owner;
-- bounded allocation and timing behavior.
+### V1C — external generated-frame ingress
 
-### V1B — Synthetic composition
-
-Draw a project-owned moving shape, test strip, or diagnostic overlay over the semantic frame.
-
-This is the first proof that the project can mix pixels without screen capture.
-
-### V1C — External frame ingress
-
-A tiny helper publishes generated test frames through the platform-neutral IPC boundary. The DrivenByMoss derivative composites them without any Bitwig-window capture.
-
-This separates IPC/composition errors from capture-permission and window-discovery errors.
+A helper publishes generated `VisualSourceFrame` data through a platform-neutral latest-frame boundary. The DrivenByMoss derivative consumes it without window capture.
 
 ### V2M — macOS dedicated-window capture
 
-Use the macOS capture backend to discover and capture one dedicated Bitwig native-device/floating view or plug-in editor.
+Use a macOS capture backend to discover and capture one floating native-device view or plug-in editor.
 
-Preferred first target remains a floating Expanded Device View, ideally Sampler, if the installed Bitwig version exposes it suitably.
+### V2A — semantic-seeded pixel-anchor benchmark
 
-### V2A — semantic-seeded pixel anchor benchmark
+Use local fixture frames to compare flattened-pixel, grayscale/edge correlation, multi-scale search, multi-anchor geometry, false locks, and compute cost.
 
-Use locally captured Mac fixture frames to benchmark flattened pixels, grayscale/edge correlation, multi-scale search, multi-anchor geometry, false locks, and compute cost.
+### V2P — Linux/Steam Deck portability checkpoint
 
-### V2P — second-host portability checkpoint
-
-After the first useful Mac lens exists, port the relevant transport/capture backend to a Linux fixture, preferably the Steam Deck when available.
-
-This checkpoint proves that:
-
-- the compositor and adapter schema were not accidentally macOS-specific;
-- only the capture/backend and host integration layers need replacement;
-- the same semantic/visual acceptance test can run on a second host.
+Port the accepted contracts and one useful visual lens to Linux, preferably the Steam Deck when available.
 
 ## macOS-specific capture constraints
 
@@ -238,7 +264,7 @@ The capture helper should be packaged as a normal macOS application so that:
 - capture lifecycle and errors are observable;
 - Bitwig's extension host does not need to embed platform capture code.
 
-The first capture implementation should prefer a dedicated window. Embedded Bitwig-panel resolution and anchor matching remain separate later problems.
+These constraints begin in V2M, not V1B.
 
 ## Portability guardrails
 
@@ -246,26 +272,26 @@ Mac-first does not mean Mac-shaped architecture.
 
 The following remain mandatory:
 
-- `VisualSourceFrame` contains no `SCWindow`, `CGWindowID`, `CVPixelBuffer`, or other platform handle;
-- the compositor contains no ScreenCaptureKit code;
+- no `SCWindow`, `CGWindowID`, `CVPixelBuffer`, or other platform handle in core frame contracts;
+- no ScreenCaptureKit code inside the compositor/controller extension;
 - visual adapters identify semantic roles and source-relative geometry, not macOS desktop coordinates;
-- the frame pipeline can accept a synthetic source in tests;
-- semantic fallback works with no capture helper installed;
+- the frame pipeline can accept synthetic sources in tests;
+- semantic fallback works without a capture helper;
 - Linux and later Windows backends can implement the same contracts;
-- Steam Deck validation remains a named portability checkpoint before a Linux support claim.
+- Steam Deck validation remains required before a Linux support claim.
 
 ## Result
 
-The Mac can carry the project through the most important early software work:
+The Mac development sequence is now:
 
 ```text
-understand the existing renderer
-        -> prove the derivative build/install baseline
-        -> insert a safe frame pipeline
-        -> mix project-owned pixels
+understand the existing renderer              complete
+        -> prove source/build custody         complete
+        -> insert identity frame seam         complete
+        -> prove bounded in-place pixels      active
         -> accept external frames
         -> capture a real Bitwig window
-        -> benchmark semantic-seeded anchors
+        -> benchmark semantic anchors
 ```
 
-The Steam Deck then becomes a second-host and appliance deployment, rather than the machine that must be free before any software work can begin.
+The Steam Deck remains a second-host and appliance deployment rather than a prerequisite for the first software breakthroughs.

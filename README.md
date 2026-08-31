@@ -8,7 +8,7 @@ The primary software question is broader than one computer or one all-in-one bui
 
 That adaptive visual/controller layer is the main open-source product. The all-in-one appliance and Intel NUC connector work are parallel projects that build on it.
 
-> **Status:** S0 and V1A-0 are accepted and merged. The active slice is V1A: insert an allocation-free identity frame-pipeline seam into the proven DrivenByMoss Push display path, verify the exact source/build/runtime delta, pass the real Push baseline, and restore the official extension.
+> **Status:** S0, V1A-0, and V1A are accepted and merged. The active slice is **V1B: startup-scoped static synthetic overlay**—the first proof that project-owned pixels can coexist with the live DrivenByMoss semantic frame without changing the Push USB transport.
 
 ## Three independent project tracks
 
@@ -84,20 +84,34 @@ The currently available Mac can carry the project through the most important ear
 ```text
 trace the existing semantic renderer                 proven
         -> establish fork/build/install baseline     proven
-        -> insert a no-op frame pipeline              active
-        -> mix synthetic project-owned pixels
+        -> insert a no-op frame pipeline              proven
+        -> mix bounded synthetic project pixels      active
         -> accept an external test frame
         -> capture a real Bitwig/editor window
         -> benchmark semantic-seeded anchors
 ```
 
-The leading implementation keeps final composition and USB transport inside the DrivenByMoss derivative at first, while a separate native macOS helper later handles window capture and publishes platform-neutral `VisualSourceFrame` data.
+The accepted controller-extension integration branch is:
 
-This is an implementation order, not a Mac-only product decision. The compositor, resolver, adapter schema, and frame contract must remain free of macOS-specific window or image types. Steam Deck/Linux becomes an explicit second-host portability and appliance checkpoint.
+```text
+kasselvania/DrivenByMoss: pushwig/main
+commit: 033ccef8c64f08e8d8d41fa90d48fa06b326a1a1
+```
 
-The controller-extension source lives in the true [`kasselvania/DrivenByMoss`](https://github.com/kasselvania/DrivenByMoss) fork, preserving upstream history and LGPL provenance. The immutable `pushwig/upstream-26.4.1` branch records the accepted upstream basis; `pushwig/main` is the project integration branch. This repository remains the authority and evidence hub.
+V1A established this path:
 
-See [`docs/DRIVENBYMOSS_DERIVATIVE_STRATEGY.md`](docs/DRIVENBYMOSS_DERIVATIVE_STRATEGY.md) and [`docs/MAC_FIRST_DEVELOPMENT.md`](docs/MAC_FIRST_DEVELOPMENT.md).
+```text
+complete semantic IBitmap
+        -> project-owned identity pipeline
+        -> exact same IBitmap reference
+        -> unchanged PushUsbDisplay
+```
+
+V1B now tests the smallest visible extension of that path. The same artifact is ordinary by default. When a startup diagnostic property is enabled, a fixed two-color mark is drawn synchronously into one bounded rectangle before the unchanged USB transport sends the frame.
+
+The first mark is intentionally static. DrivenByMoss reuses a persistent bitmap and only re-renders semantic content when its model changes; moving or hot-disabled overlays would therefore introduce a separate damage-restoration problem. V1B proves preservation first, then later slices can choose a complete composition representation deliberately.
+
+See [`docs/V1B_SYNTHETIC_COMPOSITION.md`](docs/V1B_SYNTHETIC_COMPOSITION.md), [`docs/DRIVENBYMOSS_DERIVATIVE_STRATEGY.md`](docs/DRIVENBYMOSS_DERIVATIVE_STRATEGY.md), and [`docs/MAC_FIRST_DEVELOPMENT.md`](docs/MAC_FIRST_DEVELOPMENT.md).
 
 ## Visual portability strategy
 
@@ -115,6 +129,49 @@ One promising implementation is a **semantic-seeded pixel anchor resolver**: Dri
 See [`docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`](docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md).
 
 Cross-platform capture backends remain behind a platform-neutral frame contract. macOS is the first implementation fixture because it is currently available; Linux and later Windows backends remain explicit portability targets.
+
+## Accepted milestones
+
+### S0 — fixture and display seam
+
+Retained under `evidence/s0-macos-reference-fixture/`.
+
+It proved the accepted Mac + Bitwig + Push baseline, cryptographically pinned official DrivenByMoss 26.4.1, traced the complete semantic-renderer-to-USB path, and located the lawful cut inside `Push2Display.send(IBitmap)`.
+
+### V1A-0 — derivative custody and build baseline
+
+Retained under `evidence/v1a0-drivenbymoss-build-baseline/`.
+
+It proved the true fork, immutable upstream basis, explicit Java 21/Maven build, bounded local-vs-official artifact comparison, reversible installation, real-device parity, and exact official rollback.
+
+### V1A — identity frame pipeline
+
+Retained under `evidence/v1a-identity-frame-pipeline/`.
+
+It proved the exact reference-preserving synchronous frame boundary, bounded the executable delta to three classes, kept `PushUsbDisplay.class` byte-identical, passed all eleven real Push checks, produced no visual difference, shut down normally, and restored the exact official artifact.
+
+## Current source-change slice
+
+V1B asks:
+
+> Does a second bounded render callback paint project-owned pixels onto the persistent semantic bitmap while preserving all pixels outside the declared region?
+
+The accepted test is startup-scoped and default-off:
+
+```text
+property absent
+        -> PassThroughPushFramePipeline
+
+-Dpushwig.syntheticOverlay=true
+        -> SyntheticOverlayPushFramePipeline
+        -> fixed bounded mark
+        -> same IBitmap
+        -> unchanged PushUsbDisplay
+```
+
+V1B does not add animation, runtime hot switching, external frames, IPC, capture, window discovery, or a second USB owner.
+
+See [`CURRENT_SLICE.md`](CURRENT_SLICE.md).
 
 ## Valid stopping points
 
@@ -139,25 +196,6 @@ The active Mac is the first software-development fixture. The Steam Deck Flatpak
 
 See [`docs/RUNTIME_STRATEGY.md`](docs/RUNTIME_STRATEGY.md).
 
-## Current first source-change slice
-
-S0 is retained under `evidence/s0-macos-reference-fixture/`. It proved the accepted Mac + Bitwig + Push baseline, pinned the exact DrivenByMoss 26.4.1 source, and located the lawful frame seam inside `Push2Display.send(IBitmap)` immediately before `PushUsbDisplay.send(IBitmap)`.
-
-V1A-0 is retained under `evidence/v1a0-drivenbymoss-build-baseline/`. It proved the true fork, exact source custody, explicit Java 21/Maven build, reversible local installation, full real-device parity, and exact official-artifact rollback.
-
-V1A now makes the first functional change:
-
-```text
-complete semantic IBitmap
-        -> project-owned identity pipeline
-        -> exact same IBitmap reference
-        -> unchanged PushUsbDisplay
-```
-
-No visible pixels, transport behavior, capture path, or external frame source are added in V1A. Those remain separately reviewable later slices.
-
-See [`CURRENT_SLICE.md`](CURRENT_SLICE.md).
-
 ## Start here
 
 1. [`AGENTS.md`](AGENTS.md)
@@ -166,13 +204,14 @@ See [`CURRENT_SLICE.md`](CURRENT_SLICE.md).
 4. [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 5. [`docs/MAC_FIRST_DEVELOPMENT.md`](docs/MAC_FIRST_DEVELOPMENT.md)
 6. [`docs/DRIVENBYMOSS_DERIVATIVE_STRATEGY.md`](docs/DRIVENBYMOSS_DERIVATIVE_STRATEGY.md)
-7. [`docs/VISUAL_PORTABILITY.md`](docs/VISUAL_PORTABILITY.md)
-8. [`docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`](docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md)
-9. [`docs/VISUAL_RESEARCH_BASIS.md`](docs/VISUAL_RESEARCH_BASIS.md)
-10. [`docs/ROADMAP.md`](docs/ROADMAP.md)
-11. [`docs/RUNTIME_STRATEGY.md`](docs/RUNTIME_STRATEGY.md)
-12. [`docs/HARDWARE_DOSSIER.md`](docs/HARDWARE_DOSSIER.md)
-13. [`CONTRIBUTING.md`](CONTRIBUTING.md)
+7. [`docs/V1B_SYNTHETIC_COMPOSITION.md`](docs/V1B_SYNTHETIC_COMPOSITION.md)
+8. [`docs/VISUAL_PORTABILITY.md`](docs/VISUAL_PORTABILITY.md)
+9. [`docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`](docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md)
+10. [`docs/VISUAL_RESEARCH_BASIS.md`](docs/VISUAL_RESEARCH_BASIS.md)
+11. [`docs/ROADMAP.md`](docs/ROADMAP.md)
+12. [`docs/RUNTIME_STRATEGY.md`](docs/RUNTIME_STRATEGY.md)
+13. [`docs/HARDWARE_DOSSIER.md`](docs/HARDWARE_DOSSIER.md)
+14. [`CONTRIBUTING.md`](CONTRIBUTING.md)
 
 ## Upstream work
 
