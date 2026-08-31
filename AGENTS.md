@@ -22,13 +22,14 @@ When instructions conflict, use this order:
 4. `docs/ARCHITECTURE.md`
 5. `docs/MAC_FIRST_DEVELOPMENT.md`
 6. `docs/DRIVENBYMOSS_DERIVATIVE_STRATEGY.md`
-7. `docs/V1B_SYNTHETIC_COMPOSITION.md`
-8. `docs/VISUAL_PORTABILITY.md`
-9. `docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`
-10. `docs/ROADMAP.md`
-11. `docs/RUNTIME_STRATEGY.md`
-12. issue / PR scope
-13. implementation convenience
+7. `docs/V1C0_DYNAMIC_RASTER_COMPOSITION.md`
+8. `docs/V1B_SYNTHETIC_COMPOSITION.md`
+9. `docs/VISUAL_PORTABILITY.md`
+10. `docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`
+11. `docs/ROADMAP.md`
+12. `docs/RUNTIME_STRATEGY.md`
+13. issue / PR scope
+14. implementation convenience
 
 A contributor or coding agent must stop and surface a conflict rather than quietly widening scope.
 
@@ -50,6 +51,9 @@ A contributor or coding agent must stop and surface a conflict rather than quiet
 - Capture backend and operating-system details do not belong in the compositor frame protocol.
 - macOS capture types such as `SCWindow`, `CGWindowID`, and `CVPixelBuffer` must remain inside the macOS backend/helper.
 - Visual failure must fall back safely to semantic control/display behavior.
+- Semantic fallback means restoring the exact **current** semantic pixels; it does not mean merely stopping future visual drawing.
+- Output must be derived conceptually from `current semantic frame + optional current visual`, not from historical output state.
+- A moving, replaced, absent, stale, or invalid visual must not leave pixels behind.
 - The Mac and Steam Deck are reference hosts. Do not generalize maintainer-specific hardware, serialosc, plugdata, or yabridge state into universal product requirements.
 - yabridge/Wine compatibility is optional research and not a gate for the visual product or appliance.
 - Monome/serialosc and plugdata/Pure Data are independent integrations that may consume project interfaces but do not own the core roadmap.
@@ -72,13 +76,17 @@ Accepted DrivenByMoss integration branch:
 
 ```text
 branch: pushwig/main
-commit: 033ccef8c64f08e8d8d41fa90d48fa06b326a1a1
-tree:   9aec7429ff093addee001a62a5a07309708fd592
+commit: 1ae0b74f383314d170a5960ca763bdf9c319e787
+tree:   a81e5c4330b31f36845c25e98e322990d62f0c67
 ```
 
-This merge contains the exact accepted V1A source head `6e1e4cbd2e725a7951e5b4dc1278fbb6e7b5d61c`.
+This merge contains the exact accepted V1B source head:
 
-Accepted V1A path:
+```text
+a2e0341b7bccfa4e6b13614f4adffc2235f785f4
+```
+
+Accepted default path:
 
 ```text
 complete semantic IBitmap
@@ -87,7 +95,19 @@ complete semantic IBitmap
         -> unchanged PushUsbDisplay
 ```
 
+Accepted diagnostic V1B path:
+
+```text
+pushwig.syntheticOverlay=true at startup
+        -> SyntheticOverlayPushFramePipeline.INSTANCE
+        -> one fixed bounded render callback
+        -> same IBitmap
+        -> unchanged PushUsbDisplay
+```
+
 `PushUsbDisplay` remains the sole transport owner.
+
+V1B proved static bounded in-place painting. It did not accept a dynamic-restoration architecture.
 
 ## Slice discipline
 
@@ -110,8 +130,9 @@ Do not merge separate uncertainty domains merely because they are exciting. Exam
 - fork/toolchain/build/install/rollback proof is separate from the no-op frame-pipeline source change;
 - no-op frame-pipeline insertion is separate from synthetic composition;
 - second-render preservation is separate from moving-overlay damage restoration;
-- static composition is separate from runtime hot switching;
-- synthetic composition is separate from external-frame IPC;
+- static composition is separate from dynamic replacement/removal;
+- dynamic restoration selection is separate from production implementation;
+- local dynamic composition is separate from external-frame IPC;
 - external-frame IPC is separate from operating-system window capture;
 - framebuffer ownership is separate from visual-source discovery;
 - top-level-window capture is separate from embedded-panel resolution;
@@ -122,27 +143,29 @@ Do not merge separate uncertainty domains merely because they are exciting. Exam
 - yabridge experimentation is separate from native Bitwig/Push operation;
 - external battery integration is separate from custom native-bay battery engineering.
 
-## V1B synthetic-composition rules
+## V1C-0 dynamic-composition research rules
 
-V1B is a bounded diagnostic experiment.
+V1C-0 is an evidence and architecture-selection slice.
 
-- The exact artifact must remain pass-through by default.
-- The preferred activation is the startup Java property `pushwig.syntheticOverlay=true`, read once during `Push2Display` construction.
-- Do not poll activation per frame.
-- Do not add a user-facing configuration setting in V1B.
-- The enabled pipeline may draw only one fixed opaque mark within the declared rectangle.
-- Do not animate or move the mark.
-- Do not hot-toggle it at runtime.
-- Use one reusable renderer; do not allocate a renderer/lambda per send.
-- Invoke at most one additional `IBitmap.render` callback per eligible enabled send.
-- Return the exact same `IBitmap` reference.
-- Do not retain the bitmap after the call.
-- Do not copy/read raw pixels in committed production source.
-- Do not add an off-screen final bitmap, frame snapshot, queue, thread, executor, timer, IPC channel, capture object, or platform type.
-- Do not modify `PushUsbDisplay`, `AbstractGraphicDisplay`, `BitmapImpl`, `IBitmap`, `PushConfiguration`, or `PushControllerSetup`.
-- If the second render callback clears or unpredictably damages semantic pixels, stop, restore the official artifact, and retain the failure. Do not widen into transport replacement or raw bitmap copying.
-- If the startup property cannot reach the extension process, stop before proposing another activation mechanism.
-- Property-off restart is the V1B removal/recovery boundary. Runtime damage restoration is a later claim.
+- Begin from exact accepted DrivenByMoss integration commit `1ae0b74f383314d170a5960ca763bdf9c319e787` and central commit `95d93e262c33163783e23a8d3e66f6f92746918d`.
+- Do not open or merge a production DrivenByMoss source PR in V1C-0.
+- Temporary prototype worktrees, patches, harnesses, and instrumentation are allowed only when their hashes, changed paths, build results, and removal are retained.
+- Test current-semantic restoration before designing external-frame IPC.
+- Candidate order is: retained semantic redraw; reusable final bitmap and blit; generation-aware region restore; backend memory copy.
+- Stop evaluating once one candidate satisfies every correctness, lifecycle, one-writer, portability, and performance requirement strongly enough to authorize a production slice.
+- Correctness outranks minimal source delta and benchmark speed.
+- The selected model must produce output from the current semantic frame and the current optional visual; historical composed output must not become semantic authority.
+- Require exact movement, replacement, absence, stale-source fallback, and semantic-update-under-overlay tests.
+- Require zero unexplained outside-region mismatches.
+- Require zero unexplained old-region restoration mismatches.
+- Require zero full-frame mismatches after the visual becomes absent.
+- A target-region snapshot is invalid unless it has a trustworthy semantic-generation rule; restoring an old snapshot over newer semantics is forbidden.
+- A separate final bitmap must be allocated once and reused if selected.
+- A backend copy primitive must remain behind a host-neutral interface and must declare pixel format, dimensions, ownership, and bounds.
+- No candidate may introduce a second USB writer, unbounded queue, per-frame task/thread creation, platform capture type, or arbitrary reflection into Bitwig implementation internals.
+- `PushUsbDisplay` remains outside the experiment.
+- Real-fixture prototype use requires safe sole-artifact installation and exact official rollback.
+- The final central evidence must select one precise production seam or one precise blocker.
 
 ## Visual portability evidence
 
@@ -184,10 +207,12 @@ Retain useful evidence under `evidence/` when practical:
 - upstream basis, build toolchain, artifact hashes, installation, and rollback evidence;
 - framebuffer timing and pixel/object-equivalence evidence;
 - source and bytecode diffs that bound controller-extension changes;
-- declared overlay geometry and colors;
-- target/outside-region mismatch counts and hashes;
-- property-off/on/recovery results;
-- pipeline timing percentiles and allocation observations;
+- declared visual geometry and current/old region masks;
+- target, outside-region, restoration, and absent-state mismatch counts;
+- semantic-reference, visual-region, and outside-region hashes;
+- stale/absent visual fallback results;
+- candidate timing percentiles, allocation observations, and working-set behavior;
+- prototype/patch/harness hashes and changed-path summaries;
 - source-discovery logs and screenshots;
 - visual profile compatibility matrices;
 - anchor benchmark summaries and diagnostics;
@@ -201,14 +226,17 @@ Do not commit serial numbers, credentials, activation files, personal network de
 ## Engineering preferences
 
 - Use the currently available Mac to shorten the first implementation loop, while keeping core interfaces platform-neutral.
-- Treat accepted S0, V1A-0, and V1A evidence as authority; do not repeat or silently replace their source/toolchain claims.
+- Treat accepted S0, V1A-0, V1A, and V1B evidence as authority; do not repeat or silently replace their source/toolchain claims.
 - Use the explicitly pinned Java 21 environment for DrivenByMoss builds; do not rely on the host's default Java selection.
-- Keep the accepted pass-through pipeline as the default path.
-- Prove direct static in-place composition before adding external frames or a general compositor.
-- Prefer a fixed opaque diagnostic mark over animation in V1B.
-- Measure actual render cost now that V1B introduces pixel work, but keep instrumentation temporary and uncommitted.
+- Keep the accepted pass-through pipeline as the ordinary default path.
+- Treat the V1B static overlay as diagnostic evidence, not the final compositor representation.
+- Prefer a pristine semantic authority and a reproducible output build over historical in-place mutation.
+- Test retained semantic redraw first because it may be the smallest exact restoration path.
+- Prefer a reusable final bitmap if full semantic redraw is too expensive or couples visual cadence to semantic rendering.
+- Do not choose target-region snapshots without explicit semantic-generation ownership.
 - Prefer in-process final composition/USB transport initially so two processes do not fight over Push's display interface.
 - Keep platform capture in a separate helper/backend and publish only `VisualSourceFrame`-style data across the boundary.
+- Do not implement `VisualSourceFrame` ingress until local dynamic replacement/removal/fallback is proven.
 - Prefer observable IPC boundaries over hidden cross-process coupling.
 - Prefer shared memory or Unix-domain IPC for high-rate local frame/state paths when boundaries allow it.
 - Use latest-frame-wins behavior rather than unbounded queues.
@@ -243,7 +271,9 @@ V1A-0 accepted the true fork, exact upstream basis, explicit Java 21/Maven build
 
 V1A accepted the synchronous identity frame boundary and merged it into `pushwig/main` while preserving the same semantic bitmap and unchanged USB writer.
 
-V1B now tests one startup-scoped static synthetic mark on that accepted path. It must prove outside-region preservation, repeated-send stability, representative semantic updates, bounded timing, property-off recovery, real Push behavior, and exact official rollback.
+V1B accepted the first visible project-owned pixels: one default-off, startup-scoped static mark with zero outside-region mismatches, bounded cost, real-fixture success, property-off recovery, and exact rollback.
+
+V1C-0 now determines the dynamic restoration/frame-ownership architecture required before external-frame ingress. It is a research/evidence slice, not a production source slice.
 
 The Steam Deck remains the named second-host/Linux portability and appliance fixture when it becomes available.
 
