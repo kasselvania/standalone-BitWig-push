@@ -8,7 +8,7 @@ The primary software question is broader than one computer or one all-in-one bui
 
 That adaptive visual/controller layer is the main open-source product. The all-in-one appliance and Intel NUC connector work are parallel projects that build on it.
 
-> **Status:** S0, V1A-0, and V1A are accepted and merged. The active slice is **V1B: startup-scoped static synthetic overlay**—the first proof that project-owned pixels can coexist with the live DrivenByMoss semantic frame without changing the Push USB transport.
+> **Status:** S0, V1A-0, V1A, and V1B are accepted and merged. The active slice is **V1C-0: dynamic raster replacement and exact restoration feasibility**—selecting the lawful frame-ownership strategy that lets visuals move, change, disappear, or become stale without leaving pixels behind or erasing newer DrivenByMoss semantics.
 
 ## Three independent project tracks
 
@@ -85,8 +85,10 @@ The currently available Mac can carry the project through the most important ear
 trace the existing semantic renderer                 proven
         -> establish fork/build/install baseline     proven
         -> insert a no-op frame pipeline              proven
-        -> mix bounded synthetic project pixels      active
-        -> accept an external test frame
+        -> mix bounded static project pixels          proven
+        -> select dynamic restoration ownership      active
+        -> implement dynamic local composition
+        -> accept an external generated frame
         -> capture a real Bitwig/editor window
         -> benchmark semantic-seeded anchors
 ```
@@ -95,23 +97,32 @@ The accepted controller-extension integration branch is:
 
 ```text
 kasselvania/DrivenByMoss: pushwig/main
-commit: 033ccef8c64f08e8d8d41fa90d48fa06b326a1a1
+commit: 1ae0b74f383314d170a5960ca763bdf9c319e787
+tree:   a81e5c4330b31f36845c25e98e322990d62f0c67
 ```
 
-V1A established this path:
+The accepted path is now:
 
 ```text
-complete semantic IBitmap
-        -> project-owned identity pipeline
+persistent semantic IBitmap
+        -> project-owned PushFramePipeline
+        -> optional startup-scoped static diagnostic layer
         -> exact same IBitmap reference
         -> unchanged PushUsbDisplay
 ```
 
-V1B now tests the smallest visible extension of that path. The same artifact is ordinary by default. When a startup diagnostic property is enabled, a fixed two-color mark is drawn synchronously into one bounded rectangle before the unchanged USB transport sends the frame.
+V1B proved that a second bounded render callback can paint one fixed two-color mark with zero outside-region changes. It also proved default-off behavior, representative semantic updates, bounded cost, recovery after restart, and exact official rollback.
 
-The first mark is intentionally static. DrivenByMoss reuses a persistent bitmap and only re-renders semantic content when its model changes; moving or hot-disabled overlays would therefore introduce a separate damage-restoration problem. V1B proves preservation first, then later slices can choose a complete composition representation deliberately.
+That is not yet a complete dynamic compositor. DrivenByMoss reuses a persistent bitmap and redraws semantic content only when its `ModelInfo` changes. If a future visual moves from region A to B—or disappears because a helper closes—simply drawing B or stopping drawing does not necessarily restore A.
 
-See [`docs/V1B_SYNTHETIC_COMPOSITION.md`](docs/V1B_SYNTHETIC_COMPOSITION.md), [`docs/DRIVENBYMOSS_DERIVATIVE_STRATEGY.md`](docs/DRIVENBYMOSS_DERIVATIVE_STRATEGY.md), and [`docs/MAC_FIRST_DEVELOPMENT.md`](docs/MAC_FIRST_DEVELOPMENT.md).
+V1C-0 therefore selects one exact restoration model before the project introduces IPC:
+
+1. redraw the retained current semantic model before each dynamic layer;
+2. preserve a pristine semantic bitmap and rebuild one reusable final bitmap;
+3. use a generation-aware region restore; or
+4. use a narrow backend copy primitive if higher-level paths fail.
+
+See [`docs/V1C0_DYNAMIC_RASTER_COMPOSITION.md`](docs/V1C0_DYNAMIC_RASTER_COMPOSITION.md), [`docs/V1B_SYNTHETIC_COMPOSITION.md`](docs/V1B_SYNTHETIC_COMPOSITION.md), and [`docs/DRIVENBYMOSS_DERIVATIVE_STRATEGY.md`](docs/DRIVENBYMOSS_DERIVATIVE_STRATEGY.md).
 
 ## Visual portability strategy
 
@@ -150,26 +161,42 @@ Retained under `evidence/v1a-identity-frame-pipeline/`.
 
 It proved the exact reference-preserving synchronous frame boundary, bounded the executable delta to three classes, kept `PushUsbDisplay.class` byte-identical, passed all eleven real Push checks, produced no visual difference, shut down normally, and restored the exact official artifact.
 
-## Current source-change slice
+### V1B — startup-scoped static synthetic overlay
 
-V1B asks:
+Retained under `evidence/v1b-static-synthetic-overlay/`.
 
-> Does a second bounded render callback paint project-owned pixels onto the persistent semantic bitmap while preserving all pixels outside the declared region?
+It proved:
 
-The accepted test is startup-scoped and default-off:
+- default startup still selects the pass-through path;
+- startup diagnostic activation selects one reusable synthetic pipeline;
+- the exact same bitmap receives one fixed pink/white mark;
+- 1,529 target pixels changed and all 152,064 outside pixels remained identical;
+- repeated sends and Track, Device Parameters, Session, and Browser updates remained coherent;
+- property-off restart removed the mark;
+- enabled p95/max processing cost was 54.542 µs / 194 µs;
+- the full real Push baseline and exact rollback passed.
+
+## Current research slice
+
+V1C-0 asks:
+
+> What is the smallest exact mechanism that rebuilds output from the current semantic frame plus the current optional visual, rather than mutating historical output and hoping old pixels disappear?
+
+The required conceptual contract is:
 
 ```text
-property absent
-        -> PassThroughPushFramePipeline
-
--Dpushwig.syntheticOverlay=true
-        -> SyntheticOverlayPushFramePipeline
-        -> fixed bounded mark
-        -> same IBitmap
-        -> unchanged PushUsbDisplay
+output = compose(currentSemanticFrame, optionalCurrentVisual)
 ```
 
-V1B does not add animation, runtime hot switching, external frames, IPC, capture, window discovery, or a second USB owner.
+The rejected conceptual contract is:
+
+```text
+output = mutate(previousOutput, maybeNewVisual)
+```
+
+V1C-0 uses temporary, unmerged prototypes and produces a central evidence/decision PR only. It must prove moving, replacement, absence, stale fallback, and a semantic update underneath a previously covered region. The selected candidate must have zero unexplained restoration and outside-region mismatches, bounded cost, one USB writer, and a precise next production seam.
+
+External generated-frame ingress is now **V1D**, after the local dynamic lifecycle is proven in V1C.
 
 See [`CURRENT_SLICE.md`](CURRENT_SLICE.md).
 
@@ -204,14 +231,15 @@ See [`docs/RUNTIME_STRATEGY.md`](docs/RUNTIME_STRATEGY.md).
 4. [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 5. [`docs/MAC_FIRST_DEVELOPMENT.md`](docs/MAC_FIRST_DEVELOPMENT.md)
 6. [`docs/DRIVENBYMOSS_DERIVATIVE_STRATEGY.md`](docs/DRIVENBYMOSS_DERIVATIVE_STRATEGY.md)
-7. [`docs/V1B_SYNTHETIC_COMPOSITION.md`](docs/V1B_SYNTHETIC_COMPOSITION.md)
-8. [`docs/VISUAL_PORTABILITY.md`](docs/VISUAL_PORTABILITY.md)
-9. [`docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`](docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md)
-10. [`docs/VISUAL_RESEARCH_BASIS.md`](docs/VISUAL_RESEARCH_BASIS.md)
-11. [`docs/ROADMAP.md`](docs/ROADMAP.md)
-12. [`docs/RUNTIME_STRATEGY.md`](docs/RUNTIME_STRATEGY.md)
-13. [`docs/HARDWARE_DOSSIER.md`](docs/HARDWARE_DOSSIER.md)
-14. [`CONTRIBUTING.md`](CONTRIBUTING.md)
+7. [`docs/V1C0_DYNAMIC_RASTER_COMPOSITION.md`](docs/V1C0_DYNAMIC_RASTER_COMPOSITION.md)
+8. [`docs/V1B_SYNTHETIC_COMPOSITION.md`](docs/V1B_SYNTHETIC_COMPOSITION.md)
+9. [`docs/VISUAL_PORTABILITY.md`](docs/VISUAL_PORTABILITY.md)
+10. [`docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`](docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md)
+11. [`docs/VISUAL_RESEARCH_BASIS.md`](docs/VISUAL_RESEARCH_BASIS.md)
+12. [`docs/ROADMAP.md`](docs/ROADMAP.md)
+13. [`docs/RUNTIME_STRATEGY.md`](docs/RUNTIME_STRATEGY.md)
+14. [`docs/HARDWARE_DOSSIER.md`](docs/HARDWARE_DOSSIER.md)
+15. [`CONTRIBUTING.md`](CONTRIBUTING.md)
 
 ## Upstream work
 

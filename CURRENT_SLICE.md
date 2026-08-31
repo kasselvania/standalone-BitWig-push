@@ -1,52 +1,29 @@
-# Current Slice: V1B — Startup-Scoped Static Synthetic Overlay
+# Current Slice: V1C-0 — Dynamic Raster Replacement and Exact Restoration Feasibility
 
 ## Status
 
-Ready to start from current `main` after V1A source merge `033ccef8c64f08e8d8d41fa90d48fa06b326a1a1` and central evidence merge `3ef7d84fe2c1586babbf49658664585118ed5ddd`.
+Ready to start from current `main` after V1B source merge `1ae0b74f383314d170a5960ca763bdf9c319e787` and central evidence merge `95d93e262c33163783e23a8d3e66f6f92746918d`.
 
 ## Primary claim
 
-Prove that the accepted `PushFramePipeline` can add a small project-owned visual layer to the persistent semantic Push bitmap without clearing, corrupting, or unpredictably changing pixels outside the declared overlay bounds.
+Determine and prove the smallest technically sound frame-restoration strategy that can support a changing or disappearing project-owned visual layer while preserving the **current** DrivenByMoss semantic image exactly and retaining one Push USB writer.
 
-V1B is the first visible-pixel slice. It is deliberately a **static, startup-scoped diagnostic proof**, not the final compositor.
+V1B proved that one fixed bounded mark can be painted into the persistent semantic bitmap with zero changes outside its declared region. That does **not** yet prove a dynamic visual system.
 
-With diagnostic activation absent, the exact V1B source must preserve the accepted V1A path:
-
-```text
-complete semantic IBitmap
-        -> PassThroughPushFramePipeline
-        -> exact same IBitmap object
-        -> unchanged PushUsbDisplay
-        -> existing Push USB writer
-```
-
-With diagnostic activation enabled before Bitwig starts, the same artifact must perform:
+A moving, changing, stale, or removed visual layer creates a different problem:
 
 ```text
-complete semantic IBitmap
-        -> SyntheticOverlayPushFramePipeline
-        -> one synchronous IBitmap.render callback
-        -> fixed bounded synthetic mark
-        -> exact same IBitmap object
-        -> unchanged PushUsbDisplay
-        -> existing Push USB writer
+semantic bitmap contains frame S
+        -> visual A overwrites region R1
+        -> next visual B uses region R2
+        -> visual source disappears
 ```
 
-The slice must establish whether a second `IBitmap.render` callback paints over the existing persistent bitmap as required. That behavior is a hypothesis to test, not an API guarantee to assume.
+Unless the pixels under `R1` and `R2` are restored from the **current semantic frame**, old visual pixels can remain as trails or stale content. External-frame IPC must not be designed before that lifecycle has a lawful restoration primitive.
 
-## Why the first overlay is static and startup-scoped
+V1C-0 is an evidence-first research gate. It selects the production representation and seam for dynamic composition. It does not merge a production compositor, external-frame protocol, capture helper, or transport change.
 
-DrivenByMoss owns one persistent 960×160 semantic bitmap. Its semantic renderer runs only when `ModelInfo` changes, while the display send path runs on each eligible update. A moving or runtime-disabled overlay could therefore leave stale pixels or trails when no semantic re-render occurs.
-
-V1B avoids conflating that lifecycle problem with the first composition proof:
-
-- the synthetic mark is fixed in one declared rectangle;
-- activation is selected once at display construction;
-- disabling it means restarting Bitwig without the diagnostic activation;
-- the fresh display bitmap and normal semantic render provide the recovery boundary;
-- animation, hot switching, damage tracking, frame snapshots, and external pixels remain later claims.
-
-See [`docs/V1B_SYNTHETIC_COMPOSITION.md`](docs/V1B_SYNTHETIC_COMPOSITION.md).
+See [`docs/V1C0_DYNAMIC_RASTER_COMPOSITION.md`](docs/V1C0_DYNAMIC_RASTER_COMPOSITION.md).
 
 ## Accepted authorities and bases
 
@@ -54,8 +31,8 @@ See [`docs/V1B_SYNTHETIC_COMPOSITION.md`](docs/V1B_SYNTHETIC_COMPOSITION.md).
 
 ```text
 Repository: kasselvania/standalone-BitWig-push
-Commit:     3ef7d84fe2c1586babbf49658664585118ed5ddd
-Tree:       3fec2724e71ca32772f8f61fc870efa06571fb10
+Commit:     95d93e262c33163783e23a8d3e66f6f92746918d
+Tree:       b1f97701801a015c075d09369860f4986403b9a9
 ```
 
 ### DrivenByMoss implementation repository
@@ -64,313 +41,340 @@ Tree:       3fec2724e71ca32772f8f61fc870efa06571fb10
 Repository:       kasselvania/DrivenByMoss
 Immutable basis:  pushwig/upstream-26.4.1
 Integration base: pushwig/main
-Commit:           033ccef8c64f08e8d8d41fa90d48fa06b326a1a1
-Tree:             9aec7429ff093addee001a62a5a07309708fd592
+Commit:           1ae0b74f383314d170a5960ca763bdf9c319e787
+Tree:             a81e5c4330b31f36845c25e98e322990d62f0c67
 ```
 
-The integration commit merges the exact accepted V1A source head `6e1e4cbd2e725a7951e5b4dc1278fbb6e7b5d61c`. The immutable upstream basis remains at `fd03245ab38fa5149c45934051d937ee9fda6d08` and must not move.
+The integration commit contains the exact accepted V1B source head:
 
-Official artifact SHA-256 to restore:
+```text
+a2e0341b7bccfa4e6b13614f4adffc2235f785f4
+```
+
+The immutable upstream basis remains:
+
+```text
+commit: fd03245ab38fa5149c45934051d937ee9fda6d08
+tree:   edd2ad636b0aa1f39919f0ffd05c968015450075
+```
+
+Official extension SHA-256 to restore after any real-fixture prototype:
 
 ```text
 98dc3195ad8d911526e18b1005f09f69a1aedcb965b080565474104654345c5a
 ```
 
-## Required branch and PR topology
+## Accepted V1B result
 
-### DrivenByMoss source work
+V1B established all of the following on the accepted Mac + Bitwig 6.1 + Push 3 fixture:
 
-Create a clean feature branch directly from `origin/pushwig/main`:
+- the property-off artifact retained the accepted V1A pass-through path;
+- startup activation selected one reusable synthetic pipeline;
+- one additional `IBitmap.render(false, renderer)` callback drew a fixed two-color mark;
+- the pipeline returned the exact same `IBitmap` reference;
+- the concrete 960×160 comparison observed 1,529 target-region changes and **zero outside-region changes**;
+- repeated sends and representative semantic modes produced no clear, expansion, smear, or trail;
+- property-off restart removed the mark;
+- enabled p95/max pipeline cost was 54.542 µs / 194 µs;
+- `PushUsbDisplay.class` remained byte-identical;
+- the real Push baseline, normal shutdown, and exact official rollback passed.
 
-```text
-pushwig/v1b-static-synthetic-overlay
-```
+V1B proves the in-place static painting primitive. It does not prove movement, replacement, erasure, stale-source fallback, or semantic restoration.
 
-The source PR must:
+## Source constraints that create this gate
 
-- be opened in `kasselvania/DrivenByMoss`;
-- target `pushwig/main`;
-- contain one final implementation commit;
-- remain ordinary, non-draft, open, and unmerged for technical-lead review.
+The accepted source currently has these relevant properties:
+
+1. `AbstractGraphicDisplay` owns one persistent semantic `IBitmap` created at construction.
+2. `AbstractGraphicDisplay.send()` creates a new `ModelInfo`, calls `renderImage()` only when that model changes, clears the temporary component lists, and then sends the persistent bitmap on every eligible call.
+3. `ModelInfo` retains copied component and overlay lists, so a current semantic redraw may be possible, but that behavior and its cost are not yet accepted as a dynamic-composition contract.
+4. `IBitmap` exposes `render(...)` and `encode(...)`; it exposes no generic copy, blit, write-region, or restore-region operation.
+5. `BitmapImpl.encode(...)` can observe the Bitwig bitmap memory, but the production wrapper has no accepted generic write-back contract.
+6. `IGraphicsContext.drawImage(...)` exists, but the current Bitwig adapter accepts the project's `ImageImpl`; it does not yet establish that an `IBitmap` can be drawn into another `IBitmap` through the host-neutral abstraction.
+7. `PushUsbDisplay` remains the accepted sole USB transport owner and is outside this research gate.
+
+Do not assume one of these observations is the final architecture. Prove the smallest adequate option.
+
+## Repository and PR topology
 
 ### Central evidence work
 
-Create a clean central branch from the exact central basis established by the status merge:
+Create a clean central branch directly from the accepted central basis:
 
 ```text
-codex/v1b-static-synthetic-overlay-evidence
+codex/v1c0-dynamic-raster-composition-evidence
 ```
 
-The central PR must:
-
-- contain only retained V1B evidence;
-- reference the exact source PR/head/tree;
-- include `Addresses #<active V1B issue>`;
-- remain ordinary, non-draft, open, and unmerged.
-
-Do not place DrivenByMoss source or generated extension artifacts in the central repository.
-
-## Preferred activation contract
-
-Use one startup-scoped Java system property:
+The final reviewable output is one ordinary, non-draft, open, unmerged central evidence PR containing only:
 
 ```text
-pushwig.syntheticOverlay=true
+evidence/v1c0-dynamic-raster-composition/**
 ```
 
-The production artifact must read this property once during `Push2Display` construction.
+The PR must include `Addresses #<active V1C-0 issue>`.
 
-- Property absent or false: select `PassThroughPushFramePipeline.INSTANCE`.
-- Property true: select `SyntheticOverlayPushFramePipeline.INSTANCE`.
-- Do not poll the property per frame.
-- Do not expose a user-facing setting or alter `PushConfiguration` in V1B.
-- Do not add a macOS-specific type or path to the controller extension.
+### DrivenByMoss experimental work
 
-The real fixture must prove that the property can be supplied to the Bitwig controller-extension process. If the preferred property cannot reach that process, stop and document the exact failure before proposing another activation mechanism. Do not silently hard-code the overlay on or widen into settings/configuration work.
+Use clean temporary worktrees rooted at exact `origin/pushwig/main`.
 
-## Authorized DrivenByMoss source envelope
+Temporary prototype branches, commits, patch files, instrumentation, or harnesses are permitted locally only when needed to test a candidate. They must not be merged into `pushwig/main`, and no DrivenByMoss source PR is expected from V1C-0.
 
-Expected production changes are limited to:
+Retain exact source/patch hashes, changed-path summaries, build artifact hashes, and commands. Remove or abandon temporary prototype branches after evidence is safely retained. Leave the accepted integration branch unchanged.
+
+Do not copy DrivenByMoss source into the central repository.
+
+## Candidate order
+
+Evaluate candidates in this order. Stop when one candidate satisfies every correctness, lifecycle, one-writer, and performance criterion strongly enough to authorize a production slice.
+
+### Candidate A — redraw the retained current semantic model, then compose
+
+Prototype a narrow Push-only path equivalent to:
 
 ```text
-src/main/java/de/mossgrabers/controller/ableton/push/controller/Push2Display.java
-src/main/java/de/mossgrabers/controller/ableton/push/controller/SyntheticOverlayPushFramePipeline.java
+retained current ModelInfo
+        -> full semantic redraw into the existing persistent bitmap
+        -> draw current dynamic visual layer
+        -> send through unchanged PushUsbDisplay
 ```
 
-The accepted V1A files remain present:
+Questions to prove:
+
+- Can the current retained `ModelInfo` reproduce the correct current semantic frame on demand?
+- Can this occur on each eligible dynamic visual update without stale data or unintended model mutation?
+- Does a visual move or disappear with exact semantic restoration?
+- What are p50/p95/max time and allocation behavior?
+- Can the necessary production seam remain Push-specific rather than imposing unconditional redraw on every graphic controller?
+
+Candidate A is preferred only if its correctness is exact and its cost remains practical.
+
+### Candidate B — reusable final/output bitmap with semantic blit
+
+Prototype a two-bitmap ownership model:
 
 ```text
-PushFramePipeline.java
-PassThroughPushFramePipeline.java
+persistent pristine semantic bitmap
+        -> copy/blit into one reusable final bitmap
+        -> compose current visual layer into final bitmap
+        -> send final bitmap through unchanged PushUsbDisplay
 ```
 
-They should not require behavioral change. Any additional production path requires an explicit stop and technical justification before editing.
+Questions to prove:
 
-The following are not authorized for modification:
+- Can the Bitwig host bitmap be drawn or copied into another bitmap through a narrow, host-neutral abstraction?
+- Does the current Bitwig graphics API treat a bitmap as a drawable image in the exact accepted API version?
+- Can the wrapper be extended without leaking Bitwig implementation types into the generic frame contract?
+- Can the final bitmap be allocated once and reused?
+- Does the full-frame copy remain within the performance band?
+
+A separate final bitmap is the preferred long-term ownership model if it can be implemented cleanly and cheaply.
+
+### Candidate C — bounded region snapshot/restore with semantic generation
+
+Prototype only if A and B are not acceptable.
+
+A region strategy must prove that snapshots are refreshed whenever the semantic image under an active visual changes. Restoring an old region over a newer semantic frame is an automatic rejection.
+
+Any viable design therefore needs an explicit, trustworthy semantic-generation signal or equivalent ownership rule. Pixel heuristics are not sufficient.
+
+### Candidate D — backend memory copy
+
+Prototype only if the higher-level candidates fail.
+
+A backend-specific memory copy may be selected only behind a narrow host adapter with explicit dimensions, pixel format, bounds checks, and one reusable buffer. It must not expose Bitwig memory objects or platform handles in the public compositor/frame contract.
+
+## Required dynamic lifecycle experiment
+
+For each serious candidate, use a deterministic generated visual sequence over a stable semantic base:
 
 ```text
-PushUsbDisplay.java
-pom.xml
-PushConfiguration.java
-PushControllerSetup.java
-AbstractGraphicDisplay.java
-BitmapImpl.java
-IBitmap.java
+A at R1
+B at R2
+C at R3
+none
 ```
 
-## Required overlay behavior
+The sequence must include at least four non-overlapping or partially overlapping positions and an absent state.
 
-The preferred mark is a fixed two-color rectangle in the top-right of the 960×160 frame:
+Repeat the sequence for at least 1,000 composition cycles offline or for a sufficient equivalent instrumented run. Then repeat a bounded live demonstration on the real Push where practical.
 
-```text
-outer bounds: x=856, y=4, width=96, height=16
-inner bounds: x=860, y=8, width=88, height=8
-outer color: ColorEx.PINK
-inner color: ColorEx.WHITE
-```
+The candidate must prove:
 
-Equivalent dimensions may be proposed only before editing and only to avoid a proven hardware/display conflict. The exact bounds and colors must be retained as evidence.
+1. Every visual state appears only in its current declared bounds.
+2. Pixels under the previous visual are restored to the exact current semantic value before the next frame is sent.
+3. After the absent state, the complete 960×160 frame is pixel-identical to the current semantic reference.
+4. Pixels outside the union of the current visual bounds remain identical to the current semantic reference.
+5. No trail, smear, expansion, duplication, stale block, whole-frame clear, scale error, or coordinate offset occurs.
+6. A semantic model change beneath a previously covered region is reproduced correctly before the next visual state and after removal.
+7. A simulated stale or unavailable visual source produces semantic-only output, not the last valid visual forever.
+8. Repeated semantic mode/track/device/parameter changes remain coherent.
 
-The implementation must:
+## Pixel correctness evidence
 
-1. Use one class-initialized renderer or equivalent reusable object; do not allocate a renderer/lambda per send.
-2. Call `semanticFrame.render(false, renderer)` exactly once for each eligible overlay-enabled send.
-3. Draw only inside the declared outer rectangle.
-4. Return the exact same `IBitmap` reference.
-5. Retain no frame after `process` returns.
-6. Leave `PushUsbDisplay` and the sole USB writer unchanged.
-7. Add no raw pixel copy, off-screen bitmap, queue, thread, executor, timer, IPC, capture dependency, or platform-specific type.
-8. Keep the ordinary property-off path on the accepted pass-through singleton.
+Use local, non-committed raw-frame observation or host debug output that can be validated as the exact 960×160 bitmap.
 
-A source comment must state that this is a static diagnostic proof and not the final visual compositor.
+Retain only sanitized aggregate evidence:
 
-## Required preservation proof
+- candidate name and prototype hash;
+- semantic-reference hash;
+- each generated visual state's target-region hash;
+- outside-region mismatch count;
+- old-region restoration mismatch count;
+- full-frame mismatch count after the absent state;
+- semantic-update-under-overlay mismatch count;
+- dimensions, pixel format, mask method, and comparison command;
+- representative mismatch coordinates if any.
 
-The exact V1B head must be tested in one stable semantic state with the diagnostic property off and on.
+Do not commit proprietary screenshots, full frames, Bitwig UI crops, or binary artifacts.
 
-Retain evidence that:
+A candidate cannot be selected with unexplained nonzero restoration or outside-region mismatches.
 
-- the declared overlay rectangle changes as expected;
-- pixels outside the declared rectangle are identical, or every mismatch is precisely characterized and reviewed;
-- the overlay does not cause a whole-frame clear, background replacement, coordinate offset, scaling error, or color-space surprise;
-- repeated sends while semantic state is unchanged do not expand the mark or produce trails;
-- switching among at least three representative DrivenByMoss modes causes the semantic frame to update normally while the mark remains bounded;
-- restarting without the property restores an unmarked semantic display.
+## Performance and allocation evidence
 
-Preferred proof order:
-
-1. exact-source and bytecode inspection;
-2. local analysis of the existing DrivenByMoss debug bitmap window in a stable non-animated state; or
-3. temporary, uncommitted, observation-only raw-bitmap instrumentation derived from the exact head.
-
-Do not commit proprietary screenshots or raw Bitwig/Push frame captures. Retain only hashes, mismatch counts, coordinates, locally generated masks, aggregate results, and sanitized methodology.
-
-Any temporary instrumentation must be removed before the source commit. The exact committed artifact must also pass the real Push test without instrumentation.
-
-## Required timing and allocation evidence
-
-V1B introduces actual pixel work, so retain a bounded performance observation.
-
-- Measure property-off and property-on pipeline cost using temporary external or uncommitted instrumentation.
-- Record sample count, p50, p95, maximum, and measurement method.
-- Record whether any new project-owned object is allocated per send.
-- Exercise at least an idle semantic view and repeated mode/parameter changes.
-- Record any audio xrun, control lag, display lag, or abnormal CPU observation.
-
-Provisional review band on the accepted M1 Max fixture:
-
-```text
-p95 pipeline processing <= 2 ms
-maximum pipeline processing <= 10 ms
-```
-
-Exceeding a band is not permission to optimize outside the slice. Stop and surface the result for review.
-
-Do not add permanent per-frame logging, counters, hashing, or profiler code to the committed production source.
-
-## Build and artifact proof
-
-Use the explicit accepted Java 21/Maven environment.
-
-Build both:
-
-1. accepted integration base `033ccef8c64f08e8d8d41fa90d48fa06b326a1a1`;
-2. exact V1B source head;
-
-under the same toolchain.
+Measure at least 1,000 post-warmup cycles for each serious candidate.
 
 Retain:
 
-- source parent/head/tree;
-- one-commit topology;
-- exact changed paths;
-- build commands and results;
-- artifact sizes and SHA-256 values;
-- extracted class/resource comparison;
-- bytecode for property selection and overlay process;
-- proof that `PushUsbDisplay.class` remains byte-identical;
-- proof that unrelated payloads remain byte-identical or are precisely characterized.
+- sample count;
+- p50, p95, and maximum end-to-end restore-plus-compose time;
+- semantic-only baseline time;
+- fixed construction-time allocation;
+- project-owned per-cycle allocation count/bytes where observable;
+- any existing host-adapter allocation that remains;
+- working-set behavior across the run;
+- any controller lag, display lag, audio xrun/dropout, or abnormal CPU observation.
 
-Expected executable differences are limited to `Push2Display.class` and the new synthetic-overlay pipeline class.
+Provisional accepted-Mac bands:
 
-## Real-fixture sequence
+```text
+green:  p95 <= 2 ms and max <= 10 ms
+review: p95 > 2 ms but <= 5 ms, or max > 10 ms but <= 15 ms
+stop:   p95 > 5 ms or max > 15 ms
+```
 
-Use the accepted Mac + Bitwig 6.1 + Push 3 fixture and the exact proposed source-head artifact.
+A review-band result requires an explicit technical recommendation; it is not automatic permission to optimize or add concurrency.
 
-### Phase A — default-off derivative
+No candidate may use an unbounded queue, per-frame thread/task creation, or a second Push USB owner.
 
-1. Install the exact V1B artifact as the sole scanned DrivenByMoss extension.
-2. Launch Bitwig without the diagnostic property.
-3. Confirm the normal semantic display and the accepted eleven-row baseline.
-4. Confirm no synthetic mark is visible.
-5. Quit Bitwig normally.
+## Build and source evidence
 
-### Phase B — overlay-enabled derivative
+For every candidate that reaches execution:
 
-1. Launch the same exact artifact with `pushwig.syntheticOverlay=true` supplied before process start.
-2. Confirm the fixed two-color mark appears at the declared bounds.
-3. Exercise at least Track, Device Parameters, and one additional representative mode.
-4. Leave a stable semantic frame displayed long enough to observe repeated sends.
-5. Confirm all semantic content outside the mark remains coherent and interactive.
-6. Repeat the eleven-row baseline, including audio through Push headphones.
-7. Record any error, lag, xrun, unexpected clear, expansion, or trail.
-8. Quit Bitwig normally.
+- begin from exact `1ae0b74f383314d170a5960ca763bdf9c319e787` / tree `a81e5c4330b31f36845c25e98e322990d62f0c67`;
+- record the temporary patch/source SHA-256 and changed paths;
+- use the accepted explicit Java 21/Maven environment;
+- build successfully or retain the exact blocker;
+- hash the resulting artifact;
+- inspect the executable delta;
+- prove `PushUsbDisplay.class` remains byte-identical unless the candidate is rejected before fixture use;
+- remove all temporary timing, pixel-dump, and comparison instrumentation from any candidate artifact used for a final live check;
+- do not commit generated extension binaries.
 
-### Phase C — property-off recovery
+## Real-fixture gate
 
-1. Relaunch the same exact artifact without the property.
-2. Confirm the overlay is absent and the normal semantic display is restored.
-3. Quit Bitwig normally.
+The leading candidate must receive a bounded real Mac + Bitwig 6.1 + Push 3 check before selection.
 
-### Phase D — exact official rollback
+At minimum retain:
 
-1. Move the derivative outside the scan path.
-2. Restore the untouched official artifact.
-3. Reverify SHA-256 `98dc3195ad8d911526e18b1005f09f69a1aedcb965b080565474104654345c5a`.
-4. Confirm exactly one scanned extension.
-5. Relaunch sufficiently to confirm the official extension remains loadable.
-6. Leave the ordinary environment on the official artifact unless the maintainer explicitly directs otherwise.
+- exact temporary prototype artifact hash and patch hash;
+- sole scanned extension state;
+- moving/replacing/absent visual sequence on the physical Push;
+- Track, Device Parameters, and Session or Browser mode changes;
+- selected track/device/parameter updates, including an update under a previously covered visual region;
+- coherent controls and semantic display;
+- Push audio-device presence and audible headphone output;
+- no observed trail, stale content, lag, xrun, or relevant error;
+- normal Bitwig quit;
+- exact official-artifact rollback and physical restored-display confirmation.
+
+If no candidate is safe enough for the real fixture, retain the blocker and stop without installation.
+
+## Required decision output
+
+The final evidence must select exactly one of these outcomes:
+
+### SELECTED
+
+Name one candidate and specify:
+
+- exact production ownership model;
+- exact source seam and expected changed-path envelope for the next implementation slice;
+- public/internal interface boundary;
+- bitmap/frame lifetime rules;
+- semantic-generation or redraw rules;
+- stale/absent visual behavior;
+- allocation and timing budget;
+- why rejected candidates are inferior.
+
+### BLOCKED
+
+State the smallest missing capability or API fact, the experiments performed, and the next bounded research required. Do not hide a blocker behind a vague recommendation.
+
+V1C-0 is not complete merely because one moving rectangle appears.
 
 ## Expected central evidence
 
-Retain a structure equivalent to:
+Use a structure equivalent to:
 
 ```text
-evidence/v1b-static-synthetic-overlay/
+evidence/v1c0-dynamic-raster-composition/
 ├── README.md
-├── source-topology.md
-├── activation-and-rendering.md
-├── pixel-preservation.md
+├── accepted-source-analysis.md
+├── candidate-a-semantic-redraw.md
+├── alternative-candidates.md
+├── pixel-restoration.md
 ├── performance.md
-├── build-artifact-comparison.md
-├── install-rollback.md
-└── manual-acceptance.md
+├── real-fixture-and-rollback.md
+└── decision.md
 ```
+
+Files may be omitted only when the decision document explains why the corresponding candidate was not reached.
 
 Every file must state what it proves and what it does not prove.
 
-Do not commit:
-
-- official or derivative `.bwextension` files;
-- proprietary screenshots, full frames, or UI crops;
-- temporary instrumentation source/binaries;
-- full Bitwig logs;
-- user projects;
-- account/license data;
-- serial numbers, hardware UUIDs, hostnames, IP addresses, or unsanitized personal paths.
-
 ## Explicit non-goals
 
-- no moving or animated overlay;
-- no runtime hot toggle;
-- no overlay erasure/damage-tracking system;
-- no alternate output bitmap or immutable frame representation;
-- no semantic bitmap copy or snapshot;
-- no raw external frame;
-- no `PushDisplayTransport` abstraction;
-- no `PushUsbDisplay` modification;
-- no queue, worker, executor, timer, latest-frame store, IPC, socket, or shared memory;
-- no ScreenCaptureKit or Screen Recording permission;
-- no Bitwig/editor window discovery or capture;
-- no visual adapter, resolver, calibration, or pixel-anchor implementation;
-- no POM/dependency/test-framework change;
-- no version, extension-ID, controller-ID, USB matcher, endpoint, encoder, padding, XOR, or transfer change;
+- no production DrivenByMoss source PR;
+- no merge into `pushwig/main`;
+- no external-frame IPC, socket, shared memory, or helper process;
+- no ScreenCaptureKit or window capture;
+- no `VisualSourceFrame` wire format;
+- no visual-source discovery, adapter, calibration, or pixel-anchor implementation;
+- no second USB owner or `PushUsbDisplay` redesign;
+- no unbounded queue, worker pool, timer, or async composition path;
+- no user-facing configuration;
+- no arbitrary plug-in or native-device visual;
 - no Push 2 hardware claim;
-- no Steam Deck/Linux, yabridge, Monome, plugdata, appliance, battery, connector, or NUC work.
+- no Steam Deck/Linux validation;
+- no yabridge, Monome, plugdata, appliance, battery, connector, or NUC work.
 
 ## Acceptance criteria
 
-V1B is complete only when all of the following are true:
+V1C-0 is complete only when all of the following are true:
 
-1. The source PR is one commit directly above accepted `pushwig/main` at `033ccef8c64f08e8d8d41fa90d48fa06b326a1a1` / tree `9aec7429ff093addee001a62a5a07309708fd592`.
-2. Source changes remain within the authorized envelope.
-3. The default startup path selects the accepted pass-through pipeline.
-4. The enabled startup path selects one static synthetic-overlay pipeline.
-5. The overlay pipeline performs exactly one bounded render callback and returns the same `IBitmap` reference.
-6. The mark appears at the declared location and no pixels outside its bounds change without a precise accepted explanation.
-7. Repeated sends and representative semantic-mode changes produce no whole-frame clear, expansion, or trail.
-8. The property-off relaunch restores an unmarked semantic display.
-9. Timing/allocation evidence is retained and remains within the provisional review band, or work stops for review.
-10. `PushUsbDisplay` and all transport behavior remain unchanged and sole-owned.
-11. The exact source head builds and the artifact delta is bounded to intended classes.
-12. The same exact artifact passes default-off, enabled-overlay, and property-off-recovery real-fixture phases.
-13. The accepted eleven-row baseline passes while the overlay is enabled.
-14. The exact official artifact is restored and reverified.
-15. The source PR and paired central evidence PR are open, non-draft, unmerged, and identify exact heads.
-16. Relevant repositories and worktrees are clean and synchronized.
+1. Research begins from the exact accepted central and DrivenByMoss integration bases.
+2. The accepted source lifecycle and bitmap API constraints are retained from exact source inspection.
+3. Candidate A is tested first or explicitly rejected from source evidence.
+4. At least one candidate proves changing, moving, absent, and semantic-update-under-overlay states.
+5. Selected-candidate outside-region mismatches are zero.
+6. Selected-candidate old-region restoration mismatches are zero.
+7. Selected-candidate full-frame mismatches after visual absence are zero.
+8. Stale/unavailable visual state produces semantic-only output.
+9. Performance/allocation evidence is retained against the defined bands.
+10. `PushUsbDisplay` remains unchanged and sole-owned.
+11. The leading candidate receives a bounded real-fixture check or a precise safety blocker is retained.
+12. The exact official artifact is restored after any fixture prototype.
+13. The decision names one production representation and source seam, or one precise blocker.
+14. No temporary prototype or instrumentation is merged into either repository.
+15. The central evidence PR is open, non-draft, unmerged, and points to the exact retained evidence head.
+16. Relevant accepted branches and ordinary worktrees are clean and synchronized.
 
-If a second render callback clears or unpredictably damages the semantic frame, V1B is not complete. Stop, restore the official artifact, retain the failure, and do not paper over it by widening into raw bitmap copying or transport replacement.
+## Expected handoff
 
-## Expected V1C handoff
+If V1C-0 selects a design, the next production slice is **V1C — Dynamic Local Composition Lifecycle**. It will implement only the selected restoration/composition primitive with generated local frames.
 
-V1C may begin only after V1B is reviewed and merged.
-
-V1C will answer the next separate question:
-
-> How can a process outside Bitwig publish a generated, immutable, latest-frame-wins `VisualSourceFrame` for the in-process pipeline without blocking control/audio or introducing a second Push USB owner?
-
-V1B must prove only the local pixel-composition primitive and its lifecycle limits.
+External generated-frame ingress moves to **V1D**. That slice may begin only after dynamic replacement, removal, and semantic fallback are proven locally.
 
 ## Review standard
 
-Do not accept V1B merely because a colored rectangle appears once. The exact source head must prove default-off safety, bounded static composition, outside-region preservation, repeated-send stability, representative semantic updates, measured cost, real Push behavior, startup-scoped recovery, one-writer preservation, and exact official rollback.
+Correct restoration outranks minimal line count, raw benchmark speed, or architectural novelty. Do not accept a candidate that can paint a changing visual but cannot restore the exact current semantic pixels when that visual moves, disappears, or becomes stale.
