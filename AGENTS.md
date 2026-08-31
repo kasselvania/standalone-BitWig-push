@@ -61,7 +61,9 @@ A contributor or coding agent must stop and surface a conflict rather than quiet
 - Do not casually redistribute proprietary UI screenshots/templates; prefer local anchor generation, recipes, hashes, descriptors, or legally distributable fixtures.
 - Upstream forks and dependencies retain their licenses and provenance.
 - DrivenByMoss source changes live in the `kasselvania/DrivenByMoss` fork and must preserve upstream history and LGPL notices; do not vendor that source into this repository.
-- Every DrivenByMoss implementation slice must name an exact accepted upstream commit/tree and must not silently move to a newer upstream basis.
+- Every DrivenByMoss implementation slice must name an exact accepted commit/tree and must not silently move to a newer upstream basis.
+- `pushwig/upstream-26.4.1` is the immutable accepted upstream basis. Project feature PRs target `pushwig/main`; do not merge implementation work into the immutable basis branch or upstream `master`.
+- Central evidence/status work and DrivenByMoss source work are separate PRs with exact cross-references.
 
 ## Slice discipline
 
@@ -132,7 +134,8 @@ Retain useful evidence under `evidence/` when practical:
 - USB and audio enumeration;
 - operating-system, graphical-session, sandbox, and permission state;
 - upstream basis, build toolchain, artifact hashes, installation, and rollback evidence;
-- framebuffer timing and pixel-equivalence evidence;
+- framebuffer timing and pixel/object-equivalence evidence;
+- source and bytecode diffs that bound controller-extension changes;
 - source-discovery logs and screenshots;
 - visual profile compatibility matrices;
 - anchor benchmark summaries and diagnostics;
@@ -141,13 +144,15 @@ Retain useful evidence under `evidence/` when practical:
 - boot/service logs;
 - benchmark summaries.
 
-Do not commit serial numbers, credentials, activation files, personal network details, user-specific paths, or proprietary binaries.
+Do not commit serial numbers, credentials, activation files, personal network details, user-specific paths, proprietary binaries, or generated DrivenByMoss extension artifacts.
 
 ## Engineering preferences
 
 - Use the currently available Mac to shorten the first implementation loop, while keeping core interfaces platform-neutral.
-- Prove a clean unmodified DrivenByMoss source build, reversible installation, real-device parity, and exact rollback before the first source behavior change.
+- Treat the accepted V1A-0 fork/build/install/rollback evidence as the baseline; do not repeat or silently replace its source/toolchain authority.
+- Use the explicitly pinned Java 21 environment for DrivenByMoss builds; do not rely on the host's default Java selection.
 - Prefer a no-op frame-pipeline seam before changing visible output.
+- For V1A, preserve the exact `IBitmap` reference and leave `PushUsbDisplay` unchanged; do not extract transport merely because a future design may need it.
 - Prefer in-process final composition/USB transport initially so two processes do not fight over Push's display interface.
 - Keep platform capture in a separate helper/backend and publish only `VisualSourceFrame`-style data across the boundary.
 - Prefer observable IPC boundaries over hidden cross-process coupling.
@@ -176,11 +181,13 @@ A CM11EB development card is staged open hardware:
 
 `Standalone Bitwig Push` is a working repository/project description, not a claim of affiliation. Internal software may use the provisional `pushwig-*` prefix.
 
-## Current reference fixture
+## Current reference fixture and source posture
 
-S0 has accepted the maintainer's macOS computer, Bitwig Studio, Push 3, and DrivenByMoss 26.4.1 as the first real-device fixture and has pinned the display handoff seam.
+S0 accepted the maintainer's macOS computer, Bitwig Studio 6.1, Push 3, and official DrivenByMoss 26.4.1 as the first real-device fixture and pinned the display handoff seam.
 
-V1A-0 now uses that same fixture to prove the DrivenByMoss fork, Java/Maven build, reversible extension installation, behavioral parity, and exact official-artifact rollback.
+V1A-0 accepted the true `kasselvania/DrivenByMoss` fork, exact upstream basis, explicit Java 21/Maven build, reversible installation, full behavioral parity, and exact official-artifact rollback.
+
+V1A now makes the first source change on `pushwig/v1a-no-op-frame-pipeline`, targeting `pushwig/main`. It must add only the synchronous identity frame boundary while preserving the same semantic bitmap and unchanged USB writer.
 
 The Steam Deck remains the named second-host/Linux portability and appliance fixture when it becomes available.
 
