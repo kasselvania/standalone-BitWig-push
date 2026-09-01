@@ -10,26 +10,13 @@ Track V needs a narrow DrivenByMoss derivative, while the central repository own
 
 `kasselvania/standalone-BitWig-push`
 
-Owns:
-
-- architecture and active-slice authority;
-- accepted source bases;
-- evidence and technical decisions;
-- visual-source, raster, external-ingress, capture, appliance, and hardware roadmaps.
-
-It does not vendor DrivenByMoss source or generated extension binaries.
+Owns architecture, active-slice authority, accepted source bases, retained evidence, protocol/raster/capture contracts, and Track V/A/H roadmap decisions. It does not vendor DrivenByMoss source or generated extension binaries.
 
 ### Controller implementation
 
 `kasselvania/DrivenByMoss`, a true fork of `git-moss/DrivenByMoss`.
 
-Owns:
-
-- the minimal controller-extension source delta;
-- buildable LGPL derivative source;
-- contribution-ready commits;
-- upstream synchronization;
-- semantic redraw, composition, raster consumption, and later bounded external-frame intake.
+Owns the minimal LGPL-compatible controller-extension source delta, buildable derivative source, contribution-ready commits, upstream synchronization, semantic redraw, raster composition, external frame intake, and the sole accepted Push display transport path.
 
 ## Accepted branches and bases
 
@@ -50,7 +37,7 @@ commit: 663d719207ef58ec84b4d235c43211ec5da43605
 tree:   c4e42825d069421a44b3241349de9a7c6453a3ad
 ```
 
-The integration contains accepted source heads:
+Contained accepted source heads:
 
 ```text
 V1A:   6e1e4cbd2e725a7951e5b4dc1278fbb6e7b5d61c
@@ -59,14 +46,14 @@ V1C:   4b3326eddcf2d890de3baa10b93f6e80842d41e1
 V1D-1: 3c3ca02ff81ab5ce110ae3d714e20b5fca05a03f
 ```
 
-Feature and research work begins from the exact current accepted `pushwig/main` unless a separate basis-upgrade decision authorizes otherwise.
-
-Accepted central V1D-1 evidence:
+Accepted central decisions/evidence:
 
 ```text
-commit: a02c9c772da38bfdbc89dfff751c9617cd397c02
-tree:   62b4edce8d649266cda65a638d26113692eaef04
+V1D-1:   a02c9c772da38bfdbc89dfff751c9617cd397c02
+V1D-2-0: 99e09e2a651c92ac6710fdc88c4675a874a56600
 ```
+
+Feature and research work begins from the exact current accepted `pushwig/main` unless a separate basis-upgrade decision authorizes otherwise.
 
 ## Local remote topology
 
@@ -75,18 +62,7 @@ origin   git@github.com:kasselvania/DrivenByMoss.git
 upstream https://github.com/git-moss/DrivenByMoss.git
 ```
 
-Before each source or research slice, retain:
-
-```text
-git remote -v
-git fetch origin --prune
-git fetch upstream --prune --tags
-git rev-parse <basis>
-git rev-parse <basis>^{tree}
-git status --short
-```
-
-Never silently move work to fork `master` or upstream `master`.
+Before each source or research slice, retain remotes, fetched refs/tags, exact commit/tree, and clean status. Never silently move work to fork `master` or upstream `master`.
 
 ## Production PR convention
 
@@ -100,40 +76,16 @@ pushwig/v1d1-local-raster-composition
 pushwig/v1d2-external-frame-ingress
 ```
 
-A production implementation slice normally produces:
+A production slice normally produces:
 
 1. one narrow source PR in `kasselvania/DrivenByMoss`, targeting `pushwig/main`;
-2. one narrow evidence PR in the central repository;
-3. exact cross-references between the two and the active issue;
+2. one narrow central evidence PR;
+3. exact cross-references between both and the active issue;
 4. exact tested heads left open until technical-lead review.
-
-## Research-slice exception
-
-V1C-0, V1D-0, and V1D-2-0 are architecture-selection slices.
-
-They may use temporary:
-
-- local branches and worktrees;
-- commits and patches;
-- harnesses and generated patterns;
-- external generated-frame producers;
-- aggregate-only instrumentation;
-- derivative build artifacts outside Git.
-
-They must not:
-
-- merge prototypes into `pushwig/main`;
-- open a production source PR merely to archive an experiment;
-- copy derivative source into the central repository;
-- leave instrumentation or test credentials in an accepted artifact;
-- change `PushUsbDisplay` to avoid proving the correct higher-level ownership model;
-- capture proprietary Bitwig/plugin pixels before the generated external-frame boundary is accepted.
-
-The central evidence retains exact candidate identities, protocol/source/producer hashes, changed paths, build/artifact hashes, correctness/performance, thread/buffer ownership, real-fixture/rollback results, and one selected production seam or one precise blocker.
 
 ## Accepted build and rollback baseline
 
-Build with the explicit accepted environment:
+Build with:
 
 ```text
 env \
@@ -149,21 +101,16 @@ Java:  Homebrew OpenJDK 21.0.11
 Maven: 3.9.16
 ```
 
-Canonical extension path:
+Canonical extension path and official artifact:
 
 ```text
 $HOME/Documents/Bitwig Studio/Extensions/DrivenByMoss.bwextension
-```
-
-Accepted official artifact SHA-256:
-
-```text
-98dc3195ad8d911526e18b1005f09f69a1aedcb965b080565474104654345c5a
+SHA-256: 98dc3195ad8d911526e18b1005f09f69a1aedcb965b080565474104654345c5a
 ```
 
 Never overwrite the only official copy. Replace extensions only while Bitwig is stopped, keep exactly one scanned artifact, and restore/reverify the official artifact after every live derivative experiment unless explicitly directed otherwise.
 
-## Accepted display and raster ownership
+## Accepted display ownership
 
 ### V1A — frame seam
 
@@ -174,112 +121,102 @@ complete semantic IBitmap
         -> unchanged PushUsbDisplay
 ```
 
-### V1B — static diagnostic
-
-```text
-pushwig.syntheticOverlay=true
-        -> one fixed bounded vector render
-        -> same IBitmap
-```
-
-### V1C — current-semantic dynamic lifecycle
+### V1C — dynamic restoration
 
 ```text
 newest copied ModelInfo
         -> complete current-semantic redraw
-        -> current valid local vector visual or no visual
+        -> current optional visual
         -> same persistent IBitmap
         -> unchanged PushUsbDisplay
 ```
 
-The previous composed output is never restoration authority.
+Previous composed output is never restoration authority.
 
-### V1D-1 — production raster sink
+### V1D-1 — raster sink
 
 ```text
 current semantic redraw
-        -> complete opaque-BGRA request validation
-        -> absolute bulk row writes, or no mutation
+        -> host-neutral OPAQUE_BGRA8888 request
+        -> complete validation and thread ownership
+        -> absolute bulk row copies, or zero writes
         -> same logical IBitmap
         -> unchanged PushUsbDisplay
 ```
 
-Accepted production contract:
+`IRasterWritableBitmap` carries only `RasterPixelFormat`, caller-owned `byte[]`, source offset/stride, destination x/y, and dimensions. `BitmapImpl` alone owns Bitwig memory and a private cached destination view. V1D-1's local generated raster lifecycle is proof scaffolding, not an external protocol.
 
-```java
-boolean writeRasterRegion (
-    RasterPixelFormat format,
-    byte[] source,
-    int sourceOffset,
-    int sourceStride,
-    int destinationX,
-    int destinationY,
-    int width,
-    int height);
-```
-
-`BitmapImpl` privately owns the Bitwig bitmap memory view and all target support, request, alpha, and thread checks. The controller-facing interface contains no Bitwig, macOS, capture, or USB type.
-
-The writer is all-or-nothing, synchronous, same-bitmap, and allocation-free per application. Default, V1B, V1C, raster, and all-property precedence paths remain accepted. `PushUsbDisplay` remains unchanged and sole-owned.
-
-## V1D-2-0 external-ingress discipline
-
-V1D-2-0 selects the transport and process-to-display handoff before production source is opened.
-
-Primary contract:
+## Accepted V1D-2-0 architecture
 
 ```text
 external generated producer
-        -> local complete-message transport
-        -> fixed latest-frame publication
-        -> nonblocking display-owned adoption
+        -> loopback TCP framed protocol v1
+        -> capability-authenticated complete receive
+        -> fixed staging + latest publication
+        -> display-thread tryLock copy into fixed consumer bytes
+        -> local monotonic freshness
         -> accepted V1D-1 writer
+        -> same IBitmap
+        -> unchanged PushUsbDisplay
 ```
 
-The receiver thread never writes the bitmap. The display thread never performs network I/O or blocks on the receiver.
+Selected rules:
 
-Candidate order:
+- bind exactly `127.0.0.1`, default/configurable port 45291, backlog 1, address reuse before bind;
+- one active connection and one daemon receiver thread;
+- fixed 80-byte network-order header;
+- HELLO, FRAME, and CLEAR messages;
+- 32-byte capability authentication before frame authority;
+- nonzero 128-bit producer session plus receiver-local connection generation;
+- positive strictly increasing sequence with legal gaps and no historical replay;
+- maximum 614,400-byte opaque-BGRA payload;
+- complete protocol/geometry/alpha validation before publication;
+- fixed staging, publication, and display-consumer arrays;
+- receiver blocking lock allowed only for publication; display uses `tryLock` only;
+- local complete-receipt `System.nanoTime()` freshness, default 1,500 ms;
+- exact semantic fallback after every absence/failure state;
+- bounded close/join and immediate same-port restart.
 
-1. loopback-only versioned TCP framing plus one receiver thread and fixed staging/published/consumer storage;
-2. Unix-domain socket with the same bounded handoff if TCP fails;
-3. memory-mapped double buffer only if socket candidates fail;
-4. precise blocked result.
+## V1D-2 production discipline
 
-Any selected architecture must:
+V1D-2 implements the accepted architecture in exactly:
 
-- use a hard frame/message cap known before payload read;
-- publish only complete frames;
-- allocate no frame array/object per message;
-- keep one active producer and fixed thread count;
-- define session identity and strictly increasing per-session sequence;
-- use local monotonic receipt time for freshness;
-- use latest-frame-wins rather than an application queue;
-- prevent receiver mutation of display-consumed bytes;
-- clear old session authority on disconnect/replacement;
-- map no producer, clear, crash, staleness, malformed/truncated/oversized input, failed authentication/protocol, and failed raster application to exact semantic-only output;
-- shut down boundedly even with a silent or partial-message producer;
-- retain one unchanged Push USB writer.
+```text
+Push2Display.java
+ExternalRasterPushFramePipeline.java
+ExternalRasterReceiver.java
+LatestExternalRasterFrameStore.java
+```
 
-The research uses generated external test cards only. ScreenCaptureKit and real Bitwig/plugin capture remain V2.
+Any additional production path requires authority before editing.
 
-## Production posture after V1D-2-0
+The source must:
 
-If selected, V1D-2 implements the exact decided receiver/protocol/store and a temporary generated producer proof.
+- preserve V1C current-semantic redraw as restoration authority;
+- preserve the accepted V1D-1 sink without modification;
+- read external activation/port/token-path/stale-timeout only at construction;
+- give external ingress precedence over local raster/vector/static diagnostics;
+- bind only IPv4 loopback;
+- validate a private regular non-symlink 32-byte capability file before starting the receiver;
+- use one receiver thread and fixed frame arrays;
+- publish only complete authenticated current frames;
+- use display `tryLock` and display-owned consumer bytes;
+- perform no socket operation or blocking wait on the display thread;
+- prevent the receiver from owning bitmap or writer objects;
+- implement exact session/sequence/gap/reset/exhaustion and receipt-time freshness rules;
+- map clear/disconnect/crash/stale/auth/protocol/truncation/malformed/oversize/writer/bind/shutdown failures to current semantics;
+- keep `PushUsbDisplay` unchanged and sole-owned;
+- pass five blocked-receive shutdown states, collision, restart, performance, fixture, and rollback gates.
 
-A likely production source PR may need responsibilities for:
+The launcher/orchestrator owns token-file creation and cleanup. Fixed/configurable port plus token-file path is the V1D-2 handoff; a friendlier helper rendezvous belongs to later product work.
 
-- external frame protocol parsing;
-- receiver lifecycle;
-- fixed latest-frame storage;
-- display-thread external raster pipeline;
-- pipeline shutdown ownership;
-- `Push2Display` startup selection and cleanup.
+A connected local peer owns the single receiver slot until close or shutdown. The capability protects frame authority, not availability against a same-user process that can read the token or occupy the slot.
 
-The exact paths and interface shape are not pre-authorized until V1D-2-0 `decision.md` selects them.
+## External protocol status
 
-The later external frame contract should carry bounded host-neutral information such as source identity/role, dimensions, stride, pixel format, sequence, local receipt state, validity/stale reason, confidence, and bytes. V1D-2-0 may choose a narrower first wire format and evolve it explicitly.
+Protocol v1 is an internal project protocol during V1D-2. It is exact enough for a conformance producer and later capture helper, but it is not yet promised as a stable public SDK surface.
 
-V2 then replaces the temporary generated producer with a normal macOS helper that discovers and captures dedicated windows. Apple types remain inside that helper.
+The later helper must generate/crop/scale opaque BGRA frames outside DrivenByMoss, then publish them through this boundary. Apple capture objects never enter the controller extension.
 
 ## Upstream synchronization
 
@@ -298,7 +235,7 @@ Do not allow automated rebases or dependency tooling to rewrite the accepted bas
 
 DrivenByMoss retains upstream LGPL licensing and notices. Modified source remains available under compatible terms and must not imply upstream endorsement.
 
-Source lives in the fork. Build, artifact, pixel, protocol, performance, fixture, rollback, and decision evidence lives in the central repository. Temporary research code is retained by hashes and methodology rather than promoted into accepted source merely for archival convenience.
+Source lives in the fork. Build, artifact, protocol, timing, fixture, rollback, and decision evidence lives in the central repository. Temporary conformance producer/harness code is retained by hash and methodology rather than promoted into product source merely for archival convenience.
 
 ## Current sequence
 
@@ -306,12 +243,12 @@ Source lives in the fork. Build, artifact, pixel, protocol, performance, fixture
 S0        accepted fixture/source/display seam
 V1A-0     accepted fork/build/install/rollback baseline
 V1A       accepted identity frame pipeline
-V1B       accepted static bounded vector composition
+V1B       accepted static bounded composition
 V1C-0     accepted dynamic restoration architecture
 V1C       accepted production dynamic local lifecycle
 V1D-0     accepted direct bulk raster primitive
 V1D-1     accepted production local raster sink
-V1D-2-0   active external latest-frame ingress selection
-V1D-2     future production external generated-frame ingress
-V2        future macOS window capture
+V1D-2-0   accepted external-ingress architecture
+V1D-2     active production external latest-frame ingress
+V2        future macOS dedicated-window capture
 ```

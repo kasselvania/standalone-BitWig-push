@@ -16,42 +16,35 @@ The Mac is the first implementation fixture; Steam Deck/Linux is the named secon
 
 ## Accepted foundations
 
-### S0 — fixture and display seam
+### S0 through V1B
 
-Accepted the Mac + Bitwig 6.1 + Push 3 fixture, pinned official DrivenByMoss 26.4.1 to exact source, and traced the persistent 960×160 semantic bitmap through `Push2Display` to the sole `PushUsbDisplay` transport.
+Accepted the exact Mac/Bitwig/Push fixture, source and artifact provenance, derivative build/install/rollback, the frame-pipeline seam, and bounded static project-owned pixels.
 
-### V1A-0 — derivative custody/build baseline
-
-Accepted the true fork, immutable upstream basis, Java 21/Maven build, reversible installation, real-device parity, and exact official rollback.
-
-### V1A — identity frame pipeline
+### V1C-0 and V1C — current-semantic dynamic restoration
 
 ```text
-semantic IBitmap
-        -> PushFramePipeline
-        -> same IBitmap
+newest retained semantic model
+        -> complete semantic redraw
+        -> current optional visual
+        -> same persistent bitmap
         -> unchanged PushUsbDisplay
 ```
 
-### V1B — static bounded composition
+Accepted movement, overlap, resize, replacement, semantic-only states, semantic updates under coverage, overlay-only updates, notification lifecycle, regression paths, one writer, real Push behavior, and exact rollback.
 
-Accepted one startup-gated fixed mark with zero outside-region mismatches, bounded timing, preserved semantic modes, real controls/audio, and exact rollback.
+### V1D-0 and V1D-1 — production bulk raster sink
 
-### V1C-0 — dynamic restoration architecture
+```text
+current semantic redraw
+        -> validate complete OPAQUE_BGRA8888 request
+        -> absolute bulk row copies, or zero writes
+        -> same logical bitmap
+        -> unchanged PushUsbDisplay
+```
 
-Selected current-semantic redraw before current optional visual. Historical composed pixels are not restoration authority.
+Accepted a caller-owned `byte[]` host-neutral sink, adapter-private cached destination view, complete alpha/geometry/overflow/thread validation, padded/medium/full-frame writes, malformed fallback, zero restoration mismatches, bounded writer timing/allocation, all prior-mode regressions, real Push behavior, and exact rollback.
 
-### V1C — production dynamic local lifecycle
-
-Accepted movement, overlap, resize, replacement, NONE, STALE, INVALID, semantic updates under coverage, overlay-only updates, notification lifecycle, all startup regression paths, exact restoration, bounded performance, one writer, real Push behavior, and exact rollback.
-
-### V1D-0 — bulk raster composition decision
-
-Selected direct, adapter-owned opaque-BGRA region writing with complete validation before mutation, one cached destination view, synchronous display-thread ownership, zero partial invalid writes, exact V1C restoration, green full-frame timing, real Push behavior, and exact rollback.
-
-### V1D-1 — production local raster sink
-
-Accepted source integration:
+Accepted implementation:
 
 ```text
 kasselvania/DrivenByMoss: pushwig/main
@@ -59,88 +52,76 @@ commit: 663d719207ef58ec84b4d235c43211ec5da43605
 tree:   c4e42825d069421a44b3241349de9a7c6453a3ad
 ```
 
-Accepted central evidence:
+Accepted V1D-1 evidence:
 
 ```text
 commit: a02c9c772da38bfdbc89dfff751c9617cd397c02
 tree:   62b4edce8d649266cda65a638d26113692eaef04
 ```
 
-Production contract:
+### V1D-2-0 — external ingress architecture
+
+Selected Candidate A:
 
 ```text
-current semantic redraw
-        -> IRasterWritableBitmap.writeRasterRegion(...)
-        -> complete OPAQUE_BGRA8888 validation
-        -> absolute bulk rows, or zero write
-        -> same logical bitmap
+external generated producer
+        -> capability-authenticated TCP 127.0.0.1 protocol v1
+        -> complete-message receive in one receiver thread
+        -> fixed latest-publication storage
+        -> display-thread nonblocking adoption
+        -> local monotonic freshness
+        -> accepted V1D-1 sink
         -> unchanged PushUsbDisplay
 ```
 
-Accepted evidence includes:
+Accepted:
 
-- one public host-neutral raster capability and one pixel format;
-- private adapter-owned cached direct destination view;
-- preserved `BitmapImpl` constructor/accessor and record-equivalent behavior;
-- fail-closed unsupported destination layouts;
-- race-safe first-valid writer thread binding;
-- 28 negative/thread cases with zero changed bytes or rows;
-- 1,000 complete nine-state cycles with all mismatch categories zero;
-- one cached view and zero project-owned allocation across 5,000 full-frame applications;
-- default, V1B, V1C, raster, and all-property precedence behavior;
-- full real Push control/display/audio acceptance and exact rollback.
+- 80-byte network-order header and 614,400-byte payload cap;
+- HELLO/FRAME/CLEAR messages;
+- 32-byte capability, producer session identity, receiver-local generation, and strictly increasing sequence;
+- legal gaps and latest-frame supersession without application backlog;
+- fixed staging/publication/display arrays and one daemon receiver thread;
+- complete publication only after full receive and validation;
+- display `tryLock` only;
+- exact semantic fallback on absence, clear, disconnect, crash, stale, protocol/authentication/session failure, truncation, malformed data, writer rejection, bind failure, and shutdown;
+- 1/15/30/60 fps and burst tests;
+- five blocked-receive shutdown states and immediate same-port restart;
+- full real Push controls/audio/display acceptance and exact rollback.
 
-The writer-only stable p95/max were `0.079834 ms` / `0.678917 ms`. Combined wall-clock tails above 15 ms were retained and explicitly accepted as pre-existing semantic/host scheduling tails, not reclassified as green.
-
-## V1D-2-0 — external latest-frame ingress architecture — active
-
-**Claim:** select the exact process transport, protocol, fixed-memory handoff, session, sequence, freshness, failure, and shutdown architecture by which a local producer can publish generated raster frames to the accepted V1D-1 sink.
-
-Candidate order:
-
-1. loopback-only framed TCP stream plus one receiver thread and fixed staging/published/display-consumer storage;
-2. Unix-domain socket with the same bounded handoff if TCP fails;
-3. memory-mapped double buffer only if socket candidates fail;
-4. precise blocked result.
-
-Required properties:
+Accepted evidence:
 
 ```text
-complete-message publication only
-fixed maximum payload and storage
-one active producer and fixed thread count
-latest-frame-wins, no application FIFO queue
-session identity and increasing per-session sequence
-local monotonic receipt-time freshness
-nonblocking display-owned adoption
-receiver never touches bitmap
-exact semantic fallback on clear/disconnect/crash/stale/malformed input
-bounded shutdown while connected, silent, or mid-message
-one unchanged Push USB writer
+commit: 99e09e2a651c92ac6710fdc88c4675a874a56600
+tree:   db22ec0a845146f03861581a929ae52b30204a1b
 ```
 
-Use a temporary standalone generated-frame producer and generated asymmetric opaque-BGRA cards only. Prove 1/15/30/60 fps where practical, producer bursts, supersession, duplicates/out-of-order messages, clear, crash, stale timeout, truncation, oversized input, reconnect/sequence reset, fixed allocation, no torn frames, real Push behavior, and exact rollback.
+## V1D-2 — production external latest-frame ingress — active
 
-V1D-2-0 is evidence-only. It opens no production source PR and performs no window capture.
+Implement the selected receiver/store/pipeline in production DrivenByMoss source.
 
-## V1D-2 — production external generated-frame ingress
+Production envelope:
 
-Implement only the architecture selected by V1D-2-0.
+```text
+Push2Display.java
+ExternalRasterPushFramePipeline.java
+ExternalRasterReceiver.java
+LatestExternalRasterFrameStore.java
+```
 
-Expected responsibilities include:
+Startup contract:
 
-- versioned local protocol parsing;
-- one bounded receiver lifecycle;
-- fixed latest-frame storage;
-- nonblocking display-owned snapshot/copy;
-- local receipt-time freshness;
-- session/sequence/reset handling;
-- clear/disconnect/crash/malformed fallback;
-- pipeline shutdown ownership;
-- exact V1D-1 sink use;
-- temporary generated producer acceptance.
+```text
+pushwig.externalRasterIngress=true
+pushwig.externalRasterPort=<port>
+pushwig.externalRasterTokenFile=<private file>
+pushwig.externalRasterStaleTimeoutMs=<timeout>
+```
 
-No ScreenCaptureKit or real window capture is required for this slice.
+The launcher owns the private token file; the extension validates/loads it, binds only `127.0.0.1`, receives into fixed storage, and exposes only complete authenticated latest frames to the display thread. External mode has precedence over local diagnostic sources and enables current-semantic redraw.
+
+Acceptance requires exact protocol/security/session/sequence/freshness behavior, no receiver bitmap access, no display socket access, fixed memory, one receiver thread, nonblocking display adoption, zero torn/partial/old-session/restoration mismatches, explicit sequence-exhaustion behavior, bounded production timing, all five shutdown states, collision/restart, real Push operation, and exact rollback.
+
+No window capture enters this slice.
 
 ## V2 — macOS dedicated-window visual lens
 

@@ -10,7 +10,7 @@ The repository coordinates three independent tracks:
 2. all-in-one appliance packaging;
 3. CM11EB connector and native-compute research.
 
-The current Track V reference fixture is the maintainer's macOS Bitwig/DrivenByMoss/Push system because it provides the shortest software loop. The Steam Deck remains the first Track A appliance host and the named Linux portability fixture. Neither host defines the universal product.
+The current Track V reference fixture is the maintainer's macOS Bitwig/DrivenByMoss/Push system because it provides the shortest software loop. The Steam Deck remains the first Track A appliance host and named Linux portability fixture. Neither host defines the universal product.
 
 ## Authority order
 
@@ -22,18 +22,19 @@ When instructions conflict, use this order:
 4. `docs/ARCHITECTURE.md`
 5. `docs/MAC_FIRST_DEVELOPMENT.md`
 6. `docs/DRIVENBYMOSS_DERIVATIVE_STRATEGY.md`
-7. `docs/V1D20_EXTERNAL_FRAME_INGRESS.md`
-8. `docs/V1D1_LOCAL_RASTER_COMPOSITION.md`
-9. `docs/V1D0_BULK_RASTER_COMPOSITION.md`
-10. `docs/V1C_DYNAMIC_LOCAL_COMPOSITION.md`
-11. `docs/V1C0_DYNAMIC_RASTER_COMPOSITION.md`
-12. `docs/V1B_SYNTHETIC_COMPOSITION.md`
-13. `docs/VISUAL_PORTABILITY.md`
-14. `docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`
-15. `docs/ROADMAP.md`
-16. `docs/RUNTIME_STRATEGY.md`
-17. issue / PR scope
-18. implementation convenience
+7. `docs/V1D2_EXTERNAL_FRAME_INGRESS.md`
+8. `docs/V1D20_EXTERNAL_FRAME_INGRESS.md`
+9. `docs/V1D1_LOCAL_RASTER_COMPOSITION.md`
+10. `docs/V1D0_BULK_RASTER_COMPOSITION.md`
+11. `docs/V1C_DYNAMIC_LOCAL_COMPOSITION.md`
+12. `docs/V1C0_DYNAMIC_RASTER_COMPOSITION.md`
+13. `docs/V1B_SYNTHETIC_COMPOSITION.md`
+14. `docs/VISUAL_PORTABILITY.md`
+15. `docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`
+16. `docs/ROADMAP.md`
+17. `docs/RUNTIME_STRATEGY.md`
+18. issue / PR scope
+19. implementation convenience
 
 A contributor or coding agent must stop and surface a conflict rather than quietly widening scope.
 
@@ -45,36 +46,35 @@ A contributor or coding agent must stop and surface a conflict rather than quiet
 - Exactly one component owns the Push USB display endpoint in steady state.
 - Final composition and USB transport remain in-process in the DrivenByMoss derivative through the current slices.
 - Visual capture is visualization first. Do not replace reliable controller-API operations with fragile mouse automation.
-- Attached mode must adapt to a user's existing Bitwig windows and monitor layout.
-- Managed geometry is an appliance/test mode, not a requirement imposed on desktop users.
+- Attached mode adapts to existing Bitwig windows and monitor layouts; managed geometry is an optional appliance/test mode.
 - Physical desktop coordinates are never the primary identity of a visual source.
 - Prefer dedicated windows, semantic identity, window-relative geometry, normalized regions, anchors, and bounded calibration.
-- A resolver must prefer abstention and exact semantic fallback over a wrong visual lock.
-- Capture-backend and operating-system types do not belong in compositor/frame contracts.
-- macOS objects such as `SCWindow`, `CGWindowID`, and `CVPixelBuffer` stay inside the future macOS helper/backend.
-- Semantic fallback means restoring the exact **current** semantic pixels, not merely stopping future visual drawing.
+- A resolver prefers abstention and exact semantic fallback over a wrong visual lock.
+- Capture-backend and operating-system objects do not enter compositor, raster, or ingress contracts.
+- macOS objects such as `SCWindow`, `CGWindowID`, and `CVPixelBuffer` stay inside the later macOS helper/backend.
+- Semantic fallback means restoring the exact current semantic pixels, not merely stopping future visual drawing.
 - Output is derived from `current semantic frame + optional current visual`.
 - Historical composed output is never restoration authority.
-- A moving, replaced, resized, absent, stale, invalid, malformed, disconnected, or crashed visual source must not leave pixels behind.
-- Raster validation must complete before destination mutation; rejected input causes zero partial writes.
-- Raster format, dimensions, stride, destination bounds, source ownership, destination ownership, and thread rules are explicit.
-- Bitwig `Bitmap`, `MemoryBlock`, `ByteBuffer`, macOS handles, and USB objects do not cross host-neutral raster or external-frame contracts.
+- Moving, replaced, resized, absent, stale, invalid, malformed, disconnected, or crashed visual sources leave no pixels behind.
+- Raster validation completes before destination mutation; rejected input causes zero partial writes.
+- Raster format, dimensions, stride, bounds, source ownership, destination ownership, and thread rules are explicit.
+- Bitwig `Bitmap`, `MemoryBlock`, `ByteBuffer`, macOS handles, socket objects, and USB objects do not cross host-neutral raster/frame contracts.
 - An external receiver thread never renders into or writes a Push bitmap. Only the established display/composition thread calls the accepted raster sink.
-- The display/composition thread never performs socket accept/read/write, file blocking, thread joins, or a blocking lock acquisition.
-- External-frame publication is complete-frame only. A partial header or payload is never visible as a current frame.
-- External ingress uses fixed, bounded storage and latest-frame-wins state, not an unbounded FIFO queue.
+- The display/composition thread never performs socket accept/read/write, file blocking, thread joins, or blocking publication-lock acquisition.
+- External publication is complete-frame only. Partial headers and payloads never become visible.
+- External ingress uses fixed bounded storage and latest-frame-wins state, not an unbounded FIFO.
 - Producer wall-clock timestamps are not freshness authority. Local monotonic receipt time determines staleness.
-- Producer session identity and per-session sequence must prevent old or restarted producers from reviving stale frames.
-- External ingress is local-only by default. Remote network binding requires separate authority.
+- Producer session identity, receiver-local generation, and per-session sequence prevent old producers from reviving stale frames.
+- External ingress is loopback-only by default. Remote network binding requires separate authority.
 - Producer absence, clear, disconnect, crash, staleness, malformed input, protocol mismatch, failed authentication, or failed raster application maps to exact semantic-only output.
-- Controller input and audio may never wait for a display/capture producer.
-- The Mac and Steam Deck are reference hosts. Do not generalize maintainer-specific yabridge, serialosc, Monome, or plugdata state into universal requirements.
+- Controller input and audio never wait for a display/capture producer.
+- The Mac and Steam Deck are reference hosts. Maintainer-specific yabridge, serialosc, Monome, or plugdata state is not a universal requirement.
 - The ordinary rear Push USB path remains a first-class appliance architecture.
 - Battery operation is mandatory for a portable-appliance claim; wall power is only an engineering state.
 - Track A and Track H do not block universal Track V progress.
 - Hardware and power claims require real measurements, photographs, continuity, enumeration, or documented specifications.
-- Do not redistribute proprietary Ableton/Bitwig binaries, firmware, activation data, or private assets.
-- Do not casually redistribute proprietary UI screenshots or templates. Prefer local generation, recipes, hashes, descriptors, and legally distributable fixtures.
+- Do not redistribute proprietary Ableton/Bitwig binaries, firmware, activation data, private assets, or casual proprietary UI screenshot fixtures.
+- Prefer local generation, recipes, hashes, descriptors, and legally distributable fixtures.
 - DrivenByMoss changes live in `kasselvania/DrivenByMoss`, preserve upstream history and LGPL notices, and are not vendored into this repository.
 - Every implementation or research slice names an exact accepted source commit/tree.
 - `pushwig/upstream-26.4.1` is the immutable accepted upstream basis.
@@ -83,7 +83,7 @@ A contributor or coding agent must stop and surface a conflict rather than quiet
 
 ## Accepted source posture
 
-Accepted DrivenByMoss integration state:
+Accepted DrivenByMoss integration:
 
 ```text
 branch: pushwig/main
@@ -105,14 +105,16 @@ commit: fd03245ab38fa5149c45934051d937ee9fda6d08
 tree:   edd2ad636b0aa1f39919f0ffd05c968015450075
 ```
 
-Accepted central V1D-1 evidence:
+Accepted central evidence:
 
 ```text
-commit: a02c9c772da38bfdbc89dfff751c9617cd397c02
-tree:   62b4edce8d649266cda65a638d26113692eaef04
+V1D-1:   a02c9c772da38bfdbc89dfff751c9617cd397c02
+          tree 62b4edce8d649266cda65a638d26113692eaef04
+V1D-2-0: 99e09e2a651c92ac6710fdc88c4675a874a56600
+          tree db22ec0a845146f03861581a929ae52b30204a1b
 ```
 
-## Accepted display and raster ownership
+## Accepted ownership chain
 
 ### V1A — frame seam
 
@@ -123,21 +125,13 @@ complete semantic IBitmap
         -> unchanged PushUsbDisplay
 ```
 
-### V1B — static diagnostic
-
-```text
-pushwig.syntheticOverlay=true
-        -> one fixed bounded vector render
-        -> same IBitmap
-```
-
-### V1C — current-semantic dynamic lifecycle
+### V1C — current-semantic restoration
 
 ```text
 newest copied ModelInfo
         -> retain before render decision
         -> complete current-semantic redraw in selected dynamic mode
-        -> current valid local visual or no visual
+        -> current optional visual
         -> same persistent IBitmap
         -> unchanged PushUsbDisplay
 ```
@@ -155,40 +149,42 @@ current semantic redraw
         -> unchanged PushUsbDisplay
 ```
 
-Accepted V1D-1 properties:
+The accepted sink is a public host-neutral `IRasterWritableBitmap` using caller-owned `byte[]` plus primitive metadata. `BitmapImpl` alone owns its private cached destination view and Bitwig layout checks. Writer-only stable p95/max were `0.079834 ms` / `0.678917 ms`; larger combined tails were retained as semantic/host scheduling tails, not reclassified as green.
 
-- public host-neutral `IRasterWritableBitmap` contract;
-- caller-owned `byte[]` with primitive source/destination metadata;
-- one `RasterPixelFormat.OPAQUE_BGRA8888` value;
-- adapter-owned private cached direct destination view;
-- fail-closed unsupported-target behavior;
-- record-equivalent `BitmapImpl` constructor/accessor/equality/hash/string behavior;
-- complete pre-write geometry, overflow, source-length, alpha, and thread validation;
-- race-safe first-valid thread binding;
-- absolute bulk row copies with source padding ignored;
-- default, V1B, V1C, raster, and all-property precedence paths;
-- 1,000 complete local raster cycles and all mismatch counts zero;
-- 28 negative/thread cases with zero mutation;
-- one cached destination view and zero project-owned per-application allocation;
-- full physical Push acceptance and exact official rollback.
+### V1D-2-0 — selected external ingress architecture
 
-The accepted V1D-1 writer-only stable p95/max were `0.079834 ms` / `0.678917 ms`. Repeated combined wall-clock tails above 15 ms were explicitly accepted for V1D-1 as pre-existing semantic/host scheduling tails, not reclassified as green. External ingress must repeat separate handoff, writer, semantic-redraw, and combined measurements.
+```text
+external generated producer
+        -> TCP 127.0.0.1 protocol v1
+        -> capability-authenticated complete-message receive
+        -> fixed staging and latest-publication arrays
+        -> display-thread tryLock adoption into fixed consumer bytes
+        -> local monotonic freshness
+        -> accepted V1D-1 sink
+        -> same semantic IBitmap
+        -> unchanged PushUsbDisplay
+```
+
+Accepted properties:
+
+- fixed 80-byte big-endian header and 614,400-byte payload cap;
+- HELLO / FRAME / CLEAR messages;
+- nonzero 128-bit producer session and receiver-local connection generation;
+- positive strictly increasing sequence, legal gaps, no backlog replay;
+- one daemon receiver thread and no per-connection thread;
+- fixed project-owned frame/security arrays totaling 1,843,312 bytes;
+- one short publication lock, blocking only on receiver, `tryLock` only on display;
+- complete publication only after protocol, geometry, payload, and opaque-alpha validation;
+- local `System.nanoTime()` receipt freshness, default 1,500 ms;
+- exact semantic fallback for every absence/failure state;
+- five blocked-receive shutdown states and immediate same-port restart.
 
 ## Slice discipline
 
-Each slice states:
-
-- exact accepted basis;
-- one primary claim;
-- files/components in scope;
-- explicit non-goals;
-- executable acceptance criteria;
-- retained evidence requirements.
-
-Do not merge uncertainty domains merely because they are adjacent. In particular:
+Do not merge adjacent uncertainty domains:
 
 - local raster application is separate from external process ingress;
-- external ingress transport/handoff selection is separate from its production implementation;
+- external-ingress research is separate from production implementation;
 - external generated frames are separate from operating-system capture;
 - window capture is separate from visual-source resolution;
 - top-level windows are separate from embedded Bitwig-panel recognition;
@@ -197,83 +193,98 @@ Do not merge uncertainty domains merely because they are adjacent. In particular
 - macOS proof is separate from Linux portability;
 - appliance packaging is separate from CM11EB connector research.
 
-## V1D-2-0 external-ingress research rules
+## V1D-2 production rules
 
-V1D-2-0 selects one exact transport, protocol, fixed-memory handoff, sequence/freshness, and shutdown architecture before a production external receiver is merged.
+V1D-2 implements the selected external latest-frame ingress using generated conformance frames only.
 
-### Research posture
+### Source custody
 
-- Begin from exact DrivenByMoss integration commit `663d719207ef58ec84b4d235c43211ec5da43605` and central main containing V1D-1 evidence `a02c9c772da38bfdbc89dfff751c9617cd397c02`.
-- Use temporary local worktrees, branches, commits, patches, harnesses, generated producers, and aggregate-only instrumentation.
-- Do not open or merge a production DrivenByMoss PR in V1D-2-0.
-- Do not capture Bitwig or plug-in windows.
-- Retain complete candidate identities, protocol bytes, source/producer hashes, build/artifact hashes, correctness, timing, fixed-memory/thread behavior, live-fixture results, shutdown, and rollback.
-- Stop after the first candidate satisfies every required gate.
-- The final central evidence selects one exact production seam or one precise blocker.
+- Begin from exact `kasselvania/DrivenByMoss:pushwig/main` at `663d719207ef58ec84b4d235c43211ec5da43605`.
+- Reimplement from the accepted basis; do not cherry-pick the V1D-2-0 research commit.
+- Expected production paths are exactly:
+  - `Push2Display.java`
+  - `ExternalRasterPushFramePipeline.java`
+  - `ExternalRasterReceiver.java`
+  - `LatestExternalRasterFrameStore.java`
+- Stop before editing any additional production path.
+- `PushUsbDisplay`, `BitmapImpl`, `IRasterWritableBitmap`, `RasterPixelFormat`, `AbstractGraphicDisplay`, accepted prior pipelines, the POM, version, IDs, endpoint encoding, padding, XOR, and transfer scheduling remain unchanged.
 
-### Candidate order
+### Startup and endpoint contract
 
-1. loopback-only framed TCP stream plus one receiver thread and fixed latest-frame store;
-2. Unix-domain socket plus the same bounded handoff if TCP cannot satisfy the requirements;
-3. memory-mapped double buffer with explicit torn-frame/publication semantics only if socket candidates fail;
-4. precise blocked result.
+Read construction-time properties only:
 
-Do not continue after a decisive winner.
+```text
+pushwig.externalRasterIngress=true
+pushwig.externalRasterPort=<1024..65535>            # default 45291
+pushwig.externalRasterTokenFile=<required path>
+pushwig.externalRasterStaleTimeoutMs=<100..10000>   # default 1500
+```
 
-### Transport and protocol
+Precedence is external > local raster > dynamic vector > static > pass-through. Exactly one pipeline is selected. External, local-raster, and dynamic-vector modes request current-semantic redraw.
 
-The selected protocol is language-neutral and versioned. It defines magic, version, session identity, per-session sequence, message type, format, dimensions, destination, stride, payload length, byte order, maximum size, authentication/local-security posture, and failure behavior.
+The launcher/orchestrator owns token-file creation, delivery, lifetime, and cleanup. V1D-2 adds no discovery service. The token file is a regular non-symlink file containing exactly 64 hexadecimal characters plus optional trailing ASCII whitespace, decodes to 32 bytes, has no POSIX group/other permission bits, and is owned by the current user where owner identity is available. The token value is never logged or placed in process arguments/environment. Only its path is supplied. Temporary parse bytes are zeroed; the in-memory token is zeroed at shutdown.
 
-- Bind only to loopback or an equivalently local endpoint.
-- Use one active producer and a fixed thread count.
-- Do not allocate from untrusted length fields.
-- Do not use Java object serialization.
-- Do not publish until the complete header and payload pass ingress checks.
-- Duplicate or out-of-order sequence values do not refresh freshness.
-- New producer sessions clear prior session authority before sequence reset is accepted.
-- EOF mid-message, oversized input, wrong token/version/type, and malformed metadata fail closed.
+The fixed/configurable port plus explicit token-file path is the complete V1D-2 handoff. Friendlier helper orchestration belongs to later product work.
 
-### Buffer and thread ownership
+### Protocol v1
 
-- The receiver never calls `IRasterWritableBitmap`.
-- All maximum-size frame arrays/buffers are fixed at startup.
-- Receiver staging, published storage, and display-owned consumer bytes have explicit exclusive owners.
-- The display thread may nonblockingly adopt a newer complete publication into its own stable array.
-- The byte array passed to V1D-1 remains display-owned until synchronous return.
-- No receiver can mutate bytes currently being applied.
-- No application FIFO queue exists.
-- A producer faster than the display supersedes older unpublished/uncopied frames rather than causing backlog playback.
+- TCP bound exactly to IPv4 `127.0.0.1`, backlog 1, address reuse enabled before bind.
+- Magic `0x50575852`, version 1, header length 80, network byte order.
+- Message types: `HELLO=1`, `FRAME=2`, `CLEAR=3`.
+- Formats: `NONE=0`, `OPAQUE_BGRA8888=1`.
+- Maximum payload/message: 614,400 / 614,480 bytes.
+- HELLO carries a nonzero 128-bit session, sequence/geometry zero, and exactly 32 token bytes.
+- FRAME carries matching session, positive sequence, top-to-bottom opaque BGRA, explicit destination/size/stride, implicit source offset zero, and exact payload length.
+- CLEAR carries matching session, next positive sequence, and zero format/geometry/payload.
+- Unknown/nonzero reserved fields, wrong version/type/format, invalid arithmetic/geometry, oversize, or nonopaque alpha invalidates the connection before publication.
 
-A staging + published + display-consumer arrangement is a leading hypothesis, not accepted authority until V1D-2-0 proves it.
+### Session and freshness
 
-### Freshness and fallback
+- Sequence is a positive signed `long`, strictly increasing per authenticated session.
+- Duplicate/lower/nonpositive sequence invalidates the session and does not refresh freshness.
+- Gaps are accepted and counted; historical frames are never replayed.
+- A new authenticated connection clears old authority and permits sequence reset.
+- After sequence `Long.MAX_VALUE`, the producer reconnects with a new session before publishing again.
+- Freshness is local complete-receipt `System.nanoTime()` only.
+- Stale output becomes semantic-only on the next eligible send.
 
-- Local monotonic receipt time is freshness authority.
-- Explicit clear and clean disconnect remove external visual authority.
-- Crash/EOF, stale timeout, malformed input, failed raster application, and receiver failure reach semantic-only output within a measured bound.
-- The display path never blocks while waiting for a clear/publication lock.
-- No old session or pre-reconnect frame may reappear.
+### Fixed memory and nonblocking display
 
-### Correctness
+- One daemon receiver thread owns accept/read/parse/staging/session state.
+- Fixed arrays: header 80, token 32, staging 614,400, publication 614,400, display consumer 614,400.
+- Receiver publishes one complete latest frame under a short `ReentrantLock` critical section.
+- Display calls `tryLock` once, copies only a newer complete publication into its own array, releases before V1D-1, and never blocks.
+- A lock miss reuses only a still-fresh display-owned frame under the same authority epoch; otherwise semantics.
+- No application FIFO exists. Unadopted publications are overwritten and counted as superseded.
+- Receiver never references the bitmap; display never references socket/parser state.
 
-Use generated external patterns only. Require zero unexplained counts for:
+### Failure and shutdown
 
-- source/target mismatches;
-- outside and old-region mismatches;
-- clear/disconnect/crash/stale/malformed semantic-only mismatches;
-- old-session appearances after reconnect;
-- duplicate/out-of-order freshness refreshes;
-- torn/partial frame visibility;
-- source mutation during sink application;
-- escaped display-loop exceptions.
+No producer, clear, disconnect, crash, stale timeout, authentication/protocol/session/sequence failure, malformed/truncated/oversized input, receiver/bind failure, writer rejection, or shutdown produces external pixels.
 
-Prove positive supersession/dropped-frame counts under producer rates above display consumption.
+Shutdown must invalidate authority and close client/server before the existing Push shutdown executor performs a bounded receiver join. The final semantic shutdown message is not covered by an external frame. A join failure is reported but cannot block existing USB/super shutdown.
+
+A connected same-user peer owns the single receiver slot until it closes or shutdown closes it. Capability authentication protects frame authority, not availability against a malicious same-user process.
+
+### Required proof
+
+- one implementation commit and exact four-path envelope;
+- exact protocol constants and complete-message publication;
+- token-file validation, owner/permission/symlink checks, and zeroing;
+- fixed arrays, one receiver thread, and no frame-sized per-cycle project allocation;
+- nonblocking display adoption and exclusive consumer ownership through V1D-1 return;
+- latest-frame supersession, session reset, duplicate/lower/gap and sequence-exhaustion behavior;
+- exact semantic fallback through the complete failure matrix;
+- five blocked-receive shutdown states, collision rejection, and immediate same-port restart;
+- byte-identical `PushUsbDisplay.class` and accepted V1D-1 sink classes;
+- at least 1,000 accepted publications with every mismatch category zero;
+- exact real Push controls/display/audio acceptance and official rollback.
 
 ### Performance
 
-Measure receiver parse/publish, critical-section duration, display nonblocking snapshot/copy, V1D-1 writer, semantic redraw, combined path, stale/no-frame path, lock misses, supersession, fixed memory, per-frame allocation, thread count, RSS/heap, and shutdown time.
+Remeasure receive, validation, publication, display adoption/copy, V1D-1 writer, semantic redraw, external pipeline, combined send, no-frame/stale/rejected paths, and close/join on the exact proposed head.
 
-The project-owned display-thread handoff plus writer targets:
+The project-owned display adoption + writer target remains:
 
 ```text
 green:  p95 <= 2 ms
@@ -281,39 +292,24 @@ review: p95 <= 5 ms
 stop:   p95 > 5 ms
 ```
 
-The existing host/redraw tails remain visible but are not a waiver for a slow external handoff.
-
-### Real fixture and rollback
-
-Only the leading safe candidate reaches the Mac + Bitwig 6.1 + Push 3 fixture. Prove generated external frames, rates, latest-frame supersession, clear, disconnect, crash, staleness, malformed/truncated input, reconnect/new session, semantic restoration, controls, audio, shutdown while connected/mid-message, and exact official rollback.
+Combined host/redraw tails are retained separately. The selected research `2.106083 ms` combined p95 and larger host maxima do not waive a slow production handoff.
 
 ## Evidence rules
 
-Retain evidence under `evidence/v1d20-external-frame-ingress/`:
+Retain evidence under `evidence/v1d2-external-frame-ingress/` for exact bases, source hashes, protocol, token custody, fixed ownership, correctness/failure counts, timing/allocation, fixture/shutdown, and rollback.
 
-- accepted bases and source topology;
-- protocol bytes/version and endpoint/security rules;
-- producer and candidate hashes;
-- fixed buffer/thread ownership;
-- sequence/session/freshness results;
-- complete failure matrix;
-- timing, allocation, lock, supersession, RSS/heap, and shutdown results;
-- real-fixture and rollback evidence;
-- one `SELECTED` or `BLOCKED` decision.
-
-Do not commit proprietary screenshots/raw frames, generated extension binaries, temporary producer/harness/instrumentation source, credentials, tokens, activation data, serial numbers, UUIDs, hostnames, IP addresses, or unsanitized personal paths.
+Do not commit proprietary screenshots/raw frames, generated extension binaries, temporary producer/harness/instrumentation source, capability tokens, credentials, activation data, serial numbers, UUIDs, hostnames, non-loopback addresses, or unsanitized personal paths.
 
 ## Engineering preferences
 
-- Prefer a simple loopback, versioned framed stream if it meets every gate.
-- Prefer fixed arrays and one bounded receiver thread over per-frame object creation.
-- Keep network I/O entirely off the display/control thread.
-- Prefer a display-owned consumer array and latest-frame-wins snapshot over sharing producer-mutable bytes with the raster writer.
-- Use receipt monotonic time, not producer wall time, for staleness.
-- Clear visual authority on connection/session replacement before accepting reset sequence numbers.
-- Fail closed rather than keeping an ambiguous frame.
-- Do not introduce ScreenCaptureKit or a macOS helper before the external generated-frame boundary is exact.
-- Remeasure the full path under 1/15/30/60 fps and burst conditions.
+- Preserve the selected simple loopback framed stream.
+- Keep all network I/O off the display/control thread.
+- Keep the receiver away from the bitmap.
+- Prefer fixed arrays and latest-frame overwrite over per-frame objects or queues.
+- Use local monotonic receipt time, not producer wall time.
+- Fail closed on every ambiguity.
+- Do not add ScreenCaptureKit or a macOS helper before production ingress is accepted.
+- Remeasure the exact full path at 1/15/30/60 fps and burst conditions.
 
 ## Connector-development rules
 
@@ -327,8 +323,6 @@ A CM11EB development card is staged open hardware:
 
 ## Current posture
 
-S0, V1A-0, V1A, V1B, V1C-0, V1C, V1D-0, and V1D-1 are accepted.
+S0, V1A-0, V1A, V1B, V1C-0, V1C, V1D-0, V1D-1, and V1D-2-0 are accepted.
 
-V1D-2-0 now selects the external generated-frame transport, protocol, handoff, sequence, freshness, and shutdown model. A production external-ingress slice follows only after that decision. V2 remains the first macOS dedicated-window capture slice.
-
-See `CURRENT_SLICE.md` before changing code.
+V1D-2 now implements production external generated-frame ingress. V2 remains the first macOS dedicated-window capture slice. See `CURRENT_SLICE.md` before changing code.
