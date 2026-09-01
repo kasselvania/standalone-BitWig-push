@@ -8,7 +8,7 @@ The primary product question is broader than one computer:
 
 That adaptive visual/controller layer is Track V, the main open-source software product. The all-in-one appliance and Intel NUC connector work remain separate parallel tracks that consume it.
 
-> **Status:** S0, V1A-0, V1A, V1B, V1C-0, and V1C are accepted. The active slice is **V1D-0: bulk raster composition feasibility**—selecting the exact primitive that can place already-prepared raster pixels onto the current semantic Push frame before external-frame IPC or window capture begins.
+> **Status:** S0, V1A-0, V1A, V1B, V1C-0, V1C, and V1D-0 are accepted. The active slice is **V1D-1: production local raster composition**—implementing the selected validated opaque-BGRA bulk writer and a bounded locally generated raster lifecycle before external-frame IPC begins.
 
 ## Three independent tracks
 
@@ -96,9 +96,9 @@ complete semantic IBitmap
 
 A startup-gated fixed mark was painted into the existing bitmap with zero changes outside its bounds, bounded cost, real-device success, and exact rollback.
 
-### V1C-0 — dynamic restoration decision
+### V1C-0 and V1C — dynamic restoration and production lifecycle
 
-Candidate A was selected:
+V1C selected and implemented:
 
 ```text
 newest retained semantic model
@@ -108,20 +108,7 @@ newest retained semantic model
         -> unchanged PushUsbDisplay
 ```
 
-Historical composed pixels are not restoration authority.
-
-### V1C — production dynamic local lifecycle
-
-V1C implemented the selected model and proved:
-
-- movement, overlap, resize, replacement, NONE, STALE, and INVALID;
-- zero outside, old-region, semantic-only, and under-coverage restoration mismatches;
-- overlay-only updates despite `ModelInfo.equals` omitting overlays;
-- notification appearance and expiration;
-- default, V1B-static, dynamic, and both-property startup behavior;
-- one persistent bitmap and one unchanged USB writer;
-- full real Push controls/audio/display acceptance;
-- exact official rollback.
+It proved movement, overlap, resize, replacement, semantic-only fallback, semantic updates under coverage, overlay-only updates, notification lifecycle, startup regressions, one persistent bitmap, one USB writer, real Push controls/audio/display, and exact rollback.
 
 Accepted DrivenByMoss integration:
 
@@ -132,38 +119,53 @@ commit:     852b520933eed87fbe496a04b5c18819a10b3564
 tree:       d03a372e2efcf41b22cef46501e08efbfb0c0036
 ```
 
-Accepted central V1C evidence:
+### V1D-0 — bulk raster decision
+
+V1D-0 selected a direct, adapter-owned writable bitmap-region capability.
+
+Accepted result:
 
 ```text
-commit: e748d168ce9983bd787fad25ac03ccb5b650edb1
-tree:   2d0a7a812e25c15aa082025f6d2ec90e8595b65c
+current semantic redraw
+        -> validate complete opaque BGRA8888 request
+        -> absolute bulk row copies, or no write
+        -> same logical IBitmap
+        -> unchanged PushUsbDisplay
 ```
 
-## Why V1D-0 comes before IPC
+The accepted Mac/Bitwig bitmap was writable, direct, tightly packed, top-left-origin BGRA memory. A cached destination view remained coherent through encode and physical Push output across 1,920 sends.
 
-V1C's local proof draws vector primitives through `IBitmap.render(...)`. Real Bitwig and plug-in visuals arrive as raster pixels.
+The generated corpus included small, padded-stride, medium, full-frame, replacement, absent, stale, invalid, malformed, and under-coverage semantic-update states. All source-target, outside, restoration, semantic-only, and partial-invalid-write mismatch counts were zero. Twenty-five malformed classes rejected without mutation. All 34 real fixture rows and exact rollback passed.
 
-The project has not yet accepted a bulk operation that can place an already-cropped, already-scaled raster region into the current semantic bitmap. The wrapper exposes `render(...)` and `encode(...)`, while the underlying Bitwig bitmap also exposes a memory block and can act as an image. Those facts do not yet prove:
+Accepted central evidence:
 
-- that the memory view is safely writable;
-- that writes are coherent for output;
-- exact row/channel/alpha/stride behavior;
-- exact bitmap-to-bitmap blit behavior;
-- validation-before-write and zero partial invalid writes;
-- or the right host-neutral interface boundary.
-
-V1D-0 resolves that before adding a process boundary.
-
-The candidate order is:
-
-1. direct validated writable bitmap-region capability;
-2. reusable raster bitmap plus bitmap-as-image blit;
-3. encode-time composition wrapper above transport;
-4. precise blocked result.
-
-The first research format is opaque BGRA8888, already cropped and scaled, with explicit destination bounds and stride. No scaling, alpha blending, capture API, or OS type enters this sink.
+```text
+commit: 63dc42ba28356a30bdbd1f54c804c91f49a659c0
+tree:   1184afeb7c00ee86a1c298df539d3267475ce6b3
+```
 
 See [`docs/V1D0_BULK_RASTER_COMPOSITION.md`](docs/V1D0_BULK_RASTER_COMPOSITION.md).
+
+## Active V1D-1 work
+
+V1D-1 turns the selected research primitive into a production source slice.
+
+The first host-neutral sink is intentionally narrow:
+
+```text
+source carrier: caller-owned byte[]
+format:         opaque BGRA8888
+source:         already cropped and scaled
+metadata:       source offset/stride + destination x/y/width/height
+execution:      synchronous display/composition thread
+result:         complete write or zero write
+```
+
+The Bitwig adapter alone owns the private cached destination memory view, target-layout validation, complete request validation, thread binding, and absolute bulk row copies.
+
+The local proof lifecycle covers SMALL, ODD_PADDED, MEDIUM, FULL, REPLACEMENT, NONE, STALE, INVALID, and MALFORMED states. It preserves the accepted default, V1B static, and V1C vector paths. External producer ownership, latest-frame sequence/freshness, shared memory, and capture remain V1D-2 and V2 work.
+
+See [`docs/V1D1_LOCAL_RASTER_COMPOSITION.md`](docs/V1D1_LOCAL_RASTER_COMPOSITION.md).
 
 ## Visual portability strategy
 
@@ -189,15 +191,15 @@ V1A     accepted identity pipeline
 V1B     accepted static bounded composition
 V1C-0   accepted dynamic restoration architecture
 V1C     accepted production dynamic local lifecycle
-V1D-0   active bulk raster primitive selection
-V1D-1   production local raster lifecycle
+V1D-0   accepted bulk raster primitive
+V1D-1   active production local raster lifecycle
 V1D-2   external latest-frame ingress
 V2      macOS dedicated-window capture
 V2A     semantic-seeded anchor benchmark
 V2P     Linux/Steam Deck portability checkpoint
 ```
 
-Each step is an independently reviewable proof. External ingress does not get to paper over an unresolved local raster sink, and capture does not get to paper over unresolved IPC/freshness behavior.
+Each step is independently reviewable. External ingress does not get to paper over an unresolved raster sink, and capture does not get to paper over unresolved IPC/freshness behavior.
 
 ## Valid stopping points
 
@@ -227,14 +229,15 @@ A later result is not required to validate an earlier one.
 4. [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 5. [`docs/MAC_FIRST_DEVELOPMENT.md`](docs/MAC_FIRST_DEVELOPMENT.md)
 6. [`docs/DRIVENBYMOSS_DERIVATIVE_STRATEGY.md`](docs/DRIVENBYMOSS_DERIVATIVE_STRATEGY.md)
-7. [`docs/V1D0_BULK_RASTER_COMPOSITION.md`](docs/V1D0_BULK_RASTER_COMPOSITION.md)
-8. [`docs/V1C_DYNAMIC_LOCAL_COMPOSITION.md`](docs/V1C_DYNAMIC_LOCAL_COMPOSITION.md)
-9. [`docs/VISUAL_PORTABILITY.md`](docs/VISUAL_PORTABILITY.md)
-10. [`docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`](docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md)
-11. [`docs/ROADMAP.md`](docs/ROADMAP.md)
-12. [`docs/RUNTIME_STRATEGY.md`](docs/RUNTIME_STRATEGY.md)
-13. [`docs/HARDWARE_DOSSIER.md`](docs/HARDWARE_DOSSIER.md)
-14. [`CONTRIBUTING.md`](CONTRIBUTING.md)
+7. [`docs/V1D1_LOCAL_RASTER_COMPOSITION.md`](docs/V1D1_LOCAL_RASTER_COMPOSITION.md)
+8. [`docs/V1D0_BULK_RASTER_COMPOSITION.md`](docs/V1D0_BULK_RASTER_COMPOSITION.md)
+9. [`docs/V1C_DYNAMIC_LOCAL_COMPOSITION.md`](docs/V1C_DYNAMIC_LOCAL_COMPOSITION.md)
+10. [`docs/VISUAL_PORTABILITY.md`](docs/VISUAL_PORTABILITY.md)
+11. [`docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`](docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md)
+12. [`docs/ROADMAP.md`](docs/ROADMAP.md)
+13. [`docs/RUNTIME_STRATEGY.md`](docs/RUNTIME_STRATEGY.md)
+14. [`docs/HARDWARE_DOSSIER.md`](docs/HARDWARE_DOSSIER.md)
+15. [`CONTRIBUTING.md`](CONTRIBUTING.md)
 
 ## Safety and legal notes
 
