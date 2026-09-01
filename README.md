@@ -8,7 +8,7 @@ The primary product question is broader than one computer:
 
 That adaptive visual/controller layer is Track V, the main open-source software product. The all-in-one appliance and Intel NUC connector work remain separate parallel tracks that consume it.
 
-> **Status:** S0, V1A-0, V1A, V1B, V1C-0, V1C, and V1D-0 are accepted. The active slice is **V1D-1: production local raster composition**—implementing the selected validated opaque-BGRA bulk writer and a bounded locally generated raster lifecycle before external-frame IPC begins.
+> **Status:** S0, V1A-0, V1A, V1B, V1C-0, V1C, V1D-0, and V1D-1 are accepted. The active slice is **V1D-2-0: external latest-frame ingress architecture**—selecting the exact local transport, protocol, fixed-memory handoff, sequence, freshness, failure, and shutdown model before a production external producer boundary is merged.
 
 ## Three independent tracks
 
@@ -110,62 +110,86 @@ newest retained semantic model
 
 It proved movement, overlap, resize, replacement, semantic-only fallback, semantic updates under coverage, overlay-only updates, notification lifecycle, startup regressions, one persistent bitmap, one USB writer, real Push controls/audio/display, and exact rollback.
 
-Accepted DrivenByMoss integration:
+### V1D-0 and V1D-1 — bulk raster sink
 
-```text
-repository: kasselvania/DrivenByMoss
-branch:     pushwig/main
-commit:     852b520933eed87fbe496a04b5c18819a10b3564
-tree:       d03a372e2efcf41b22cef46501e08efbfb0c0036
-```
+V1D-0 selected a direct adapter-owned writable bitmap-region capability. V1D-1 implemented it as production source.
 
-### V1D-0 — bulk raster decision
-
-V1D-0 selected a direct, adapter-owned writable bitmap-region capability.
-
-Accepted result:
+Accepted path:
 
 ```text
 current semantic redraw
         -> validate complete opaque BGRA8888 request
+        -> validate copied alpha and display-thread ownership
         -> absolute bulk row copies, or no write
         -> same logical IBitmap
         -> unchanged PushUsbDisplay
 ```
 
-The accepted Mac/Bitwig bitmap was writable, direct, tightly packed, top-left-origin BGRA memory. A cached destination view remained coherent through encode and physical Push output across 1,920 sends.
+The host-neutral contract accepts a caller-owned `byte[]`, source offset/stride, destination x/y/width/height, and `RasterPixelFormat.OPAQUE_BGRA8888`. `BitmapImpl` alone owns the private cached Bitwig destination view and all target-layout checks.
 
-The generated corpus included small, padded-stride, medium, full-frame, replacement, absent, stale, invalid, malformed, and under-coverage semantic-update states. All source-target, outside, restoration, semantic-only, and partial-invalid-write mismatch counts were zero. Twenty-five malformed classes rejected without mutation. All 34 real fixture rows and exact rollback passed.
+V1D-1 proved:
+
+- exact record-compatible `BitmapImpl` behavior after conversion to a final class;
+- one accepted and fourteen unsupported destination layouts with fail-closed behavior;
+- race-safe first-valid display-thread binding;
+- 28 malformed and thread cases with zero changed bytes/rows;
+- SMALL, ODD_PADDED, MEDIUM, FULL, REPLACEMENT, NONE, STALE, INVALID, and MALFORMED states;
+- 1,000 complete cycles and all target/outside/restoration/fallback mismatch counts zero;
+- one cached destination view and zero project-owned allocation across 5,000 full-frame writes;
+- default, V1B static, V1C vector, raster, and all-property precedence paths;
+- all physical Push control/display/audio checks and exact official rollback.
+
+Accepted source integration:
+
+```text
+repository: kasselvania/DrivenByMoss
+branch:     pushwig/main
+commit:     663d719207ef58ec84b4d235c43211ec5da43605
+tree:       c4e42825d069421a44b3241349de9a7c6453a3ad
+```
 
 Accepted central evidence:
 
 ```text
-commit: 63dc42ba28356a30bdbd1f54c804c91f49a659c0
-tree:   1184afeb7c00ee86a1c298df539d3267475ce6b3
+commit: a02c9c772da38bfdbc89dfff751c9617cd397c02
+tree:   62b4edce8d649266cda65a638d26113692eaef04
 ```
 
-See [`docs/V1D0_BULK_RASTER_COMPOSITION.md`](docs/V1D0_BULK_RASTER_COMPOSITION.md).
-
-## Active V1D-1 work
-
-V1D-1 turns the selected research primitive into a production source slice.
-
-The first host-neutral sink is intentionally narrow:
-
-```text
-source carrier: caller-owned byte[]
-format:         opaque BGRA8888
-source:         already cropped and scaled
-metadata:       source offset/stride + destination x/y/width/height
-execution:      synchronous display/composition thread
-result:         complete write or zero write
-```
-
-The Bitwig adapter alone owns the private cached destination memory view, target-layout validation, complete request validation, thread binding, and absolute bulk row copies.
-
-The local proof lifecycle covers SMALL, ODD_PADDED, MEDIUM, FULL, REPLACEMENT, NONE, STALE, INVALID, and MALFORMED states. It preserves the accepted default, V1B static, and V1C vector paths. External producer ownership, latest-frame sequence/freshness, shared memory, and capture remain V1D-2 and V2 work.
+The V1D-1 writer remained bounded (`0.079834 ms` p95 and `0.678917 ms` maximum in the stable real run). Larger combined maxima were explicitly retained and accepted as pre-existing semantic/host scheduling tails, not described as green. External ingress must repeat handoff, writer, redraw, and combined timing separately.
 
 See [`docs/V1D1_LOCAL_RASTER_COMPOSITION.md`](docs/V1D1_LOCAL_RASTER_COMPOSITION.md).
+
+## Active V1D-2-0 work
+
+The project can now place prepared raster bytes on Push. It still needs an exact way for another process to deliver those bytes safely.
+
+The active question is:
+
+> Which local transport and fixed-memory handoff can publish only complete latest frames, never block the Push display thread, survive producer restart/crash/truncation, and return to exact current semantics whenever external visual authority is absent or invalid?
+
+Candidate order:
+
+1. loopback-only framed TCP stream, one receiver thread, and fixed latest-frame storage;
+2. Unix-domain socket with the same bounded handoff if TCP fails a required gate;
+3. memory-mapped double buffer only if socket candidates fail;
+4. a precise blocked result.
+
+The leading shape separates ownership:
+
+```text
+external generated producer
+        -> receiver-owned socket and staging bytes
+        -> complete validated publication
+        -> fixed published slot
+        -> nonblocking display-owned consumer copy
+        -> accepted V1D-1 writer
+```
+
+The display thread performs no network I/O and never waits for a lock. The receiver never touches the Push bitmap. Local monotonic receipt time determines freshness. Session identity and strictly increasing per-session sequence prevent old or restarted producers from reviving stale frames. Clear, disconnect, crash, staleness, malformed/truncated/oversized input, protocol failure, and failed raster application all return to current semantic-only output.
+
+V1D-2-0 uses only generated external frames and temporary prototypes. It opens no production source PR and performs no window capture.
+
+See [`docs/V1D20_EXTERNAL_FRAME_INGRESS.md`](docs/V1D20_EXTERNAL_FRAME_INGRESS.md).
 
 ## Visual portability strategy
 
@@ -185,21 +209,22 @@ See [`docs/VISUAL_PORTABILITY.md`](docs/VISUAL_PORTABILITY.md) and [`docs/SEMANT
 ## Current sequence
 
 ```text
-S0      accepted fixture and display seam
-V1A-0   accepted fork/build/install baseline
-V1A     accepted identity pipeline
-V1B     accepted static bounded composition
-V1C-0   accepted dynamic restoration architecture
-V1C     accepted production dynamic local lifecycle
-V1D-0   accepted bulk raster primitive
-V1D-1   active production local raster lifecycle
-V1D-2   external latest-frame ingress
-V2      macOS dedicated-window capture
-V2A     semantic-seeded anchor benchmark
-V2P     Linux/Steam Deck portability checkpoint
+S0        accepted fixture and display seam
+V1A-0     accepted fork/build/install baseline
+V1A       accepted identity pipeline
+V1B       accepted static bounded composition
+V1C-0     accepted dynamic restoration architecture
+V1C       accepted production dynamic local lifecycle
+V1D-0     accepted bulk raster primitive
+V1D-1     accepted production local raster sink
+V1D-2-0   active external latest-frame ingress architecture
+V1D-2     production external generated-frame ingress
+V2        macOS dedicated-window capture
+V2A       semantic-seeded anchor benchmark
+V2P       Linux/Steam Deck portability checkpoint
 ```
 
-Each step is independently reviewable. External ingress does not get to paper over an unresolved raster sink, and capture does not get to paper over unresolved IPC/freshness behavior.
+Each step is independently reviewable. Capture does not get to paper over unresolved transport, handoff, session, or freshness behavior.
 
 ## Valid stopping points
 
@@ -209,7 +234,7 @@ Each is a successful project result:
 2. a portable Steam Deck appliance using the existing stand and battery;
 3. a reproducible Framework/compact-x86 appliance;
 4. an open CM11EB diagnostic/development board;
-5. a used NUC Compute Element native-bay instrument.
+5. a used Compute Element native-bay instrument.
 
 A later result is not required to validate an earlier one.
 
@@ -229,15 +254,16 @@ A later result is not required to validate an earlier one.
 4. [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 5. [`docs/MAC_FIRST_DEVELOPMENT.md`](docs/MAC_FIRST_DEVELOPMENT.md)
 6. [`docs/DRIVENBYMOSS_DERIVATIVE_STRATEGY.md`](docs/DRIVENBYMOSS_DERIVATIVE_STRATEGY.md)
-7. [`docs/V1D1_LOCAL_RASTER_COMPOSITION.md`](docs/V1D1_LOCAL_RASTER_COMPOSITION.md)
-8. [`docs/V1D0_BULK_RASTER_COMPOSITION.md`](docs/V1D0_BULK_RASTER_COMPOSITION.md)
-9. [`docs/V1C_DYNAMIC_LOCAL_COMPOSITION.md`](docs/V1C_DYNAMIC_LOCAL_COMPOSITION.md)
-10. [`docs/VISUAL_PORTABILITY.md`](docs/VISUAL_PORTABILITY.md)
-11. [`docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`](docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md)
-12. [`docs/ROADMAP.md`](docs/ROADMAP.md)
-13. [`docs/RUNTIME_STRATEGY.md`](docs/RUNTIME_STRATEGY.md)
-14. [`docs/HARDWARE_DOSSIER.md`](docs/HARDWARE_DOSSIER.md)
-15. [`CONTRIBUTING.md`](CONTRIBUTING.md)
+7. [`docs/V1D20_EXTERNAL_FRAME_INGRESS.md`](docs/V1D20_EXTERNAL_FRAME_INGRESS.md)
+8. [`docs/V1D1_LOCAL_RASTER_COMPOSITION.md`](docs/V1D1_LOCAL_RASTER_COMPOSITION.md)
+9. [`docs/V1D0_BULK_RASTER_COMPOSITION.md`](docs/V1D0_BULK_RASTER_COMPOSITION.md)
+10. [`docs/V1C_DYNAMIC_LOCAL_COMPOSITION.md`](docs/V1C_DYNAMIC_LOCAL_COMPOSITION.md)
+11. [`docs/VISUAL_PORTABILITY.md`](docs/VISUAL_PORTABILITY.md)
+12. [`docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`](docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md)
+13. [`docs/ROADMAP.md`](docs/ROADMAP.md)
+14. [`docs/RUNTIME_STRATEGY.md`](docs/RUNTIME_STRATEGY.md)
+15. [`docs/HARDWARE_DOSSIER.md`](docs/HARDWARE_DOSSIER.md)
+16. [`CONTRIBUTING.md`](CONTRIBUTING.md)
 
 ## Safety and legal notes
 
