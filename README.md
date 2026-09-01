@@ -8,7 +8,7 @@ The primary software question is broader than one computer or one all-in-one bui
 
 That adaptive visual/controller layer is the main open-source product. The all-in-one appliance and Intel NUC connector work are parallel projects that build on it.
 
-> **Status:** S0, V1A-0, V1A, and V1B are accepted and merged. The active slice is **V1C-0: dynamic raster replacement and exact restoration feasibility**—selecting the lawful frame-ownership strategy that lets visuals move, change, disappear, or become stale without leaving pixels behind or erasing newer DrivenByMoss semantics.
+> **Status:** S0, V1A-0, V1A, V1B, and V1C-0 are accepted. The active slice is **V1C: dynamic local visual composition lifecycle**—the production implementation that redraws the newest DrivenByMoss semantic model before every enabled changing visual, so movement, replacement, disappearance, stale input, and invalid input restore exact current semantics.
 
 ## Three independent project tracks
 
@@ -79,15 +79,15 @@ The goal is not to shrink the entire desktop onto a 960×160 display. It is to s
 
 ## Mac-first development, portable architecture
 
-The currently available Mac can carry the project through the most important early software work:
+The available Mac provides the shortest development loop for the early software:
 
 ```text
 trace the existing semantic renderer                 proven
         -> establish fork/build/install baseline     proven
         -> insert a no-op frame pipeline              proven
         -> mix bounded static project pixels          proven
-        -> select dynamic restoration ownership      active
-        -> implement dynamic local composition
+        -> select dynamic restoration ownership      proven
+        -> implement dynamic local composition       active
         -> accept an external generated frame
         -> capture a real Bitwig/editor window
         -> benchmark semantic-seeded anchors
@@ -101,28 +101,53 @@ commit: 1ae0b74f383314d170a5960ca763bdf9c319e787
 tree:   a81e5c4330b31f36845c25e98e322990d62f0c67
 ```
 
-The accepted path is now:
+The accepted semantic/display seam is:
 
 ```text
-persistent semantic IBitmap
+complete semantic IBitmap
         -> project-owned PushFramePipeline
-        -> optional startup-scoped static diagnostic layer
-        -> exact same IBitmap reference
+        -> same IBitmap
         -> unchanged PushUsbDisplay
 ```
 
-V1B proved that a second bounded render callback can paint one fixed two-color mark with zero outside-region changes. It also proved default-off behavior, representative semantic updates, bounded cost, recovery after restart, and exact official rollback.
+V1B proved bounded static in-place painting:
 
-That is not yet a complete dynamic compositor. DrivenByMoss reuses a persistent bitmap and redraws semantic content only when its `ModelInfo` changes. If a future visual moves from region A to B—or disappears because a helper closes—simply drawing B or stopping drawing does not necessarily restore A.
+```text
+startup property off
+        -> pass-through
 
-V1C-0 therefore selects one exact restoration model before the project introduces IPC:
+pushwig.syntheticOverlay=true
+        -> one fixed bounded project-owned mark
+        -> zero outside-region changes
+```
 
-1. redraw the retained current semantic model before each dynamic layer;
-2. preserve a pristine semantic bitmap and rebuild one reusable final bitmap;
-3. use a generation-aware region restore; or
-4. use a narrow backend copy primitive if higher-level paths fail.
+V1C-0 then selected the exact dynamic restoration rule:
 
-See [`docs/V1C0_DYNAMIC_RASTER_COMPOSITION.md`](docs/V1C0_DYNAMIC_RASTER_COMPOSITION.md), [`docs/V1B_SYNTHETIC_COMPOSITION.md`](docs/V1B_SYNTHETIC_COMPOSITION.md), and [`docs/DRIVENBYMOSS_DERIVATIVE_STRATEGY.md`](docs/DRIVENBYMOSS_DERIVATIVE_STRATEGY.md).
+```text
+output =
+    compose(
+        redraw(newest retained semantic ModelInfo),
+        optional current valid visual
+    )
+```
+
+The rejected rule is:
+
+```text
+output =
+    mutate(previous composed output, maybe new visual)
+```
+
+The selected candidate produced zero outside, old-region restoration, disappearance, stale, invalid, and semantic-update mismatch counts. On the accepted real Bitwig fixture, restore-plus-compose measured p95 `0.413209 ms` and maximum `7.356958 ms`.
+
+V1C now implements this decision as production source with a bounded locally generated lifecycle before any external frame or capture process exists.
+
+See:
+
+- [`docs/V1C_DYNAMIC_LOCAL_COMPOSITION.md`](docs/V1C_DYNAMIC_LOCAL_COMPOSITION.md)
+- [`docs/V1C0_DYNAMIC_RASTER_COMPOSITION.md`](docs/V1C0_DYNAMIC_RASTER_COMPOSITION.md)
+- [`docs/V1B_SYNTHETIC_COMPOSITION.md`](docs/V1B_SYNTHETIC_COMPOSITION.md)
+- [`docs/DRIVENBYMOSS_DERIVATIVE_STRATEGY.md`](docs/DRIVENBYMOSS_DERIVATIVE_STRATEGY.md)
 
 ## Visual portability strategy
 
@@ -135,7 +160,7 @@ The preferred acquisition order is:
 3. use bounded one-time calibration when automatic resolution cannot be proven;
 4. accept direct project-owned frames from analyzers or companion integrations.
 
-One promising implementation is a **semantic-seeded pixel anchor resolver**: DrivenByMoss supplies the selected device and expected visual role, then a lightweight multi-anchor matcher searches only plausible Bitwig windows/regions, solves translation/scale, validates confidence, and locks the visual crop. This turns generic screen recognition into a bounded registration problem and can be benchmarked explicitly for wrong-lock rate, acquisition latency, and CPU cost.
+One promising implementation is a **semantic-seeded pixel anchor resolver**: DrivenByMoss supplies the selected device and expected visual role, then a lightweight multi-anchor matcher searches only plausible Bitwig windows/regions, solves translation/scale, validates confidence, and locks the visual crop.
 
 See [`docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`](docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md).
 
@@ -159,44 +184,75 @@ It proved the true fork, immutable upstream basis, explicit Java 21/Maven build,
 
 Retained under `evidence/v1a-identity-frame-pipeline/`.
 
-It proved the exact reference-preserving synchronous frame boundary, bounded the executable delta to three classes, kept `PushUsbDisplay.class` byte-identical, passed all eleven real Push checks, produced no visual difference, shut down normally, and restored the exact official artifact.
+It proved the exact reference-preserving synchronous frame boundary, bounded the executable delta, kept `PushUsbDisplay.class` byte-identical, passed all real Push checks, produced no visual difference, shut down normally, and restored the official artifact exactly.
 
-### V1B — startup-scoped static synthetic overlay
+### V1B — static synthetic overlay
 
 Retained under `evidence/v1b-static-synthetic-overlay/`.
 
 It proved:
 
-- default startup still selects the pass-through path;
+- default startup still selects pass-through;
 - startup diagnostic activation selects one reusable synthetic pipeline;
-- the exact same bitmap receives one fixed pink/white mark;
+- the same bitmap receives one fixed pink/white mark;
 - 1,529 target pixels changed and all 152,064 outside pixels remained identical;
-- repeated sends and Track, Device Parameters, Session, and Browser updates remained coherent;
+- repeated sends and representative semantic modes remained coherent;
 - property-off restart removed the mark;
 - enabled p95/max processing cost was 54.542 µs / 194 µs;
 - the full real Push baseline and exact rollback passed.
 
-## Current research slice
+### V1C-0 — dynamic restoration architecture
 
-V1C-0 asks:
+Retained under `evidence/v1c0-dynamic-raster-composition/`.
 
-> What is the smallest exact mechanism that rebuilds output from the current semantic frame plus the current optional visual, rather than mutating historical output and hoping old pixels disappear?
+It selected **Candidate A — retained current semantic redraw** and proved:
 
-The required conceptual contract is:
+- movement through four positions;
+- replacement, absence, stale, and invalid states;
+- exact restoration of previous regions;
+- exact semantic updates beneath previously covered pixels;
+- zero outside/restoration/fallback mismatch counts;
+- green real-Bitwig timing;
+- bounded memory;
+- unchanged sole USB transport;
+- real Push control/display/audio acceptance;
+- exact official rollback.
+
+Candidates B–D were correctly not reached after Candidate A satisfied the ordered stopping gate.
+
+## Current source slice
+
+V1C asks:
+
+> Can the accepted Candidate A ownership rule be implemented cleanly in production source while preserving ordinary dirty rendering, the accepted V1B static path, exact overlay/notification semantics, bounded cost, one bitmap, and one USB writer?
+
+The production path is:
 
 ```text
-output = compose(currentSemanticFrame, optionalCurrentVisual)
+newest copied ModelInfo
+        -> retain before render decision
+        -> full semantic redraw only when dynamic-local mode is selected
+        -> current valid local visual, or no visual
+        -> same persistent IBitmap
+        -> unchanged PushUsbDisplay
 ```
 
-The rejected conceptual contract is:
+The bounded diagnostic lifecycle covers:
 
 ```text
-output = mutate(previousOutput, maybeNewVisual)
+move
+partial overlap
+enlarge
+shrink
+replace
+NONE
+STALE
+INVALID
 ```
 
-V1C-0 uses temporary, unmerged prototypes and produces a central evidence/decision PR only. It must prove moving, replacement, absence, stale fallback, and a semantic update underneath a previously covered region. The selected candidate must have zero unexplained restoration and outside-region mismatches, bounded cost, one USB writer, and a precise next production seam.
+V1C also proves an overlay-only update and the notification appearance/replacement/expiration lifecycle.
 
-External generated-frame ingress is now **V1D**, after the local dynamic lifecycle is proven in V1C.
+External generated-frame ingress is **V1D**, after V1C is accepted.
 
 See [`CURRENT_SLICE.md`](CURRENT_SLICE.md).
 
@@ -231,15 +287,16 @@ See [`docs/RUNTIME_STRATEGY.md`](docs/RUNTIME_STRATEGY.md).
 4. [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 5. [`docs/MAC_FIRST_DEVELOPMENT.md`](docs/MAC_FIRST_DEVELOPMENT.md)
 6. [`docs/DRIVENBYMOSS_DERIVATIVE_STRATEGY.md`](docs/DRIVENBYMOSS_DERIVATIVE_STRATEGY.md)
-7. [`docs/V1C0_DYNAMIC_RASTER_COMPOSITION.md`](docs/V1C0_DYNAMIC_RASTER_COMPOSITION.md)
-8. [`docs/V1B_SYNTHETIC_COMPOSITION.md`](docs/V1B_SYNTHETIC_COMPOSITION.md)
-9. [`docs/VISUAL_PORTABILITY.md`](docs/VISUAL_PORTABILITY.md)
-10. [`docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`](docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md)
-11. [`docs/VISUAL_RESEARCH_BASIS.md`](docs/VISUAL_RESEARCH_BASIS.md)
-12. [`docs/ROADMAP.md`](docs/ROADMAP.md)
-13. [`docs/RUNTIME_STRATEGY.md`](docs/RUNTIME_STRATEGY.md)
-14. [`docs/HARDWARE_DOSSIER.md`](docs/HARDWARE_DOSSIER.md)
-15. [`CONTRIBUTING.md`](CONTRIBUTING.md)
+7. [`docs/V1C_DYNAMIC_LOCAL_COMPOSITION.md`](docs/V1C_DYNAMIC_LOCAL_COMPOSITION.md)
+8. [`docs/V1C0_DYNAMIC_RASTER_COMPOSITION.md`](docs/V1C0_DYNAMIC_RASTER_COMPOSITION.md)
+9. [`docs/V1B_SYNTHETIC_COMPOSITION.md`](docs/V1B_SYNTHETIC_COMPOSITION.md)
+10. [`docs/VISUAL_PORTABILITY.md`](docs/VISUAL_PORTABILITY.md)
+11. [`docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`](docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md)
+12. [`docs/VISUAL_RESEARCH_BASIS.md`](docs/VISUAL_RESEARCH_BASIS.md)
+13. [`docs/ROADMAP.md`](docs/ROADMAP.md)
+14. [`docs/RUNTIME_STRATEGY.md`](docs/RUNTIME_STRATEGY.md)
+15. [`docs/HARDWARE_DOSSIER.md`](docs/HARDWARE_DOSSIER.md)
+16. [`CONTRIBUTING.md`](CONTRIBUTING.md)
 
 ## Upstream work
 
