@@ -8,7 +8,7 @@ The primary product question is broader than one computer:
 
 That adaptive visual/controller layer is Track V, the main open-source software product. The all-in-one appliance and Intel NUC connector work remain separate parallel tracks that consume it.
 
-> **Status:** S0, V1A-0, V1A, V1B, V1C-0, V1C, V1D-0, and V1D-1 are accepted. The active slice is **V1D-2-0: external latest-frame ingress architecture**—selecting the exact local transport, protocol, fixed-memory handoff, sequence, freshness, failure, and shutdown model before a production external producer boundary is merged.
+> **Status:** S0, V1A-0, V1A, V1B, V1C-0, V1C, V1D-0, V1D-1, and V1D-2-0 are accepted. The active slice is **V1D-2: production external latest-frame ingress**—implementing the selected capability-authenticated loopback protocol, fixed latest-frame handoff, nonblocking display adoption, and exact failure fallback before any window-capture code begins.
 
 ## Three independent tracks
 
@@ -31,31 +31,11 @@ A managed virtual desktop is not imposed on attached-mode users.
 
 ### Track A — all-in-one appliance
 
-Package accepted Track V software as a portable headless instrument.
+Package accepted Track V software as a portable headless instrument. The maintainer's first appliance can use the Steam Deck, existing angled wooden base, protected battery, tested USB-C PD-to-barrel cable, Push's ordinary rear USB connection, and wireless access to the full Bitwig desktop. A Framework mainboard or other x86 host can later replace the Deck without changing the visual contracts.
 
-The maintainer's first appliance can use:
+### Track H — connector and native compute
 
-- Steam Deck;
-- existing angled wooden base;
-- existing protected battery;
-- tested USB-C PD-to-barrel power cable;
-- Push's ordinary rear USB connection;
-- wireless access to the full Bitwig desktop.
-
-A Framework mainboard or other x86 host can later replace the Deck without changing the core visual contracts.
-
-### Track H — connector and native-compute research
-
-Investigate Push's CM11EB/Intel NUC Compute Element carrier as an independent open-hardware effort:
-
-- survey and measure the carrier/cavity;
-- design a safe diagnostic edge card;
-- map USB, mux, power, and sideband behavior;
-- use an external host as a development workstation;
-- evaluate used Compute Elements only after the interface is understood;
-- integrate battery, power, and thermals for a native-bay final form.
-
-A useful connector development board is a valid result even without a completed NUC conversion.
+Investigate Push's CM11EB/Intel NUC Compute Element carrier as an independent open-hardware effort: measure the carrier and cavity, create a safe diagnostic edge card, map USB/mux/power/sideband behavior, and evaluate used Compute Elements only after the interface is understood. A useful connector development board is a valid result even without a completed native-bay conversion.
 
 See [`docs/PROJECT_TRACKS.md`](docs/PROJECT_TRACKS.md).
 
@@ -75,30 +55,11 @@ The goal is not to shrink an entire desktop onto a 960×160 strip. It is to disp
 
 ## Accepted visual foundation
 
-### S0 — fixture and display seam
+### S0 through V1B
 
-The Mac + Bitwig 6.1 + Push 3 fixture was accepted, official DrivenByMoss 26.4.1 was cryptographically tied to exact source, and the semantic-renderer-to-USB path was traced.
+The Mac + Bitwig 6.1 + Push 3 fixture, official DrivenByMoss 26.4.1 source/artifact provenance, derivative build/install/rollback, the project-owned frame seam, and the first bounded static project pixels are accepted.
 
-### V1A-0 — derivative custody/build baseline
-
-The true fork, immutable source basis, Java 21/Maven build, reversible installation, hardware parity, and exact official rollback were accepted.
-
-### V1A — identity frame pipeline
-
-```text
-complete semantic IBitmap
-        -> project-owned frame pipeline
-        -> same IBitmap
-        -> unchanged PushUsbDisplay
-```
-
-### V1B — static bounded composition
-
-A startup-gated fixed mark was painted into the existing bitmap with zero changes outside its bounds, bounded cost, real-device success, and exact rollback.
-
-### V1C-0 and V1C — dynamic restoration and production lifecycle
-
-V1C selected and implemented:
+### V1C — exact dynamic restoration
 
 ```text
 newest retained semantic model
@@ -108,38 +69,24 @@ newest retained semantic model
         -> unchanged PushUsbDisplay
 ```
 
-It proved movement, overlap, resize, replacement, semantic-only fallback, semantic updates under coverage, overlay-only updates, notification lifecycle, startup regressions, one persistent bitmap, one USB writer, real Push controls/audio/display, and exact rollback.
+V1C proved movement, overlap, resize, replacement, absence/stale/invalid fallback, semantic updates under coverage, overlay-only updates, notification lifecycle, one persistent bitmap, one USB writer, real Push controls/audio/display, and exact rollback.
 
-### V1D-0 and V1D-1 — bulk raster sink
-
-V1D-0 selected a direct adapter-owned writable bitmap-region capability. V1D-1 implemented it as production source.
-
-Accepted path:
+### V1D-1 — production raster sink
 
 ```text
 current semantic redraw
-        -> validate complete opaque BGRA8888 request
+        -> validate complete OPAQUE_BGRA8888 request
         -> validate copied alpha and display-thread ownership
         -> absolute bulk row copies, or no write
         -> same logical IBitmap
         -> unchanged PushUsbDisplay
 ```
 
-The host-neutral contract accepts a caller-owned `byte[]`, source offset/stride, destination x/y/width/height, and `RasterPixelFormat.OPAQUE_BGRA8888`. `BitmapImpl` alone owns the private cached Bitwig destination view and all target-layout checks.
+The host-neutral sink accepts caller-owned bytes plus source offset/stride and destination geometry. `BitmapImpl` alone owns the private cached Bitwig memory view and all target-layout checks.
 
-V1D-1 proved:
+V1D-1 proved fail-closed unsupported destinations, race-safe thread binding, padded-stride and full-frame writes, all malformed/semantic fallback states, zero pixel/restoration/partial-write mismatches, zero project-owned per-application allocation, prior-path regressions, full physical Push behavior, and exact official rollback.
 
-- exact record-compatible `BitmapImpl` behavior after conversion to a final class;
-- one accepted and fourteen unsupported destination layouts with fail-closed behavior;
-- race-safe first-valid display-thread binding;
-- 28 malformed and thread cases with zero changed bytes/rows;
-- SMALL, ODD_PADDED, MEDIUM, FULL, REPLACEMENT, NONE, STALE, INVALID, and MALFORMED states;
-- 1,000 complete cycles and all target/outside/restoration/fallback mismatch counts zero;
-- one cached destination view and zero project-owned allocation across 5,000 full-frame writes;
-- default, V1B static, V1C vector, raster, and all-property precedence paths;
-- all physical Push control/display/audio checks and exact official rollback.
-
-Accepted source integration:
+Accepted implementation:
 
 ```text
 repository: kasselvania/DrivenByMoss
@@ -148,48 +95,59 @@ commit:     663d719207ef58ec84b4d235c43211ec5da43605
 tree:       c4e42825d069421a44b3241349de9a7c6453a3ad
 ```
 
-Accepted central evidence:
+Accepted V1D-1 evidence:
 
 ```text
 commit: a02c9c772da38bfdbc89dfff751c9617cd397c02
 tree:   62b4edce8d649266cda65a638d26113692eaef04
 ```
 
-The V1D-1 writer remained bounded (`0.079834 ms` p95 and `0.678917 ms` maximum in the stable real run). Larger combined maxima were explicitly retained and accepted as pre-existing semantic/host scheduling tails, not described as green. External ingress must repeat handoff, writer, redraw, and combined timing separately.
+### V1D-2-0 — external ingress decision
 
-See [`docs/V1D1_LOCAL_RASTER_COMPOSITION.md`](docs/V1D1_LOCAL_RASTER_COMPOSITION.md).
-
-## Active V1D-2-0 work
-
-The project can now place prepared raster bytes on Push. It still needs an exact way for another process to deliver those bytes safely.
-
-The active question is:
-
-> Which local transport and fixed-memory handoff can publish only complete latest frames, never block the Push display thread, survive producer restart/crash/truncation, and return to exact current semantics whenever external visual authority is absent or invalid?
-
-Candidate order:
-
-1. loopback-only framed TCP stream, one receiver thread, and fixed latest-frame storage;
-2. Unix-domain socket with the same bounded handoff if TCP fails a required gate;
-3. memory-mapped double buffer only if socket candidates fail;
-4. a precise blocked result.
-
-The leading shape separates ownership:
+V1D-2-0 selected Candidate A:
 
 ```text
 external generated producer
-        -> receiver-owned socket and staging bytes
-        -> complete validated publication
-        -> fixed published slot
-        -> nonblocking display-owned consumer copy
-        -> accepted V1D-1 writer
+        -> capability-authenticated TCP 127.0.0.1 protocol v1
+        -> complete-message receive in one receiver thread
+        -> fixed latest-publication storage
+        -> display-thread tryLock adoption into fixed consumer bytes
+        -> local monotonic freshness
+        -> accepted V1D-1 sink
+        -> unchanged PushUsbDisplay
 ```
 
-The display thread performs no network I/O and never waits for a lock. The receiver never touches the Push bitmap. Local monotonic receipt time determines freshness. Session identity and strictly increasing per-session sequence prevent old or restarted producers from reviving stale frames. Clear, disconnect, crash, staleness, malformed/truncated/oversized input, protocol failure, and failed raster application all return to current semantic-only output.
+The selected protocol uses a fixed 80-byte big-endian header, HELLO/FRAME/CLEAR messages, a 32-byte capability, nonzero producer session identity, positive strictly increasing sequence, and a 614,400-byte payload cap. Application memory is fixed; no application frame queue exists.
 
-V1D-2-0 uses only generated external frames and temporary prototypes. It opens no production source PR and performs no window capture.
+The research proof retained more than 1,000 accepted publications, positive supersession/gap/session/failure counts, zero source-target/outside/restoration/semantic-only/old-session/torn-frame/consumer-mutation mismatches, 1/15/30/60 fps and burst behavior, all five blocked-receive shutdown states, immediate same-port restart, full Push controls/audio/display behavior, and exact rollback.
+
+Accepted V1D-2-0 evidence:
+
+```text
+commit: 99e09e2a651c92ac6710fdc88c4675a874a56600
+tree:   db22ec0a845146f03861581a929ae52b30204a1b
+```
 
 See [`docs/V1D20_EXTERNAL_FRAME_INGRESS.md`](docs/V1D20_EXTERNAL_FRAME_INGRESS.md).
+
+## Active V1D-2 work
+
+V1D-2 now implements that architecture as production DrivenByMoss source.
+
+Construction-time properties select a loopback-only receiver, fixed/configurable port, private token-file path, and stale timeout. The launcher/orchestrator owns token-file creation and cleanup; the extension validates and loads it without exposing the token. External mode has precedence over local diagnostics and keeps current-semantic redraw active.
+
+The production source is limited to:
+
+```text
+Push2Display.java
+ExternalRasterPushFramePipeline.java
+ExternalRasterReceiver.java
+LatestExternalRasterFrameStore.java
+```
+
+The receiver never touches the bitmap. The display thread never touches the socket. Complete accepted frames replace one latest publication; the display nonblockingly adopts into its own fixed bytes and calls the accepted V1D-1 sink. Clear, disconnect, crash, stale timeout, protocol/authentication failure, truncation, malformed/oversized input, writer rejection, bind failure, and shutdown all produce exact current semantics.
+
+See [`docs/V1D2_EXTERNAL_FRAME_INGRESS.md`](docs/V1D2_EXTERNAL_FRAME_INGRESS.md).
 
 ## Visual portability strategy
 
@@ -217,8 +175,8 @@ V1C-0     accepted dynamic restoration architecture
 V1C       accepted production dynamic local lifecycle
 V1D-0     accepted bulk raster primitive
 V1D-1     accepted production local raster sink
-V1D-2-0   active external latest-frame ingress architecture
-V1D-2     production external generated-frame ingress
+V1D-2-0   accepted external ingress architecture
+V1D-2     active production external latest-frame ingress
 V2        macOS dedicated-window capture
 V2A       semantic-seeded anchor benchmark
 V2P       Linux/Steam Deck portability checkpoint
@@ -254,16 +212,15 @@ A later result is not required to validate an earlier one.
 4. [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 5. [`docs/MAC_FIRST_DEVELOPMENT.md`](docs/MAC_FIRST_DEVELOPMENT.md)
 6. [`docs/DRIVENBYMOSS_DERIVATIVE_STRATEGY.md`](docs/DRIVENBYMOSS_DERIVATIVE_STRATEGY.md)
-7. [`docs/V1D20_EXTERNAL_FRAME_INGRESS.md`](docs/V1D20_EXTERNAL_FRAME_INGRESS.md)
-8. [`docs/V1D1_LOCAL_RASTER_COMPOSITION.md`](docs/V1D1_LOCAL_RASTER_COMPOSITION.md)
-9. [`docs/V1D0_BULK_RASTER_COMPOSITION.md`](docs/V1D0_BULK_RASTER_COMPOSITION.md)
-10. [`docs/V1C_DYNAMIC_LOCAL_COMPOSITION.md`](docs/V1C_DYNAMIC_LOCAL_COMPOSITION.md)
-11. [`docs/VISUAL_PORTABILITY.md`](docs/VISUAL_PORTABILITY.md)
-12. [`docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`](docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md)
-13. [`docs/ROADMAP.md`](docs/ROADMAP.md)
-14. [`docs/RUNTIME_STRATEGY.md`](docs/RUNTIME_STRATEGY.md)
-15. [`docs/HARDWARE_DOSSIER.md`](docs/HARDWARE_DOSSIER.md)
-16. [`CONTRIBUTING.md`](CONTRIBUTING.md)
+7. [`docs/V1D2_EXTERNAL_FRAME_INGRESS.md`](docs/V1D2_EXTERNAL_FRAME_INGRESS.md)
+8. [`docs/V1D20_EXTERNAL_FRAME_INGRESS.md`](docs/V1D20_EXTERNAL_FRAME_INGRESS.md)
+9. [`docs/V1D1_LOCAL_RASTER_COMPOSITION.md`](docs/V1D1_LOCAL_RASTER_COMPOSITION.md)
+10. [`docs/VISUAL_PORTABILITY.md`](docs/VISUAL_PORTABILITY.md)
+11. [`docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`](docs/SEMANTIC_PIXEL_ANCHOR_RESOLVER.md)
+12. [`docs/ROADMAP.md`](docs/ROADMAP.md)
+13. [`docs/RUNTIME_STRATEGY.md`](docs/RUNTIME_STRATEGY.md)
+14. [`docs/HARDWARE_DOSSIER.md`](docs/HARDWARE_DOSSIER.md)
+15. [`CONTRIBUTING.md`](CONTRIBUTING.md)
 
 ## Safety and legal notes
 

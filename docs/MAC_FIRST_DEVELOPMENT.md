@@ -8,42 +8,49 @@ This changes implementation order, not product scope:
 
 - macOS supplies the fastest source/build/install/measurement loop;
 - Steam Deck remains the first Track A appliance host and named Linux portability fixture;
-- semantic, raster, external-frame, resolver, and adapter contracts remain operating-system neutral;
-- no ScreenCaptureKit, Core Graphics, or other macOS object may leak into the controller extension or public frame contracts.
+- semantic, raster, ingress, resolver, and adapter contracts remain operating-system neutral;
+- no ScreenCaptureKit, Core Graphics, or other macOS object enters the controller extension or host-neutral frame contracts.
 
 ## Accepted Mac progress
 
 ### S0 through V1B
 
-Accepted the exact Mac + Bitwig + Push fixture, official DrivenByMoss source/artifact provenance, derivative build/install/rollback, the project-owned frame seam, and the first bounded static visual pixels.
+Accepted the exact Mac + Bitwig + Push fixture, official DrivenByMoss source/artifact provenance, derivative build/install/rollback, the project-owned frame seam, and bounded static project pixels.
 
-### V1C-0 and V1C
-
-Selected and implemented current-semantic redraw as dynamic restoration authority:
+### V1C — dynamic restoration
 
 ```text
 newest copied ModelInfo
         -> complete current-semantic redraw
-        -> current optional local visual
+        -> current optional visual
         -> same persistent IBitmap
         -> unchanged PushUsbDisplay
 ```
 
-V1C proved movement, overlap, resize, replacement, semantic-only states, semantic changes under coverage, overlay-only updates, notification lifecycle, regression paths, bounded performance, real Push behavior, and exact rollback.
+Accepted movement, resize, replacement, semantic-only states, under-coverage semantic updates, overlay-only updates, notification lifecycle, regression paths, bounded performance, real Push behavior, and exact rollback.
 
-### V1D-0 and V1D-1
-
-Selected and implemented a direct writable bitmap-region sink:
+### V1D-1 — production raster sink
 
 ```text
 current semantic redraw
-        -> complete opaque-BGRA request validation
-        -> absolute bulk row copies, or zero write
+        -> validate complete opaque BGRA request
+        -> absolute bulk row copies, or zero writes
         -> same logical IBitmap
         -> unchanged PushUsbDisplay
 ```
 
-Accepted source:
+Accepted:
+
+- host-neutral caller-owned `byte[]` raster request;
+- adapter-private cached direct destination view;
+- complete geometry/overflow/source/alpha/thread validation;
+- race-safe display-thread binding;
+- small, padded, medium, full, replacement, absent, stale, invalid, and malformed states;
+- zero source-target/outside/restoration/semantic-only/partial-write mismatches;
+- one cached view and zero project-owned per-application allocation;
+- all prior startup paths, full Push controls/audio, and exact rollback.
+
+Accepted implementation:
 
 ```text
 kasselvania/DrivenByMoss: pushwig/main
@@ -51,139 +58,81 @@ commit: 663d719207ef58ec84b4d235c43211ec5da43605
 tree:   c4e42825d069421a44b3241349de9a7c6453a3ad
 ```
 
-Accepted central evidence:
+### V1D-2-0 — external ingress decision
+
+Selected a capability-authenticated loopback framed stream:
 
 ```text
-commit: a02c9c772da38bfdbc89dfff751c9617cd397c02
-tree:   62b4edce8d649266cda65a638d26113692eaef04
+external generated producer
+        -> TCP 127.0.0.1 protocol v1
+        -> one receiver thread and complete-message validation
+        -> fixed latest-publication storage
+        -> display-thread tryLock copy into fixed consumer bytes
+        -> local monotonic freshness
+        -> accepted V1D-1 sink
+        -> unchanged PushUsbDisplay
 ```
 
-V1D-1 established:
+Research established:
 
-- one host-neutral `IRasterWritableBitmap` contract;
-- one opaque BGRA pixel format;
-- one private cached direct Bitwig destination view;
-- all-or-nothing geometry, source, alpha, destination, and thread validation;
-- race-safe first-valid display-thread binding;
-- padded row support and exact bulk copying;
-- fail-closed unsupported destinations;
-- default, V1B, V1C, raster, and all-property precedence behavior;
-- 1,000 complete raster cycles with every mismatch category zero;
-- 28 negative/thread cases with no changed byte;
-- zero project-owned allocation across 5,000 full-frame applications;
-- full real Push control/display/audio acceptance;
-- exact official rollback.
+- exact 80-byte network-order protocol with HELLO/FRAME/CLEAR;
+- 32-byte capability, 128-bit producer session, receiver-local generation, and strictly increasing sequence;
+- fixed 1,843,312 bytes of project frame/security arrays;
+- no application frame queue or receiver bitmap access;
+- no display-thread socket I/O or blocking lock;
+- latest-frame supersession and no backlog replay at tested rates/bursts;
+- exact semantic fallback after clear, disconnect, crash, stale timeout, auth/protocol/session failure, truncation, malformed input, writer rejection, bind failure, and shutdown;
+- 1/15/30/60 fps, real Push behavior, five blocked-receive shutdown states, immediate restart, and exact rollback.
 
-The writer itself remained extremely small in the stable real run. Repeated larger combined wall-clock maxima were explicitly retained and accepted as pre-existing semantic/host scheduling tails, not described as green. Any external handoff must be measured independently from those tails.
-
-## Active Mac task: V1D-2-0 external latest-frame ingress architecture
-
-The Mac can now consume a prepared raster efficiently. The active task is to prove how another local process safely supplies the latest complete raster.
-
-The required separation is:
+Accepted evidence:
 
 ```text
-external process
-        -> local transport and complete-message parser
-        -> fixed latest-frame publication
-        -> nonblocking display-owned frame adoption
-        -> V1D-1 raster writer
+commit: 99e09e2a651c92ac6710fdc88c4675a874a56600
+tree:   db22ec0a845146f03861581a929ae52b30204a1b
 ```
 
-The external receiver never writes the Push bitmap. The Push display thread never performs network I/O, waits for the producer, or blocks on the receiver.
+## Active Mac task: V1D-2 production ingress
 
-Candidate order:
+V1D-2 now recreates the selected receiver/store/pipeline as production source against exact accepted `pushwig/main`.
 
-1. loopback-only framed TCP stream with one receiver thread and fixed storage;
-2. Unix-domain socket if the loopback candidate cannot satisfy the requirements;
-3. memory-mapped double buffer only if socket candidates fail.
-
-V1D-2-0 must select:
-
-- endpoint binding/discovery and local security;
-- language-neutral versioned framing;
-- maximum message/payload sizes;
-- producer session identity and per-session sequence;
-- local monotonic receipt-time freshness;
-- explicit clear and disconnect behavior;
-- fixed staging, publication, and display-consumer ownership;
-- nonblocking adoption and latest-frame supersession;
-- partial/truncated/malformed/oversized rejection;
-- clean shutdown while connected, silent, or mid-message;
-- exact production source seam.
-
-The test producer uses only generated asymmetric BGRA frames. No Screen Recording permission or proprietary window capture is needed.
-
-## Why another architecture gate is appropriate
-
-External ingress introduces a new concurrency boundary that the local sink deliberately avoided.
-
-A premature production implementation could accidentally:
-
-- expose a partial frame;
-- block the control surface thread;
-- allocate a new full-frame array on every update;
-- build a FIFO backlog;
-- refresh stale state with duplicate sequence values;
-- let an old producer session reappear after reconnect;
-- race producer mutation against `writeRasterRegion`;
-- hang Bitwig shutdown on a slow sender;
-- treat producer wall-clock time as freshness authority.
-
-V1D-2-0 resolves those ownership questions with generated frames before the project adds real capture complexity.
-
-## Expected first candidate
-
-The leading candidate is:
+Production source envelope:
 
 ```text
-one loopback server
-one active producer
-one receiver thread
-one fixed receive staging array
-one fixed complete-publication array
-one fixed display-owned consumer array
-one versioned binary protocol
-one local receipt-time freshness clock
-no application frame queue
+Push2Display.java
+ExternalRasterPushFramePipeline.java
+ExternalRasterReceiver.java
+LatestExternalRasterFrameStore.java
 ```
 
-The receiver publishes only complete frames. The display thread uses a nonblocking snapshot/copy to update its own stable bytes and may continue using that frame only while it remains fresh. Producer clear, disconnect, crash, staleness, protocol failure, malformed data, or sink rejection produces exact current semantics.
+Construction-time properties provide activation, fixed/configurable loopback port, private token-file path, and stale timeout. External mode has precedence over local diagnostic sources and forces current-semantic redraw.
 
-This remains a candidate until the slice proves correctness, fixed allocation, rates, supersession, failure behavior, and shutdown.
+The launcher/orchestrator owns token-file creation and cleanup. The extension validates a regular non-symlink owner-private file, loads exactly 32 capability bytes, and never logs or exposes the token. Fixed/configurable port plus token-file path is the current endpoint handoff; friendlier helper orchestration is later work.
+
+The receiver owns socket, parser, staging, session, and publication. It publishes only complete authenticated frames. The display nonblockingly adopts into its own fixed array, checks local receipt-time freshness, invokes V1D-1 synchronously, and returns the same semantic bitmap to one unchanged USB writer.
+
+Production acceptance repeats exact session/sequence/gap/reset/exhaustion rules, all failure fallbacks, 1/15/30/60 fps and burst behavior, fixed allocation and separated timing, five shutdown states, active-listener collision, immediate restart, full Push controls/audio, and exact official rollback.
+
+No ScreenCaptureKit or window discovery enters V1D-2.
 
 ## Tail-latency posture
 
-V1D-2-0 must measure separately:
+The selected research external pipeline measured `0.092375 ms` p95, while the combined semantic/host path measured `2.106083 ms` p95 with much larger scheduler tails. Production must repeat exact clean-head receive/publication/display-copy/writer/redraw/combined measurements.
 
-- receiver receive/parse/publish;
-- publication critical section;
-- display snapshot/copy;
-- raster writer;
-- semantic redraw;
-- combined display path.
+A slow ingress handoff is not excused by accepted host tails. The project-owned display adoption plus writer must remain at or below 2 ms p95 for green, with explicit review at 2–5 ms and a stop above 5 ms.
 
-The accepted V1D-1 host/redraw tails remain visible, but they are not a waiver for a slow or blocking handoff. The project-owned display snapshot/copy plus writer targets p95 at or below 2 ms and must not allocate per frame.
+No queue, worker compositor, second bitmap, or extra USB writer may be introduced to hide tails.
 
 ## What the Mac can still prove before the Deck returns
 
 The Mac can establish:
 
-1. external generated-frame transport, latest-frame ownership, and freshness;
-2. production external ingress;
-3. macOS dedicated-window capture;
-4. one floating Bitwig native-device or plug-in visual lens;
-5. semantic-seeded anchor benchmarks;
-6. much of the public attached-mode experience.
+1. production external latest-frame ingress;
+2. macOS dedicated-window capture;
+3. one floating Bitwig native-device or plug-in visual lens;
+4. semantic-seeded anchor benchmarks;
+5. much of the public attached-mode experience.
 
-The Mac cannot establish:
-
-- Linux X11/Wayland/portal behavior;
-- Flatpak/host IPC boundaries;
-- Steam Deck power, battery, headless boot, or managed geometry;
-- Linux support claims.
-
-Those remain explicit later checkpoints.
+The Mac cannot establish Linux X11/Wayland/portal behavior, Flatpak/host boundaries, Steam Deck power/battery/headless boot, or Linux support claims. Those remain explicit later checkpoints.
 
 ## Revised sequence
 
@@ -193,24 +142,22 @@ V1A-0     accepted fork/build/install baseline
 V1A       accepted identity pipeline
 V1B       accepted static bounded composition
 V1C-0     accepted dynamic restoration selection
-V1C       accepted dynamic local lifecycle
+V1C       accepted dynamic local visual lifecycle
 V1D-0     accepted bulk raster primitive
 V1D-1     accepted production local raster sink
-V1D-2-0   active external latest-frame ingress architecture
-V1D-2     production external generated-frame ingress
+V1D-2-0   accepted external-ingress architecture
+V1D-2     active production external latest-frame ingress
 V2        macOS dedicated-window capture
 V2A       semantic-seeded anchor benchmark
 V2P       Linux/Steam Deck checkpoint
 ```
 
-## Future macOS capture posture
+## Future capture posture
 
-After external ingress is accepted, Screen capture belongs in a normal macOS helper application with stable permission identity. Dedicated top-level native-device and plug-in windows remain the first capture targets.
+After V1D-2, a normal macOS helper may own ScreenCaptureKit permission, discover a dedicated top-level Bitwig native-device or plug-in window, crop/scale/convert into opaque BGRA, and publish through the accepted loopback boundary.
 
-The helper will convert/crop/scale its platform frame into the accepted external raster contract. Apple types remain inside the helper. The controller side sees only bounded host-neutral metadata and opaque raster bytes.
-
-Embedded Bitwig panels and pixel anchors remain later work.
+Apple capture objects remain entirely inside the helper. The controller extension consumes only the bounded protocol and returns to exact semantics when the helper is absent, denied, stale, malformed, or closed.
 
 ## Result
 
-Mac-first development has proven the semantic seam, visible composition, exact dynamic restoration, and a production bulk raster sink. It now proves the process boundary and latest-frame lifecycle before real window capture begins.
+Mac-first development has proven the semantic seam, visible composition, exact dynamic restoration, the production raster sink, and the external-ingress architecture. V1D-2 now turns that final pre-capture boundary into accepted production source.
