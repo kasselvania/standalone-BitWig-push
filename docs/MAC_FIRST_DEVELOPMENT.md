@@ -13,34 +13,13 @@ This changes implementation order, not product scope:
 
 ## Accepted Mac progress
 
-### S0 — exact fixture and display path
+### S0 through V1B
 
-Accepted Bitwig 6.1, Push controls/audio/display, official DrivenByMoss 26.4.1 provenance, the persistent 960×160 bitmap, and the `Push2Display` to `PushUsbDisplay` seam.
+Accepted the exact Mac + Bitwig + Push fixture, official DrivenByMoss source/artifact provenance, derivative build/install/rollback, the project-owned frame seam, and the first bounded static visual pixels.
 
-### V1A-0 — derivative custody and build
+### V1C-0 and V1C
 
-Accepted the true fork, immutable source basis, explicit Java 21/Maven environment, reversible installation, real Push parity, and exact official rollback.
-
-### V1A — identity pipeline
-
-```text
-complete semantic IBitmap
-        -> PushFramePipeline
-        -> same IBitmap
-        -> unchanged PushUsbDisplay
-```
-
-### V1B — static bounded composition
-
-Accepted a fixed startup-gated vector mark with zero outside-region mismatches, bounded cost, representative semantic modes, real controls/audio, and exact rollback.
-
-### V1C-0 — dynamic restoration decision
-
-Selected current-semantic redraw rather than historical output mutation, a second bitmap, region snapshots, or raw transport ownership.
-
-### V1C — production dynamic local lifecycle
-
-Accepted:
+Selected and implemented current-semantic redraw as dynamic restoration authority:
 
 ```text
 newest copied ModelInfo
@@ -60,71 +39,108 @@ commit: 852b520933eed87fbe496a04b5c18819a10b3564
 tree:   d03a372e2efcf41b22cef46501e08efbfb0c0036
 ```
 
+### V1D-0 — bulk raster decision
+
+V1D-0 selected a direct writable bitmap-region capability inside the Bitwig bitmap adapter.
+
+The accepted real bitmap was:
+
+```text
+format:           ARGB32
+size:             960x160
+memory:           614400 bytes
+rows:             tightly packed, 3840 bytes
+view:             writable, direct, non-array-backed
+observed channels: BGRA
+origin:           top-left
+alpha:            opaque 0xFF
+thread:           Control Surface Session
+```
+
+Distinct views aliased the same memory. A cached destination view stayed coherent through encode and the physical Push across 1,920 sends.
+
+The selected host-neutral operation uses a caller-owned `byte[]`, primitive source/destination metadata, and `OPAQUE_BGRA8888`. Complete validation and alpha scanning precede the first absolute bulk row write; rejection performs no mutation.
+
+V1D-0 proved:
+
+- small, padded-stride, medium, full-frame, replacement, NONE, STALE, INVALID, malformed, and under-coverage semantic-update states;
+- zero source-target, outside, restoration, semantic-only, and partial-invalid-write mismatches;
+- 25 malformed classes rejected all-or-nothing;
+- zero project-owned per-application allocation;
+- green full-frame redraw-plus-write timing;
+- all 34 real Push fixture rows;
+- exact official rollback.
+
 Accepted central evidence:
 
 ```text
-commit: e748d168ce9983bd787fad25ac03ccb5b650edb1
-tree:   2d0a7a812e25c15aa082025f6d2ec90e8595b65c
+commit: 63dc42ba28356a30bdbd1f54c804c91f49a659c0
+tree:   1184afeb7c00ee86a1c298df539d3267475ce6b3
 ```
 
-## Why the next Mac task is bulk raster—not IPC
+## Active Mac task: V1D-1 production local raster composition
 
-The current dynamic local source draws a few vector primitives through `IBitmap.render(...)`. A real captured device or plug-in view will be a raster image.
+V1D-1 now implements the selected sink as production source before any external producer exists.
 
-The project therefore needs a production-capable bulk raster sink before another process can usefully publish frames.
-
-The relevant accepted facts are:
-
-- project `IBitmap` exposes render and encode, but no accepted region write;
-- Bitwig's bitmap exposes a `MemoryBlock` and is also an `Image`;
-- the current project wrapper does not establish writable coherence, exact row/channel/stride behavior, or pixel-exact bitmap blitting;
-- V1C semantic redraw already solves movement/removal/fallback and must remain restoration authority.
-
-V1D-0 selects the narrow raster primitive before IPC.
-
-## V1D-0 — bulk raster feasibility
-
-The first research contract is:
+The production shape is:
 
 ```text
-opaque BGRA8888
-already cropped and scaled
-explicit destination bounds
-explicit validated source stride
-synchronous current display thread
+current V1C semantic redraw
+        -> locally generated current byte[] raster
+        -> complete validation
+        -> absolute bulk row copies, or no write
+        -> same logical IBitmap
+        -> unchanged PushUsbDisplay
 ```
 
-Candidate order:
+Expected source envelope:
 
-1. direct validated write into the current bitmap backing memory;
-2. one reusable source bitmap and exact bitmap-as-image blit;
-3. encode-time composition above transport;
-4. precise blocker.
+```text
+BitmapImpl.java
+Push2Display.java
+DynamicLocalRasterPushFramePipeline.java
+IRasterWritableBitmap.java
+RasterPixelFormat.java
+```
 
-The research must prove:
+The local pipeline exercises SMALL, ODD_PADDED, MEDIUM, FULL, REPLACEMENT, NONE, STALE, INVALID, and MALFORMED states. It proves the real sink without introducing another process, transport, capture API, or final frame protocol.
 
-- buffer writeability, aliasing, lifetime, and coherence;
-- channel, row, alpha, capacity, and stride behavior;
-- small, odd padded, medium, and full-frame generated patterns;
-- validation before mutation and zero partial invalid writes;
-- exact source pixels and exact semantic restoration;
-- bounded performance/allocation;
-- unchanged `PushUsbDisplay` and one writer;
-- real Push behavior and exact official rollback for the leading candidate.
+`BitmapImpl` owns one private cached destination view and every host-specific layout check. The host-neutral interface exposes only the pixel format, caller-owned bytes, source offset/stride, destination x/y, width, height, and all-or-nothing boolean result.
 
-No proprietary UI capture is needed. Generated test cards are sufficient.
+The exact source head must preserve:
+
+- default pass-through;
+- V1B static mode;
+- V1C vector mode;
+- raster mode with explicit precedence;
+- current-semantic restoration;
+- one pipeline call;
+- one unchanged `PushUsbDisplay.send`;
+- exact official rollback.
+
+It must also preserve the public constructor/accessor and observable record semantics if `BitmapImpl` changes from a record to a final class.
+
+## Tail-latency posture
+
+V1D-0's required full-frame path was green, but it retained:
+
+```text
+MEDIUM combined max:          17.679042 ms
+mixed startup/interaction:    47.747125 ms
+```
+
+V1D-1 must repeat stable post-warmup per-size measurements and separate writer-only, semantic-redraw, GC, and scheduling context. A persistent writer regression blocks acceptance. An isolated host/scheduler outlier with bounded writer cost remains visible for technical review rather than being hidden with asynchronous machinery.
 
 ## What the Mac can still prove before the Deck returns
 
 The Mac can establish:
 
-1. exact bulk raster application;
-2. production local raster lifecycle;
-3. external latest-frame-wins ingress and freshness;
-4. macOS dedicated-window capture;
-5. one floating Bitwig native-device or plug-in visual lens;
-6. semantic-seeded anchor benchmarks;
-7. much of the public attached-mode experience.
+1. production local raster application;
+2. external latest-frame-wins ingress and freshness;
+3. macOS dedicated-window capture;
+4. one floating Bitwig native-device or plug-in visual lens;
+5. semantic-seeded anchor benchmarks;
+6. much of the public attached-mode experience.
 
 The Mac cannot establish:
 
@@ -144,8 +160,8 @@ V1A     accepted identity pipeline
 V1B     accepted static bounded composition
 V1C-0   accepted dynamic restoration selection
 V1C     accepted dynamic local vector lifecycle
-V1D-0   active bulk raster primitive selection
-V1D-1   production local raster lifecycle
+V1D-0   accepted bulk raster primitive
+V1D-1   active production local raster lifecycle
 V1D-2   external latest-frame ingress
 V2      macOS dedicated-window capture
 V2A     semantic-seeded anchor benchmark
@@ -160,9 +176,12 @@ The controller extension must:
 
 - never wait for the producer;
 - use latest-frame-wins rather than a queue;
+- establish explicit producer/controller buffer ownership;
 - validate before applying;
 - preserve V1C current-semantic redraw;
 - map helper absence, crash, stale sequence, invalid metadata, permission failure, and resolver abstention to exact semantic-only output.
+
+V1D-1's `byte[]` sink does not predetermine the V1D-2 wire or shared-memory representation.
 
 ## macOS capture posture
 
@@ -170,4 +189,4 @@ Screen capture eventually belongs in a normal macOS helper application with stab
 
 ## Result
 
-Mac-first development has already proven the semantic seam, visible composition, and exact dynamic restoration. It now proves the bulk raster sink and external-frame contract before the same portable architecture moves to Steam Deck/Linux.
+Mac-first development has now proven the semantic seam, visible composition, exact dynamic restoration, and the direct raster primitive. V1D-1 hardens that primitive into production source; V1D-2 then adds external frame ownership before real window capture begins.
