@@ -1,46 +1,59 @@
-# Current Slice: V1D-1 — Production Local Raster Composition
+# Current Slice: V1D-2-0 — External Latest-Frame Ingress Architecture
 
 ## Status
 
-Ready to execute from the current accepted central `origin/main` containing the merged V1D-0 decision and from DrivenByMoss `origin/pushwig/main` at the exact accepted V1C integration state.
+Ready to execute from the current accepted central `origin/main` containing merged V1D-1 evidence and from DrivenByMoss `origin/pushwig/main` at the exact accepted V1D-1 integration state.
 
-Active issue: [#29 — V1D-1: Implement production local raster composition](https://github.com/kasselvania/standalone-BitWig-push/issues/29).
+Active issue: [#32 — V1D-2-0: Select external latest-frame ingress architecture](https://github.com/kasselvania/standalone-BitWig-push/issues/32).
 
 Before work begins, fetch central `origin/main` and verify that its history contains:
 
 ```text
-63dc42ba28356a30bdbd1f54c804c91f49a659c0  # accepted V1D-0 evidence
+a02c9c772da38bfdbc89dfff751c9617cd397c02  # accepted V1D-1 evidence
 ```
 
-Create the central evidence branch directly from the then-current accepted `origin/main`. If `origin/main` has moved, inspect every intervening commit and stop if it changes V1D-1 authority or scope.
+Create the central evidence branch directly from the then-current accepted `origin/main`. If `origin/main` has moved, inspect every intervening commit and stop if it changes V1D-2-0 authority or scope.
 
 ## Primary claim
 
-Implement the production form of the V1D-0 Candidate A decision:
+Select and prove the smallest production-capable architecture by which a separate local process can publish generated raster frames to the accepted V1D-1 sink while preserving:
+
+- complete-frame publication only;
+- fixed and bounded memory;
+- latest-frame-wins behavior rather than backlog playback;
+- nonblocking display-thread consumption;
+- explicit producer session and sequence authority;
+- local monotonic freshness;
+- exact current-semantic fallback for every absence/failure state;
+- clean connection, replacement, shutdown, and restart behavior;
+- one unchanged Push display USB writer.
+
+The accepted conceptual path is:
 
 ```text
-newest retained ModelInfo
-        -> complete current-semantic redraw
-        -> completely validate current opaque BGRA raster request
-        -> absolute bulk row copies, or no write
-        -> same logical IBitmap
-        -> one unchanged PushUsbDisplay.send
+external generated producer
+        -> local framed transport
+        -> complete receive and ingress validation
+        -> fixed-memory latest-frame publication
+        -> nonblocking display-thread acquisition
+        -> accepted V1D-1 raster sink
+        -> unchanged PushUsbDisplay
 ```
 
-The previous composed output is never restoration authority. Rejected metadata, unsupported target layout, absent input, stale input, or invalid input must leave the freshly redrawn current semantic frame byte-identical.
+The receiver thread may never write the Push bitmap. The display thread may never perform network I/O or wait for a producer.
 
-V1D-1 is a production source slice using locally generated raster frames. It does not introduce an external process, IPC, shared memory, sequence/freshness protocol, ScreenCaptureKit, or window capture.
+V1D-2-0 is an evidence-first architecture gate. It does not merge a production external receiver, add ScreenCaptureKit, discover a Bitwig window, or capture proprietary pixels.
 
-See [`docs/V1D1_LOCAL_RASTER_COMPOSITION.md`](docs/V1D1_LOCAL_RASTER_COMPOSITION.md).
+See [`docs/V1D20_EXTERNAL_FRAME_INGRESS.md`](docs/V1D20_EXTERNAL_FRAME_INGRESS.md).
 
 ## Accepted authorities
 
 ### Central authority and evidence
 
 ```text
-repository:      kasselvania/standalone-BitWig-push
-V1D-0 merge:     63dc42ba28356a30bdbd1f54c804c91f49a659c0
-tree:            1184afeb7c00ee86a1c298df539d3267475ce6b3
+repository:  kasselvania/standalone-BitWig-push
+V1D-1 merge: a02c9c772da38bfdbc89dfff751c9617cd397c02
+tree:        62b4edce8d649266cda65a638d26113692eaef04
 ```
 
 ### DrivenByMoss implementation
@@ -48,14 +61,14 @@ tree:            1184afeb7c00ee86a1c298df539d3267475ce6b3
 ```text
 repository: kasselvania/DrivenByMoss
 branch:     pushwig/main
-commit:     852b520933eed87fbe496a04b5c18819a10b3564
-tree:       d03a372e2efcf41b22cef46501e08efbfb0c0036
+commit:     663d719207ef58ec84b4d235c43211ec5da43605
+tree:       c4e42825d069421a44b3241349de9a7c6453a3ad
 ```
 
-That integration contains exact accepted V1C source head:
+That integration contains exact accepted V1D-1 source head:
 
 ```text
-4b3326eddcf2d890de3baa10b93f6e80842d41e1
+3c3ca02ff81ab5ce110ae3d714e20b5fca05a03f
 ```
 
 Immutable upstream basis remains:
@@ -66,422 +79,500 @@ commit: fd03245ab38fa5149c45934051d937ee9fda6d08
 tree:   edd2ad636b0aa1f39919f0ffd05c968015450075
 ```
 
-Official extension SHA-256 to restore:
+Official extension SHA-256 to restore after any real-fixture prototype:
 
 ```text
 98dc3195ad8d911526e18b1005f09f69a1aedcb965b080565474104654345c5a
 ```
 
-## Accepted V1D-0 decision
+## Accepted V1D-1 consumer
 
-V1D-0 selected **Candidate A — direct writable bitmap region**.
-
-The accepted host observation established a Bitwig `ARGB32` bitmap with:
-
-```text
-dimensions:       960x160
-memory bytes:     614400
-row bytes:        3840
-view:             writable, direct, non-array-backed
-byte order:       little-endian
-observed channels: blue, green, red, alpha
-row origin:       top-left
-alpha policy:     opaque 0xFF only
-thread:           Control Surface Session
-```
-
-Distinct views aliased the same memory. One cached view remained coherent through `IBitmap.encode` and physical Push output across 1,920 sends.
-
-The selected local production contract is a caller-owned `byte[]` with primitive source offset, source stride, destination coordinates, width, height, and `RasterPixelFormat.OPAQUE_BGRA8888`.
-
-## Source topology
-
-Create a source branch directly from exact `origin/pushwig/main`:
-
-```text
-pushwig/v1d1-local-raster-composition
-```
-
-The final source branch must contain one implementation commit over the accepted integration basis.
-
-Expected production changes are exactly:
-
-```text
-src/main/java/de/mossgrabers/bitwig/framework/graphics/BitmapImpl.java
-src/main/java/de/mossgrabers/controller/ableton/push/controller/Push2Display.java
-src/main/java/de/mossgrabers/controller/ableton/push/controller/DynamicLocalRasterPushFramePipeline.java
-src/main/java/de/mossgrabers/framework/graphics/IRasterWritableBitmap.java
-src/main/java/de/mossgrabers/framework/graphics/RasterPixelFormat.java
-```
-
-Do not cherry-pick the V1D-0 research commit. Reimplement the accepted production model cleanly from the accepted integration basis.
-
-Any additional production path requires an explicit stop and technical justification before editing.
-
-Do not modify:
-
-```text
-AbstractGraphicDisplay.java
-DynamicLocalPushFramePipeline.java
-PushFramePipeline.java
-PassThroughPushFramePipeline.java
-SyntheticOverlayPushFramePipeline.java
-PushUsbDisplay.java
-GraphicsContextImpl.java
-IBitmap.java
-pom.xml
-```
-
-Do not change extension version, IDs, USB matching, endpoint ownership, encoding, line padding, XOR shaping, transfer scheduling, or shutdown ownership.
-
-## Host-neutral interface
-
-Add:
+V1D-1 established a production host-neutral sink:
 
 ```java
-public interface IRasterWritableBitmap extends IBitmap
-{
-    boolean writeRasterRegion (
-        RasterPixelFormat format,
-        byte[] source,
-        int sourceOffset,
-        int sourceStride,
-        int destinationX,
-        int destinationY,
-        int width,
-        int height);
-}
+boolean writeRasterRegion (
+    RasterPixelFormat format,
+    byte[] source,
+    int sourceOffset,
+    int sourceStride,
+    int destinationX,
+    int destinationY,
+    int width,
+    int height);
 ```
 
-`RasterPixelFormat` has one accepted V1D-1 value:
+Accepted behavior:
+
+- first format `OPAQUE_BGRA8888`;
+- caller owns source bytes exclusively until synchronous return;
+- complete request and alpha validation precede mutation;
+- `true` means full application;
+- `false` means zero destination bytes changed;
+- one private adapter-owned destination view;
+- first valid call binds the display/composition thread race-safely;
+- wrong-thread and malformed calls reject before mutation;
+- source padding is ignored;
+- no scaling, filtering, blending, or conversion;
+- current V1C semantic redraw remains restoration authority;
+- `PushUsbDisplay` remains unchanged and sole-owned.
+
+Accepted V1D-1 source and evidence proved 1,000 local cycles, 28 negative/thread cases, all required mismatch counts zero, zero project-owned allocation across 5,000 full-frame applications, all physical fixture phases, and exact official rollback.
+
+## Why this gate is required
+
+The local raster sink does not answer the external process questions:
+
+1. Which local transport is sufficiently portable and observable?
+2. How is a frame delimited and versioned?
+3. How are untrusted lengths bounded before allocation/read?
+4. When does a partially received frame become visible? It must not.
+5. Which thread owns socket reads, staging bytes, published bytes, and consumer bytes?
+6. How does the display thread adopt a new frame without blocking?
+7. How does a faster producer supersede old frames without an application queue?
+8. How are duplicate/out-of-order sequence values handled?
+9. How does producer restart reset sequence without reviving prior-session data?
+10. What local monotonic event determines staleness?
+11. How do disconnect, crash, truncated input, slow send, and shutdown clear authority?
+12. How is accidental or unauthorized local injection bounded?
+13. How is the receiver stopped without hanging Bitwig shutdown?
+
+Those must be selected before production source hardens around one transport.
+
+## Candidate order
+
+Evaluate candidates in this exact order and stop after the first decisive winner.
+
+### Candidate A — loopback framed stream plus fixed latest-frame handoff
+
+Use:
+
+- a loopback-only TCP server;
+- one owned receiver thread;
+- one active producer session;
+- a versioned language-neutral binary protocol;
+- fixed maximum-size receive staging;
+- fixed complete-publication storage;
+- fixed display-owned consumer storage;
+- nonblocking display-thread snapshot/adoption;
+- local monotonic receipt time;
+- latest-frame-wins publication.
+
+Leading conceptual ownership:
 
 ```text
-OPAQUE_BGRA8888
+receiver thread
+    owns socket + staging array
+    reads complete header/payload
+    validates transport/session/sequence/size
+    copies complete frame into bounded published storage
+
+Push display thread
+    performs no network I/O
+    never waits for receiver lock
+    adopts only a complete newer publication into display-owned bytes
+    evaluates local receipt-time freshness
+    calls V1D-1 writer synchronously
 ```
 
-The contract is all-or-nothing:
+This staging/published/consumer arrangement is a hypothesis to prove, not preaccepted production architecture.
 
-- `true`: the complete destination region was applied;
-- `false`: no destination byte changed.
+No thread per connection, unbounded queue, remote bind, Java object serialization, per-frame byte-array allocation, or receiver-thread bitmap access is allowed.
 
-Source contract:
+### Candidate B — Unix-domain socket plus the same bounded handoff
 
-- caller retains exclusive source-array ownership until synchronous return;
-- rows are top-to-bottom;
-- pixels are left-to-right;
-- bytes are blue, green, red, alpha;
-- every copied alpha byte is `0xFF`;
-- source stride is explicit and may contain ignored padding;
-- source is already cropped and scaled.
-
-No scaling, filtering, blending, premultiplication, cropping, color management, Bitwig type, macOS type, capture handle, USB type, or raw destination view crosses the interface.
-
-## BitmapImpl production responsibilities
-
-`BitmapImpl` alone owns:
-
-1. the Bitwig bitmap and memory block;
-2. one private cached writable destination view;
-3. construction/layout support state;
-4. complete request validation;
-5. composition-thread binding;
-6. absolute bulk row copies.
-
-Use actual bitmap dimensions. Do not hard-code 960x160 inside the generic adapter.
-
-A destination is raster-writable only when all support checks pass without changing ordinary behavior:
-
-- format is Bitwig `ARGB32` with four bytes per pixel;
-- dimensions are positive;
-- expected byte count is exactly `width * height * 4` without overflow;
-- memory block size, view limit, and view capacity match the expected byte count;
-- view is writable and direct;
-- initial position is zero;
-- observed byte order/layout is accepted.
-
-Unsupported format/layout/view, view-creation failure, or other initialization failure must disable raster writing and preserve existing `render()` and `encode()` behavior. Default, V1B, and V1C must not become dependent on raster support.
-
-The cached destination view is private and never exposed. Existing `encode()` behavior remains unchanged.
-
-`BitmapImpl` is currently a public record. If converted to a final class to hold cached state:
-
-- preserve `public BitmapImpl(Bitmap)`;
-- preserve `bitmap()`;
-- prefer explicit record-equivalent `equals`, `hashCode`, and `toString` behavior;
-- otherwise retain exact source-search and behavior evidence proving no accepted dependency;
-- do not silently discard observable semantics.
-
-## Validation-before-mutation
-
-No destination byte may change until every request check and every source alpha check has passed.
-
-Use `long` arithmetic or exact-overflow helpers for:
-
-```text
-width * 4
-destinationX + width
-destinationY + height
-sourceOffset + (height - 1) * sourceStride + rowBytes
-destination last-row start + rowBytes
-```
-
-Reject before mutation for:
-
-- null/unsupported format;
-- null source;
-- zero or negative dimensions;
-- negative destination coordinates;
-- negative source offset;
-- destination arithmetic overflow;
-- destination out of bounds;
-- stride below packed row bytes;
-- source-end arithmetic overflow;
-- short source;
-- unsupported destination layout;
-- any source alpha byte not equal to `0xFF`;
-- wrong thread after binding.
-
-After complete validation, copy each row through the absolute bulk overload:
-
-```java
-ByteBuffer.put(destinationIndex, source, sourceIndex, rowBytes)
-```
-
-Do not rely on or alter destination position/limit.
-
-The first valid call may bind the owner thread. Binding must be race-safe. Invalid or malformed calls must not steal ownership. Later calls from another thread return `false` before mutation.
-
-## Startup selection and precedence
-
-Add the startup property:
-
-```text
-pushwig.dynamicLocalRaster=true
-```
-
-Read all properties only during `Push2Display` construction.
-
-Required precedence:
-
-```text
-raster=true
-    -> new DynamicLocalRasterPushFramePipeline
-
-else dynamicLocalVisual=true
-    -> accepted DynamicLocalPushFramePipeline
-
-else syntheticOverlay=true
-    -> accepted SyntheticOverlayPushFramePipeline
-
-else
-    -> PassThroughPushFramePipeline
-```
-
-Raster wins if several diagnostic properties are true. Exactly one pipeline is selected.
-
-The accepted current-semantic redraw hook is enabled for V1C vector and V1D-1 raster modes. It remains disabled for default and V1B static mode.
-
-`Push2Display.send` preserves its shutdown/null guard, invokes exactly one pipeline, invokes exactly one unchanged `PushUsbDisplay.send`, and retains one USB writer.
-
-## Bounded local raster lifecycle
-
-`DynamicLocalRasterPushFramePipeline` is package-private and one instance per display. It is proof scaffolding for the production raster sink, not the external frame protocol.
-
-Use fixed class-initialized generated source arrays and bounded primitive state. Do not allocate a frame, array, renderer, collection, queue, task, future, or bitmap per send.
-
-Exercise at least:
-
-```text
-SMALL          64x16
-ODD_PADDED     117x37 with stride > width*4 and sentinel padding
-MEDIUM         480x80
-FULL           960x160
-REPLACEMENT    moved replacement content
-NONE
-STALE
-INVALID
-MALFORMED      deliberately rejected metadata
-```
-
-Patterns must make orientation and channel errors obvious through asymmetric corners, channel bars, row/column markers, opaque alpha, and recognizable generated structure.
-
-Valid states call `writeRasterRegion` once. NONE, STALE, and INVALID call it zero times. MALFORMED calls it with bounded invalid metadata and requires `false` with exact semantic-only output.
-
-If the semantic bitmap does not implement `IRasterWritableBitmap`, the pipeline performs no write and returns the same semantic bitmap.
-
-## Correctness and negative matrix
-
-Run at least 1,000 complete local raster cycles with exact 960x160 aggregate comparisons.
-
-Test all accepted V1D-0 negative classes, including:
-
-- null/unsupported format and null source;
-- negative and near-maximum coordinates;
-- zero/negative dimensions;
-- row-byte, destination, stride, and source-offset overflow;
-- destination out of bounds;
-- stride below row bytes;
-- one-byte-short and one-row-short sources;
-- non-opaque alpha;
-- short/read-only/wrong-format destination support;
-- wrong-thread call.
-
-Required exact zero results:
-
-```text
-source-target mismatches
-outside-current-region mismatches
-old-region restoration mismatches
-post-NONE full-frame mismatches
-STALE full-frame mismatches
-INVALID full-frame mismatches
-MALFORMED full-frame mismatches
-semantic-update-under-coverage mismatches
-partial writes after rejected metadata
-invalid accepts
-escaped display-loop exceptions
-```
-
-Positive target changes must prove valid writes occurred.
-
-No raw frame, screenshot, or proprietary UI crop may be committed.
-
-## Regression requirements
-
-The exact source head must prove:
-
-1. no property -> pass-through and ordinary dirty rendering;
-2. `pushwig.syntheticOverlay=true` -> accepted V1B static path;
-3. `pushwig.dynamicLocalVisual=true` -> accepted V1C vector path;
-4. `pushwig.dynamicLocalRaster=true` -> V1D-1 raster path;
-5. all properties true -> raster path only;
-6. non-raster `IBitmap` -> semantic-only fallback;
-7. unchanged `PushUsbDisplay` and accepted V1A/V1B/V1C pipeline classes.
-
-## Build and bytecode proof
-
-Use the accepted explicit Java 21/Maven environment for exact base and proposed-head builds.
+Test only if Candidate A cannot satisfy the complete lifecycle, security, discovery, portability, or performance requirements.
 
 Retain:
 
-- exact parent/head/tree and one-commit topology;
-- exact five-path source envelope;
-- source hashes;
-- artifact size/SHA-256;
-- extracted payload comparison;
-- bytecode proving property precedence, validation before every put, absolute bulk rows, safe thread binding, same-reference pipeline output, and one pipeline/one transport call;
-- byte-identical `PushUsbDisplay.class`;
-- byte-identical accepted V1A/V1B/V1C pipeline classes.
+- path discovery;
+- file permissions;
+- stale socket cleanup;
+- macOS/Linux portability;
+- Windows implications;
+- shutdown behavior.
 
-## Performance and tail review
+### Candidate C — memory-mapped double buffer
 
-Collect at least 1,000 post-warmup samples for:
+Test only if socket candidates fail.
 
-- semantic redraw only;
-- SMALL writer and combined path;
-- ODD_PADDED writer and combined path;
-- MEDIUM writer and combined path;
-- FULL writer and combined path;
-- rejected request;
-- relevant default/V1B/V1C regressions.
+Any mapped design must prove:
 
-Retain p50, p95, maximum, bytes copied, writer-only cost, combined cost, allocation, cached-view creation, RSS/heap, and control/display/audio observations.
+- explicit publication/acquire semantics;
+- torn-frame detection;
+- producer crash during write;
+- session replacement;
+- fixed file/buffer sizing;
+- stale detection;
+- display-thread copy cost;
+- safe cleanup.
 
-Required full-frame combined bands:
+Do not select memory mapping merely because it sounds faster.
 
-```text
-green:  p95 <= 2 ms and max <= 10 ms
-review: p95 <= 5 ms and max <= 15 ms
-stop:   p95 > 5 ms or max > 15 ms
-```
+### BLOCKED
 
-V1D-0 retained a MEDIUM combined maximum of `17.679042 ms` and a mixed startup/interaction outlier of `47.747125 ms`. V1D-1 must remeasure them rather than erase them.
+If no candidate passes, retain the smallest missing capability and next bounded experiment. Do not proceed to capture or silently accept a blocking/unbounded design.
 
-Any post-warmup combined sample over 15 ms requires a stable rerun plus writer-only, semantic-redraw, GC, and scheduling context. Stop if the writer itself regresses or project source reproduces a persistent stop-band result. An isolated host/scheduler outlier with bounded writer cost requires explicit technical-lead review.
+## Protocol requirements
 
-Do not add asynchronous buffering, a second bitmap, or a worker to hide tail latency.
+The selected protocol must define exactly:
 
-Project-owned per-application allocation target is zero.
+- magic;
+- protocol version;
+- fixed or bounded header length;
+- header byte order;
+- producer session identity or equivalent connection generation;
+- strictly increasing sequence within one session;
+- valid-frame and explicit-clear message types;
+- pixel-format identifier;
+- destination x/y;
+- width and height;
+- source stride;
+- payload length;
+- maximum payload/message size;
+- authentication/capability or an explicit reviewed local-security rationale;
+- unknown version/type/format/reserved-field behavior;
+- duplicate/out-of-order/skipped sequence behavior;
+- EOF mid-header and mid-payload behavior;
+- oversized length behavior;
+- reconnect and sequence-reset behavior.
 
-## Real fixture and rollback
+The protocol must be language-neutral. Java serialization is prohibited.
 
-Use only the exact proposed-head artifact as the sole scanned extension.
+Ingress publication occurs only after the complete message has arrived and all ingress-level checks pass. Partial bytes never alter current publication state.
+
+Producer wall-clock time is not freshness authority. The receiver records local monotonic receipt time only after a complete publication is accepted.
+
+## Fixed-memory ownership
+
+The selected architecture must declare every buffer and owner.
+
+At minimum distinguish:
+
+- receiver staging bytes;
+- complete published bytes;
+- display-owned consumer bytes;
+- V1D-1 destination bitmap bytes.
+
+Requirements:
+
+- all maximum-size storage allocated at startup/construction;
+- hard payload cap enforced before any untrusted allocation;
+- no frame object, byte array, buffer view, task, closure, or queue node per frame;
+- receiver never mutates display-consumer bytes;
+- display consumer bytes remain exclusive until `writeRasterRegion` returns;
+- publisher never mutates the current consumer copy;
+- no application FIFO queue;
+- newest complete frame supersedes older unpublished/unconsumed frames;
+- old session storage is invalidated on connection replacement;
+- fixed memory remains bounded under producer flood.
+
+## Nonblocking display-thread contract
+
+The display/composition thread must never:
+
+- accept or connect a socket;
+- read or write a socket;
+- wait for a complete message;
+- block acquiring a receiver lock;
+- join a receiver thread;
+- allocate from frame metadata;
+- parse a partial message;
+- wait for producer shutdown.
+
+The selected snapshot operation must be bounded and nonblocking. If a new complete frame cannot be adopted immediately, use the exact selected rule for the last display-owned fresh frame or semantic-only output. Do not read receiver-owned bytes without ownership.
+
+## Session, sequence, and freshness
 
 Prove:
 
-- Push controls, pressure/MPE, encoders, transport;
-- coherent semantic display;
-- Push audio and audible headphones;
-- all generated raster sizes and replacement state;
-- correct top-left orientation, BGRA channels, opaque alpha, and padded stride;
-- no sentinel leakage;
-- movement, resize, replacement, NONE, STALE, INVALID, MALFORMED, and semantic-update restoration;
-- default, V1B, V1C, V1D-1, and all-property precedence startups;
-- no trail, partial invalid write, corruption, filtering, whole-frame clear, abnormal lag, xrun, or relevant exception;
-- normal quit.
+- no producer at startup;
+- first authenticated/accepted session;
+- strictly increasing sequence;
+- skipped sequence accepted as a supersession signal;
+- duplicate and out-of-order sequence rejected without refreshing freshness;
+- explicit clear;
+- clean disconnect;
+- forced producer exit;
+- silence until stale timeout;
+- reconnect/new session with sequence reset;
+- old-session bytes cannot reappear;
+- wrong token/handshake;
+- protocol-version mismatch;
+- malformed header;
+- partial header;
+- partial payload;
+- oversized declaration;
+- slow sender;
+- receiver bind/listen failure;
+- shutdown while connected;
+- shutdown while silent;
+- shutdown while mid-message.
 
-Restore the exact official artifact as the sole scanned extension, verify its accepted SHA-256, relaunch without Pushwig properties, and physically confirm standard DrivenByMoss behavior.
+Define exact fallback bounds in sends and milliseconds for:
 
-## PR topology
+- clear;
+- disconnect;
+- crash;
+- stale timeout;
+- malformed message;
+- failed raster application;
+- receiver failure;
+- shutdown.
 
-### DrivenByMoss source PR
+Receipt-time staleness must use `System.nanoTime()` or an equivalent monotonic source.
+
+## Generated external producer
+
+Use a temporary standalone producer with no Bitwig dependency and only generated asymmetric opaque-BGRA test cards.
+
+It must support deterministic modes for:
+
+- moving/replacing bounded regions;
+- full-frame content;
+- 1, 15, 30, and 60 fps rates where practical;
+- faster-than-display bursts;
+- duplicate/out-of-order/skipped sequences;
+- explicit clear;
+- malformed, truncated, oversized, and slow messages;
+- clean exit;
+- forced crash/kill;
+- reconnect/new session.
+
+Prefer at least one implementation that demonstrates the protocol is independent of Java object serialization. Retain producer source hash and command, but do not commit it as the final macOS capture helper.
+
+## Correctness requirements
+
+Run at least 1,000 accepted external frame publications plus the full failure matrix.
+
+Required exact zero counts:
 
 ```text
-branch: pushwig/v1d1-local-raster-composition
-base:   pushwig/main
-commit: V1D-1: implement local raster composition
-PR:     V1D-1: implement production local raster composition
+published source-target mismatches
+outside-current-region mismatches
+old-region restoration mismatches
+clear semantic-only mismatches
+disconnect semantic-only mismatches
+crash semantic-only mismatches
+stale semantic-only mismatches
+malformed/truncated/oversized semantic-only mismatches
+old-session appearances after reconnect
+duplicate/out-of-order freshness refreshes
+partial/torn frame visibility
+consumer-source mutation during V1D-1 application
+escaped display-loop exceptions
 ```
 
-The PR remains open, non-draft, and unmerged for review.
+Require positive evidence for:
 
-### Central evidence PR
+- frame publication;
+- display adoption;
+- sequence advancement;
+- supersession;
+- producer frames dropped/superseded before display consumption;
+- reconnect/new session;
+- stale expiration.
 
-Create directly from the current accepted central `origin/main`:
+Use generated frames only. Do not commit raw frames or screenshots.
+
+## Performance and allocation
+
+After startup settling and warmup, measure separately:
+
+1. receiver header/payload receive;
+2. ingress validation;
+3. publication critical section;
+4. published-frame supersession;
+5. display nonblocking snapshot/adoption;
+6. display-owned byte copy;
+7. V1D-1 writer;
+8. current-semantic redraw;
+9. combined display path;
+10. stale/no-frame path;
+11. malformed/rejected path;
+12. receiver shutdown/join.
+
+Test small, medium, full-frame, 1/15/30/60 fps, and burst behavior.
+
+Retain:
+
+- p50/p95/max;
+- byte counts and useful throughput;
+- lock misses/contention;
+- accepted/superseded/dropped/rejected frames;
+- fixed storage bytes;
+- per-frame allocations by thread;
+- thread count;
+- RSS/heap;
+- shutdown time;
+- control/display/audio observations.
+
+Project-owned display snapshot/copy plus V1D-1 writer band:
 
 ```text
-codex/v1d1-local-raster-composition-evidence
+green:  p95 <= 2 ms
+review: p95 <= 5 ms
+stop:   p95 > 5 ms
 ```
 
-Contain only:
+The accepted V1D-1 combined host/redraw tails remain visible, but they do not excuse a slow ingress handoff. Separate all measurements.
+
+No unbounded memory growth or per-frame byte-array/frame allocation is acceptable.
+
+## Real fixture
+
+Only the leading offline-safe candidate reaches the accepted Mac + Bitwig 6.1 + Push 3 fixture.
+
+Using an exact temporary prototype and external generated producer, prove:
+
+1. Push connects normally.
+2. Pads, pressure/MPE, encoders, and transport work.
+3. Semantic display remains coherent.
+4. Push remains the Bitwig audio device.
+5. Headphone output is audible.
+6. External bounded and full-frame patterns appear correctly.
+7. BGRA channels, orientation, stride, and bounds remain correct.
+8. 15/30/60 fps updates are coherent where supported.
+9. Faster producer frames supersede without backlog playback.
+10. Movement/replacement restores prior semantics.
+11. Explicit clear restores semantics.
+12. Clean disconnect restores semantics.
+13. Forced producer exit restores semantics.
+14. Silence reaches stale semantic fallback in the declared bound.
+15. Duplicate/out-of-order messages do not refresh or regress the frame.
+16. Malformed/truncated/oversized input never appears partially.
+17. Reconnect/new session accepts sequence reset without old-frame return.
+18. Representative Track, Device Parameters, and Session/Browser modes work.
+19. A semantic update beneath coverage reappears.
+20. No blocking, trail, torn frame, corruption, abnormal lag, xrun, or relevant exception occurs.
+21. Bitwig shuts down normally with producer connected.
+22. Bitwig shuts down normally with a silent producer.
+23. Bitwig shuts down normally while a producer is mid-message.
+24. The exact official extension is restored and physically confirmed.
+
+## Research topology
+
+### DrivenByMoss
+
+Use clean temporary worktrees rooted at exact accepted `origin/pushwig/main` commit `663d719207ef58ec84b4d235c43211ec5da43605`.
+
+Temporary branches, commits, patches, receiver code, producer code, harnesses, and aggregate instrumentation are permitted locally.
+
+Do not:
+
+- push a production feature branch;
+- open a DrivenByMoss production PR;
+- merge a prototype into `pushwig/main`;
+- modify the immutable upstream branch;
+- copy derivative source into the central repository.
+
+Retain exact local commit/patch/source hashes and remove temporary instrumentation afterward.
+
+### Central evidence
+
+Create directly from the then-current accepted central `origin/main`:
 
 ```text
-evidence/v1d1-local-raster-composition/**
+codex/v1d20-external-frame-ingress-evidence
 ```
 
-Include `Addresses #29`, link the exact source PR/head/tree, and remain open, non-draft, and unmerged.
-
-## Expected evidence
+The reviewable output is one ordinary, non-draft, open, unmerged PR containing only:
 
 ```text
-evidence/v1d1-local-raster-composition/
-├── README.md
-├── source-topology.md
-├── raster-contract-and-adapter.md
-├── lifecycle-and-correctness.md
-├── negative-validation.md
-├── regression-paths.md
-├── performance.md
-├── build-artifact-comparison.md
-├── real-fixture-and-rollback.md
-└── manual-acceptance.md
+evidence/v1d20-external-frame-ingress/**
 ```
+
+Suggested files:
+
+```text
+README.md
+accepted-source-and-constraints.md
+candidate-a-loopback-stream.md
+alternative-candidates.md
+protocol.md
+buffer-and-thread-ownership.md
+lifecycle-and-failure-correctness.md
+performance.md
+real-fixture-and-rollback.md
+decision.md
+```
+
+Include `Addresses #32` and state exact basis/head/tree.
+
+## Decision output
+
+`decision.md` must choose exactly one top-level status:
+
+```text
+SELECTED
+```
+
+or:
+
+```text
+BLOCKED
+```
+
+For `SELECTED`, state:
+
+- transport and bind rule;
+- endpoint discovery;
+- authentication/local-security rule;
+- exact wire protocol and byte order;
+- hard header/payload limits;
+- producer session and sequence rules;
+- receipt-time freshness and timeout;
+- complete-publication rule;
+- buffer count, sizes, and owners;
+- synchronization and nonblocking snapshot rule;
+- last-frame versus semantic-only behavior on contention;
+- clear/disconnect/crash/malformed/reconnect behavior;
+- receiver thread count and lifecycle;
+- startup and shutdown order;
+- fixed and per-frame allocation budgets;
+- performance budget;
+- exact proposed production source envelope;
+- temporary reference-producer role;
+- why later candidates were not reached.
+
+For `BLOCKED`, state the smallest missing capability, experiments performed, and next bounded research.
+
+Do not write a vague hybrid recommendation.
 
 ## Non-goals
 
-No external producer, Unix/TCP/HTTP/WebSocket/OSC transport, shared memory, memory mapping, sequence/freshness protocol, final `VisualSourceFrame`, ScreenCaptureKit, capture permission, window discovery/capture, scaling/resampling, alpha blending, color management, adapter/resolver/calibration/anchors, transport rewrite, second bitmap, second USB writer, POM/test-framework change, Push 2 claim, Steam Deck/Linux, yabridge, Monome, plugdata, appliance, battery, connector, or NUC work.
+V1D-2-0 does not add or prove:
+
+- a production DrivenByMoss source PR;
+- a final public helper application;
+- ScreenCaptureKit;
+- Screen Recording permission;
+- Bitwig/native-device/plug-in window discovery or capture;
+- scaling, resampling, alpha blending, or color management;
+- visual adapters, resolver, calibration, or anchors;
+- remote-network ingress;
+- WebSocket, HTTP, or OSC frame transport;
+- Push transport changes;
+- a second USB writer;
+- Push 2 hardware acceptance;
+- Steam Deck/Linux portability;
+- appliance, battery, connector, or NUC work;
+- yabridge, Monome, or plugdata integration.
 
 ## Acceptance
 
-V1D-1 is complete only when:
+V1D-2-0 is complete only when:
 
-1. both exact source and evidence PR heads exist;
-2. source is one commit over the accepted DrivenByMoss basis;
-3. the source envelope is exactly accepted or explicitly repaired before editing;
-4. the host-neutral contract and all-or-nothing writer are proven;
-5. every valid and invalid mismatch category is zero;
-6. default/V1B/V1C/V1D-1 regression and precedence paths pass;
-7. performance is accepted with explicit tail review;
-8. the real Push fixture passes;
-9. `PushUsbDisplay` remains unchanged and sole-owned;
-10. the exact official artifact is restored.
+1. Research starts from the exact accepted central and DrivenByMoss states.
+2. Candidate A is tested first or rejected by decisive source evidence.
+3. One transport/protocol/handoff architecture proves complete-frame publication and bounded fixed memory.
+4. The display path proves nonblocking consumption and exclusive consumer-byte ownership.
+5. Session, sequence, reconnect, and local receipt-time freshness rules are exact.
+6. No producer failure, partial message, malformed input, or old session can leave or revive a visual.
+7. Latest-frame supersession is demonstrated without application backlog playback.
+8. All required correctness/failure counts are zero.
+9. Performance, allocation, contention, thread count, RSS/heap, and shutdown are retained.
+10. The leading candidate passes the real fixture or one precise safety blocker is retained.
+11. The exact official artifact is restored after any live prototype.
+12. `decision.md` selects one exact production architecture or one precise blocker.
+13. No prototype source is merged.
+14. The central evidence PR is open, non-draft, unmerged, and pinned to an exact head/tree.
