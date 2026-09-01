@@ -4,7 +4,7 @@
 
 Track V needs a narrow DrivenByMoss derivative, but the central project repository must not absorb or rewrite the upstream source tree.
 
-This document defines repository roles, accepted branches, build/install discipline, evidence boundaries, and the distinction between production source slices and temporary research prototypes.
+This document defines repository roles, accepted branches, build/install discipline, evidence boundaries, production source topology, and upstream synchronization.
 
 ## Repository roles
 
@@ -53,7 +53,7 @@ pushwig/upstream-26.4.1  # immutable accepted upstream basis
 pushwig/main             # accepted project integration branch
 ```
 
-The immutable branch must never receive project implementation merges.
+The immutable branch never receives project implementation merges.
 
 Current accepted integration state:
 
@@ -68,7 +68,7 @@ That merge contains:
 - accepted V1A source head `6e1e4cbd2e725a7951e5b4dc1278fbb6e7b5d61c`;
 - accepted V1B source head `a2e0341b7bccfa4e6b13614f4adffc2235f785f4`.
 
-Feature branches begin from the exact currently accepted `pushwig/main` head unless a separate basis-upgrade decision says otherwise.
+Feature branches begin from the exact currently accepted `pushwig/main` unless a separate basis-upgrade decision says otherwise.
 
 ## Local remote topology
 
@@ -79,7 +79,7 @@ origin   git@github.com:kasselvania/DrivenByMoss.git
 upstream https://github.com/git-moss/DrivenByMoss.git
 ```
 
-Before each source or research slice, record:
+Before each source slice, record:
 
 ```text
 git remote -v
@@ -113,34 +113,21 @@ Both exact heads remain unmerged until technical-lead review.
 
 ## Research-slice exception
 
-V1C-0 is an architecture-selection slice rather than a production implementation slice.
+V1C-0 was an architecture-selection slice rather than a production implementation slice.
 
-It may use:
+It used temporary local worktrees, a local research commit, harnesses, and uncommitted instrumentation without opening a source PR.
 
-- temporary local branches/worktrees;
-- temporary commits;
-- uncommitted instrumentation;
-- external harnesses;
-- generated test artifacts.
-
-It must not:
-
-- merge any prototype into `pushwig/main`;
-- open a production DrivenByMoss PR merely to preserve an experiment;
-- copy derivative source into the central repository;
-- leave temporary instrumentation in an accepted artifact.
-
-The central evidence must retain:
+Accepted central evidence retained:
 
 - exact accepted basis;
 - candidate/patch/harness hashes;
 - changed-path summaries;
 - build and artifact hashes;
-- pixel correctness and performance results;
-- real-fixture and rollback evidence where used;
-- one selected production seam or one precise blocker.
+- pixel correctness and performance;
+- real-fixture and rollback evidence;
+- one precise production decision.
 
-The next production PR begins only after that decision is accepted.
+That decision selected retained current semantic redraw. The local research commit is evidence, not an accepted source branch. V1C must not cherry-pick it wholesale.
 
 ## Accepted build baseline
 
@@ -162,7 +149,7 @@ env \
   mvn clean install package -Dbitwig.extension.directory=target
 ```
 
-A successful Maven exit is necessary but does not replace artifact inspection, exact source custody, real-device acceptance, or rollback where those claims apply.
+A successful Maven exit is necessary but does not replace artifact inspection, exact source custody, real-device acceptance, or rollback.
 
 Generated `.bwextension` files are not committed.
 
@@ -204,7 +191,7 @@ Never overwrite the only official copy. Never leave duplicate scanned DrivenByMo
 ```text
 complete semantic IBitmap
         -> PushFramePipeline.process
-        -> exact same IBitmap
+        -> same IBitmap
         -> unchanged PushUsbDisplay
 ```
 
@@ -225,31 +212,84 @@ pushwig.syntheticOverlay=true
         -> same IBitmap
 ```
 
-V1B proved zero outside-region mismatches and bounded cost for a static mark. The diagnostic path is not yet the final dynamic compositor.
+V1B proved zero outside-region mismatches and bounded cost for a static mark.
 
-## Dynamic-composition source discipline
+### V1C-0 selected restoration model
 
-Before external-frame ingress, the project must select an exact restoration model.
+```text
+newest copied ModelInfo
+        -> retain before render decision
+        -> complete semantic redraw for dynamic-local mode
+        -> current valid local visual or no visual
+        -> same persistent IBitmap
+        -> unchanged PushUsbDisplay
+```
 
-Candidate production directions are:
+The previous composed output is never restoration authority.
 
-1. redraw retained current semantic state before the dynamic layer;
-2. preserve a pristine semantic bitmap and build one reusable final bitmap;
-3. use generation-aware region restore;
-4. add a narrow host backend copy primitive.
+## V1C production source discipline
 
-Any accepted production implementation must:
+V1C begins directly from accepted `pushwig/main`.
 
-- preserve current semantics when a visual moves or disappears;
-- produce semantic-only output for stale/absent/invalid visual input;
-- retain one USB writer;
-- avoid unbounded queues and asynchronous bitmap mutation;
-- keep capture/platform types out of controller-extension contracts;
-- use fixed, explicit frame ownership;
-- measure cost and allocation behavior;
-- remain separable enough for upstream review.
+Expected source envelope:
 
-External-frame IPC is V1D, after local dynamic composition is accepted in V1C.
+```text
+src/main/java/de/mossgrabers/framework/controller/display/AbstractGraphicDisplay.java
+src/main/java/de/mossgrabers/controller/ableton/push/controller/Push2Display.java
+src/main/java/de/mossgrabers/controller/ableton/push/controller/DynamicLocalPushFramePipeline.java
+```
+
+The production source must:
+
+- retain the newest copied `ModelInfo` before the render decision;
+- add one protected default-false redraw hook;
+- preserve ordinary dirty rendering;
+- request forced redraw only for selected dynamic-local Push mode;
+- preserve pass-through and V1B static selection;
+- use one package-private per-display dynamic pipeline;
+- cover movement, overlap, resizing, replacement, none, stale, and invalid states;
+- return the same bitmap;
+- retain no historical frame or bitmap;
+- preserve one USB writer;
+- measure exact performance and allocations;
+- prove overlay-only and notification lifecycle correctness.
+
+The local V1C-0 research commit may be inspected but must not be promoted as production merely by cherry-picking or renaming.
+
+## Property selection
+
+Startup properties are read once:
+
+```text
+pushwig.syntheticOverlay
+pushwig.dynamicLocalVisual
+```
+
+Precedence:
+
+```text
+dynamic local > static synthetic > pass-through
+```
+
+Exactly one pipeline is selected.
+
+No user-facing setting is added in V1C.
+
+## External-frame boundary
+
+External-frame IPC is V1D, after V1C is accepted.
+
+V1D may replace the local diagnostic state source, but it may not replace semantic restoration ownership.
+
+The external input contract must map absence, stale sequence, invalid metadata, producer failure, permission denial, and resolver abstention to:
+
+```text
+current semantic redraw
+        -> no visual
+        -> semantic-only output
+```
+
+Capture/platform types remain outside the controller extension.
 
 ## Upstream synchronization
 
@@ -261,7 +301,7 @@ Use a dedicated basis-upgrade process:
 2. identify changes to Push display, bitmap abstraction, controller setup, USB transport, or Bitwig API version;
 3. open a basis-upgrade issue;
 4. rerun the clean build and real-device baseline;
-5. replay the accepted project delta in reviewable commits;
+5. replay accepted project changes in reviewable commits;
 6. update central authority only after acceptance.
 
 Do not let automated dependency tools or casual rebases rewrite the accepted basis.
@@ -286,18 +326,18 @@ Source changes belong in the DrivenByMoss fork.
 
 Cross-repository build, artifact, fixture, performance, pixel-correctness, and decision evidence belongs in the central repository.
 
-Temporary research code is identified by hashes and methodology rather than being promoted into accepted source merely for archival convenience.
+Temporary research code is identified by hashes and methodology rather than promoted into accepted source merely for archival convenience.
 
 ## Current sequence
 
 ```text
-S0     accepted fixture, source pin, and display seam
-V1A-0  accepted fork/build/install/rollback baseline
-V1A    accepted identity frame pipeline
-V1B    accepted static bounded synthetic overlay
-V1C-0  active dynamic restoration architecture selection
-V1C    future production dynamic local composition
-V1D    future external generated-frame ingress
+S0      accepted fixture, source pin, and display seam
+V1A-0   accepted fork/build/install/rollback baseline
+V1A     accepted identity frame pipeline
+V1B     accepted static bounded synthetic overlay
+V1C-0   accepted dynamic restoration architecture decision
+V1C     active production dynamic local composition
+V1D     future external generated-frame ingress
 ```
 
-This sequencing prevents a process boundary or capture backend from papering over an unresolved frame-restoration problem.
+This sequencing prevents a process boundary or capture backend from papering over frame-restoration correctness.

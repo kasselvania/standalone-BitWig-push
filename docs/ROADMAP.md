@@ -57,7 +57,7 @@ Accepted path:
 ```text
 semantic IBitmap
         -> PushFramePipeline
-        -> exact same IBitmap
+        -> same IBitmap
         -> unchanged PushUsbDisplay
 ```
 
@@ -81,59 +81,84 @@ Accepted result:
 
 V1B proves static in-place painting. It does not prove movement, erasure, stale fallback, or dynamic frame ownership.
 
-## V1C-0 — dynamic raster restoration feasibility — active
+## V1C-0 — dynamic raster restoration feasibility — accepted
 
 **Claim:** select and prove the smallest frame-ownership/restoration architecture that can replace or remove a changing visual while restoring exact current semantic pixels.
 
-Candidate order:
-
-1. full redraw from retained current semantic `ModelInfo` before composition;
-2. pristine semantic bitmap plus one reusable final bitmap and bitmap blit/copy;
-3. generation-aware target-region snapshot/restore;
-4. narrow backend memory copy.
-
-Required experiment states:
+Selected result:
 
 ```text
-visual at R1
-visual at R2
-visual at R3
-visual absent
-semantic change beneath a previously covered region
-visual stale/unavailable
+newest copied ModelInfo
+        -> full current-semantic redraw
+        -> current valid visual or no visual
+        -> same persistent IBitmap
+        -> unchanged PushUsbDisplay
 ```
 
-Acceptance requires:
+Accepted evidence:
 
-- zero outside-region mismatches;
-- zero old-region restoration mismatches;
-- zero full-frame mismatches after visual absence;
-- exact current semantics after an underlying semantic change;
-- deterministic stale/absent fallback;
-- one USB writer and unchanged transport;
-- bounded fixed memory ownership;
-- measured p50/p95/max and allocation behavior;
-- bounded real Push validation where safe;
-- one selected production seam or one precise blocker.
+- Candidate A tested first and selected;
+- 1,000 complete offline cycles / 7,000 transitions;
+- 1,000 real-Bitwig samples;
+- movement through four positions;
+- replacement, absence, stale, and invalid states;
+- semantic update beneath covered pixels;
+- zero outside-region mismatch;
+- zero old-region restoration mismatch;
+- zero post-absence/stale/invalid full-frame mismatch;
+- zero semantic-update restoration mismatch;
+- p95 `0.413209 ms`, maximum `7.356958 ms`;
+- bounded memory;
+- real Push controls/audio/display;
+- normal shutdown and exact rollback;
+- no production source PR or transport change.
 
-V1C-0 is a central evidence/decision slice. It does not merge production DrivenByMoss source.
+Candidates B–D were not reached after Candidate A satisfied the required ordered gate.
 
-## V1C — dynamic local composition lifecycle
+## V1C — dynamic local composition lifecycle — active
 
-**Claim:** implement the selected V1C-0 architecture with generated local visual frames.
+**Claim:** implement the accepted Candidate A model as bounded production source with generated local visual states.
 
-Acceptance:
+Production rule:
 
-- moving, replacing, resizing, and absent visuals restore exact current semantics;
-- stale/invalid visual state falls back to semantic-only output;
-- semantic changes under active visual bounds are preserved;
-- one reusable ownership model is explicit;
-- no unbounded queue or second USB owner;
-- performance/allocation remain within accepted budget;
-- real Push controls/audio/display remain correct;
-- exact rollback passes.
+```text
+newest copied ModelInfo
+        -> retain before redraw decision
+        -> full semantic redraw only for selected dynamic-local mode
+        -> current valid local visual or no visual
+        -> same persistent IBitmap
+        -> one existing PushUsbDisplay.send
+```
 
-No external process or capture API is required.
+Required local lifecycle:
+
+```text
+A — initial
+B — moved/enlarged with partial overlap
+C — moved/reduced
+D — replacement content/geometry
+NONE
+STALE
+INVALID
+```
+
+Acceptance includes:
+
+- exact three-path production envelope;
+- protected default-false redraw hook;
+- ordinary dirty-render behavior preserved;
+- pass-through default preserved;
+- V1B static path preserved;
+- dynamic property precedence explicit;
+- zero outside, restoration, semantic-only, semantic-update, overlay-only, and notification lifecycle mismatches;
+- same-reference pipeline;
+- no second bitmap, snapshot, queue, external frame, or second USB owner;
+- bounded performance/allocation;
+- full real Push controls/audio/display;
+- normal shutdown and exact official rollback;
+- paired open source/evidence PRs.
+
+No external process or capture API is part of V1C.
 
 ## V1D — external generated-frame ingress
 

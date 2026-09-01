@@ -1,44 +1,51 @@
-# Current Slice: V1C-0 — Dynamic Raster Replacement and Exact Restoration Feasibility
+# Current Slice: V1C — Dynamic Local Visual Composition Lifecycle
 
 ## Status
 
-Ready to execute from the current `origin/main` containing this authority card and from DrivenByMoss `origin/pushwig/main` at the exact accepted V1B integration state.
+Ready to execute from the current accepted central `origin/main` containing this authority card and from DrivenByMoss `origin/pushwig/main` at the exact accepted V1B integration state.
 
-Active issue: [#19 — V1C-0: Select dynamic raster restoration architecture](https://github.com/kasselvania/standalone-BitWig-push/issues/19).
+Active issue: [#23 — V1C: Implement dynamic local visual composition lifecycle](https://github.com/kasselvania/standalone-BitWig-push/issues/23).
 
 Before work begins, fetch central `origin/main` and verify that its history contains:
 
 ```text
-95d93e262c33163783e23a8d3e66f6f92746918d  # accepted V1B evidence
-1e5767552838a5bf97ee6197ff2f5ac7bfb541a7  # V1C-0 status authority
+c6ccc72c315bac85af53a0c2942a191a1e40e0d3  # accepted V1C-0 evidence
 ```
 
-The active central evidence branch must be created directly from the then-current `origin/main`. If `origin/main` has moved, inspect every intervening commit and stop if it changes V1C-0 authority or scope. Do not hard-code a pre-status ancestor as the evidence basis.
+Create the central evidence branch directly from the then-current accepted `origin/main`. If `origin/main` has moved, inspect every intervening commit and stop if it changes V1C authority or scope.
 
 ## Primary claim
 
-Determine and prove the smallest technically sound frame-restoration strategy that can support a changing or disappearing project-owned visual layer while preserving the **current** DrivenByMoss semantic image exactly and retaining one Push USB writer.
-
-V1B proved that one fixed bounded mark can be painted into the persistent semantic bitmap with zero changes outside its declared region. It did not prove movement, replacement, disappearance, stale-source fallback, or exact restoration.
-
-A dynamic visual creates this lifecycle:
+Implement the production form of the accepted V1C-0 Candidate A decision:
 
 ```text
-semantic bitmap contains frame S
-        -> visual A overwrites R1
-        -> visual B overwrites R2
-        -> visual becomes absent, stale, or invalid
+newest copied ModelInfo
+        -> retain before render decision
+        -> complete current-semantic redraw when dynamic-local mode is selected
+        -> current valid locally generated visual, or no visual
+        -> same persistent IBitmap
+        -> one existing PushUsbDisplay.send
 ```
 
-Unless the old bounds are rebuilt from the **current semantic frame**, historical visual pixels can remain. External-frame IPC is therefore deferred until exact local replacement and fallback are proven.
+The previous composed output is never restoration authority.
 
-V1C-0 is an evidence-first research gate. It selects one production representation and source seam. It does not merge a production compositor, external-frame protocol, capture helper, or transport change.
+V1C must prove that a bounded local visual can move, overlap, resize, be replaced, disappear, become stale, or become invalid while every old visual pixel is replaced by the exact newest DrivenByMoss semantic output.
 
-See [`docs/V1C0_DYNAMIC_RASTER_COMPOSITION.md`](docs/V1C0_DYNAMIC_RASTER_COMPOSITION.md).
+V1C is a production source slice. It does not introduce an external producer, IPC, ScreenCaptureKit, window capture, or the final `VisualSourceFrame` contract.
 
-## Accepted source authorities
+See [`docs/V1C_DYNAMIC_LOCAL_COMPOSITION.md`](docs/V1C_DYNAMIC_LOCAL_COMPOSITION.md).
 
-DrivenByMoss integration:
+## Accepted authorities
+
+### Central authority and evidence
+
+```text
+repository: kasselvania/standalone-BitWig-push
+V1C-0 merge: c6ccc72c315bac85af53a0c2942a191a1e40e0d3
+tree:          9b1dddab50519a06b54ea873f5c07f18197238c6
+```
+
+### DrivenByMoss implementation
 
 ```text
 repository: kasselvania/DrivenByMoss
@@ -47,7 +54,7 @@ commit:     1ae0b74f383314d170a5960ca763bdf9c319e787
 tree:       a81e5c4330b31f36845c25e98e322990d62f0c67
 ```
 
-That merge contains exact accepted V1B source head:
+That integration contains exact accepted V1B source head:
 
 ```text
 a2e0341b7bccfa4e6b13614f4adffc2235f785f4
@@ -61,151 +68,324 @@ commit: fd03245ab38fa5149c45934051d937ee9fda6d08
 tree:   edd2ad636b0aa1f39919f0ffd05c968015450075
 ```
 
-Official extension SHA-256 to restore after any real-fixture prototype:
+Official extension SHA-256 to restore:
 
 ```text
 98dc3195ad8d911526e18b1005f09f69a1aedcb965b080565474104654345c5a
 ```
 
-## Accepted V1B result
+## Accepted V1C-0 decision
 
-V1B established:
+V1C-0 selected **Candidate A — retained current semantic redraw**.
 
-- default startup retained the V1A pass-through path;
-- startup activation selected one reusable synthetic pipeline;
-- one additional `IBitmap.render(false, renderer)` callback drew a fixed two-color mark;
-- the pipeline returned the same `IBitmap` reference;
-- 1,529 target pixels changed and all 152,064 outside pixels remained identical;
-- repeated sends and representative semantic modes produced no clear, expansion, smear, or trail;
-- property-off restart removed the mark;
-- enabled p95/max processing was 54.542 µs / 194 µs;
-- `PushUsbDisplay.class` remained byte-identical;
-- real Push controls/audio/display, normal shutdown, recovery, and exact official rollback passed.
+It proved:
 
-## Source facts that create this gate
+- the newest copied `ModelInfo` can be retained before the render decision;
+- a protected default-false redraw hook can preserve ordinary dirty rendering;
+- the dynamic Push path can request a complete current-semantic redraw on each eligible send;
+- the current valid local visual can then be drawn synchronously into the same bitmap;
+- `NONE`, `STALE`, and `INVALID` can produce exact semantic-only output;
+- 1,000 offline cycles / 7,000 transitions produced zero outside, old-region, absence, stale, invalid, or semantic-update mismatches;
+- 1,000 real-Bitwig samples with two semantic changes under coverage produced the same zero mismatch result;
+- restore-plus-compose measured p95 `0.413209 ms` and maximum `7.356958 ms`;
+- the real Push control, display, audio, movement, disappearance, and rollback checks passed;
+- `PushUsbDisplay.class` remained byte-identical and sole-owned.
 
-1. `AbstractGraphicDisplay` owns one persistent semantic `IBitmap`.
-2. `send()` calls `renderImage()` only when `ModelInfo` changes, then always sends the persistent bitmap.
-3. `ModelInfo` copies and retains component/overlay lists, making on-demand semantic redraw plausible but unproven.
-4. `IBitmap` exposes `render(...)` and `encode(...)`, but no generic copy, blit, read-region, write-region, or restore operation.
-5. `BitmapImpl.encode(...)` can observe bitmap memory, but the accepted wrapper has no generic write-back contract.
-6. `IGraphicsContext.drawImage(...)` currently accepts the project `ImageImpl`; bitmap-to-bitmap blitting is not yet an accepted host-neutral operation.
-7. `PushUsbDisplay` remains the sole transport owner and is outside this research.
-
-## Topology
-
-### Central evidence
-
-From the current accepted `origin/main`, create:
+The accepted research commit is evidence only:
 
 ```text
-codex/v1c0-dynamic-raster-composition-evidence
+local commit: 3e8df95e9cc489e69da72b9acb82f2d06c90dd00
+tree:         f448eeda923232346037074a75b71c485e56ebe8
 ```
 
-The final reviewable output is one ordinary, non-draft, open, unmerged PR containing only:
+Do not merge or cherry-pick that research commit as production source. Reimplement the accepted production model cleanly from exact `origin/pushwig/main`.
+
+## Source and PR topology
+
+### DrivenByMoss source work
+
+Create a clean feature branch directly from exact accepted `origin/pushwig/main`:
 
 ```text
-evidence/v1c0-dynamic-raster-composition/**
+pushwig/v1c-dynamic-local-composition
 ```
 
-The PR must include `Addresses #19` and state its exact basis/head/tree.
+The source PR must:
 
-### DrivenByMoss experiments
+- target `pushwig/main`;
+- contain one final implementation commit;
+- remain ordinary, non-draft, open, and unmerged for technical-lead review;
+- identify its exact parent/head/tree and changed paths;
+- link issue #23 and the paired central evidence PR.
 
-Use clean temporary worktrees rooted at exact `origin/pushwig/main` commit `1ae0b74f383314d170a5960ca763bdf9c319e787`.
+### Central evidence work
 
-Temporary branches, commits, patches, instrumentation, and harnesses are allowed locally. They must not be merged into `pushwig/main`, and no production DrivenByMoss PR is expected from V1C-0.
-
-Retain patch/source/harness hashes, changed paths, build commands/results, artifact hashes, and removal state. Do not copy source into the central repository.
-
-## Candidate order
-
-Evaluate in order and stop when one candidate satisfies all correctness, lifecycle, one-writer, portability, and performance requirements.
-
-### A — redraw retained current semantic model
+From current accepted central `origin/main`, create:
 
 ```text
-retained current ModelInfo
-        -> full semantic redraw into persistent bitmap
-        -> current generated visual
-        -> unchanged PushUsbDisplay
+codex/v1c-dynamic-local-composition-evidence
 ```
 
-Prove current-value fidelity, exact movement/removal, semantic changes under active bounds, Push-specific scope, timing, and allocations.
-
-### B — pristine semantic bitmap plus reusable final bitmap
+The final central PR must contain only:
 
 ```text
-pristine semantic bitmap
-        -> reusable full-frame copy/blit
-        -> one reusable final bitmap
-        -> current generated visual
-        -> unchanged PushUsbDisplay
+evidence/v1c-dynamic-local-composition/**
 ```
 
-Prove exact copy/blit on the accepted Bitwig API, a host-neutral wrapper boundary, one-time allocation, exact fallback, and practical cost.
+It must include `Addresses #23`, identify the exact source PR/head/tree, and remain ordinary, non-draft, open, and unmerged.
 
-### C — semantic-generation-aware region restore
+## Authorized production envelope
 
-Test only if A and B fail. A snapshot taken before a semantic change may never be restored over newer semantics. A trustworthy semantic-generation rule is mandatory.
-
-### D — narrow backend memory copy
-
-Test only if higher-level candidates fail. Keep dimensions, pixel format, stride, bounds, buffer lifetime, and backend memory objects behind a host-neutral adapter.
-
-## Required lifecycle experiment
-
-Use deterministic generated visual states:
+Expected production changes are exactly:
 
 ```text
-A at R1
-B at R2
-C at R3
-D at R4
-none
+src/main/java/de/mossgrabers/framework/controller/display/AbstractGraphicDisplay.java
+src/main/java/de/mossgrabers/controller/ableton/push/controller/Push2Display.java
+src/main/java/de/mossgrabers/controller/ableton/push/controller/DynamicLocalPushFramePipeline.java
 ```
 
-Repeat at least 1,000 composition cycles offline or an equivalent instrumented run. Also trigger a semantic model change beneath a previously covered region.
+Any additional production path requires a stop and explicit technical justification before editing.
 
-The selected candidate must prove:
+The following are not authorized for modification:
 
-1. Each visual appears only in its current bounds.
-2. Previous bounds are restored to exact current semantic values.
-3. After `none`, the full 960×160 output equals the current semantic reference.
-4. Pixels outside current bounds equal the semantic reference.
-5. No trail, smear, expansion, duplicate, stale block, full clear, scale error, or coordinate offset occurs.
-6. Semantic updates under previous visual bounds survive.
-7. Stale, invalid, or unavailable input produces semantic-only output.
-8. Representative mode, track, device, and parameter changes remain coherent.
+```text
+PushUsbDisplay.java
+PushFramePipeline.java
+PassThroughPushFramePipeline.java
+SyntheticOverlayPushFramePipeline.java
+ModelInfo.java
+BitmapImpl.java
+GraphicsContextImpl.java
+IBitmap.java
+pom.xml
+```
 
-## Correctness evidence
+Do not change extension version, IDs, MIDI discovery, USB matching, endpoint, encoding, line padding, XOR shaping, transfer scheduling, or shutdown ownership.
 
-Retain only sanitized aggregate evidence:
+## Required framework behavior
 
-- candidate/prototype hash;
-- semantic-reference hash;
-- target-region hashes;
-- outside-region mismatch count;
-- old-region restoration mismatch count;
-- full-frame mismatch count after absence;
-- semantic-update-under-overlay mismatch count;
-- dimensions, pixel format, masks, tools, commands, and representative mismatch coordinates.
+`AbstractGraphicDisplay.send()` must:
 
-Do not commit screenshots, raw frames, UI crops, or extension binaries.
+1. construct the newest copied `ModelInfo`;
+2. install that newest model before deciding whether to render;
+3. compute whether equality-covered semantic state changed;
+4. render when state changed or a protected redraw hook requests current-model redraw;
+5. preserve the existing list-clearing and send lifecycle;
+6. continue using the same persistent bitmap.
 
-No candidate with unexplained nonzero restoration or outside-region mismatches can be selected.
+Add one protected redraw-request hook whose ordinary implementation returns `false`.
 
-## Performance evidence
+The hook:
 
-Measure at least 1,000 post-warmup cycles for each serious candidate:
+- is not public API;
+- does not expose the bitmap;
+- does not force unrelated displays to redraw continuously;
+- is evaluated synchronously in the existing display send path.
 
-- p50, p95, and maximum restore-plus-compose time;
-- semantic-only baseline;
-- fixed construction-time allocations;
-- project-owned per-cycle allocations;
-- existing host-adapter allocations;
-- working-set behavior;
-- control/display/audio observations.
+Newest-model retention must occur even when `ModelInfo.equals()` returns true because overlay lists are not currently part of equality.
+
+## Required Push selection behavior
+
+Use the startup property:
+
+```text
+pushwig.dynamicLocalVisual=true
+```
+
+Read startup properties once during `Push2Display` construction.
+
+Selection precedence is exact:
+
+```text
+neither property
+    -> PassThroughPushFramePipeline.INSTANCE
+
+pushwig.syntheticOverlay=true only
+    -> SyntheticOverlayPushFramePipeline.INSTANCE
+
+pushwig.dynamicLocalVisual=true
+    -> DynamicLocalPushFramePipeline
+
+both properties true
+    -> DynamicLocalPushFramePipeline
+```
+
+Dynamic-local mode deliberately wins. The two diagnostic pipelines must never be stacked.
+
+Only dynamic-local mode requests the full current-model redraw hook.
+
+`Push2Display.send(IBitmap)` must preserve:
+
+```text
+shutdown/null guard
+        -> exactly one pipeline.process
+        -> exactly one PushUsbDisplay.send
+```
+
+## Required dynamic local pipeline
+
+`DynamicLocalPushFramePipeline` must be package-private and instantiated once per display.
+
+It may retain only fixed, bounded diagnostic state and reusable renderers.
+
+Required lifecycle:
+
+```text
+A — initial visual
+B — moved and enlarged, partially overlapping A
+C — moved and reduced
+D — replacement content and geometry
+NONE
+STALE
+INVALID
+```
+
+The valid states must differ in position, size, overlap, and visual content.
+
+For `NONE`, `STALE`, and `INVALID`, the pipeline performs no visual drawing after the complete semantic redraw.
+
+The pipeline must:
+
+- return the exact input `IBitmap` reference;
+- retain no bitmap, raw frame, semantic snapshot, or historical output;
+- use no second bitmap;
+- allocate no bitmap, frame, byte array, renderer, collection, queue, task, or future per send;
+- add no thread, executor, scheduler, timer, socket, shared memory, USB object, or capture type;
+- avoid per-send `Enum.values()` or equivalent hidden array creation;
+- use class-initialized reusable renderers where practical.
+
+## Required regression matrix
+
+The exact source head must prove:
+
+### Ordinary default path
+
+```text
+no Pushwig properties
+        -> pass-through pipeline
+        -> existing dirty semantic render behavior
+        -> no forced redraw
+```
+
+### Accepted V1B path
+
+```text
+pushwig.syntheticOverlay=true
+        -> fixed static overlay pipeline
+        -> no dynamic forced-redraw selection
+```
+
+### V1C path
+
+```text
+pushwig.dynamicLocalVisual=true
+        -> newest ModelInfo retained
+        -> full semantic redraw every eligible send
+        -> current valid local visual or semantic-only output
+```
+
+Also prove that an ordinary test subclass using the default hook retains the accepted dirty-render count and behavior.
+
+## Overlay and notification lifecycle
+
+V1C must explicitly prove two remaining semantic cases.
+
+### Overlay-only update
+
+With equality-covered component and notification state otherwise stable:
+
+1. change the overlay list;
+2. perform the next dynamic send;
+3. prove the newest overlay is present;
+4. prove no older overlay or visual pixels remain.
+
+### Notification lifecycle
+
+While the dynamic visual is active:
+
+1. display a notification;
+2. move or remove the visual;
+3. prove the current notification is restored correctly;
+4. replace or expire the notification;
+5. prove current underlying semantics return without stale notification or visual pixels.
+
+## Pixel correctness
+
+Use exact 960×160 aggregate comparison with the accepted BGRA8888 observation layout.
+
+Run at least 1,000 complete deterministic cycles containing:
+
+```text
+A
+B
+C
+D
+NONE
+STALE
+INVALID
+```
+
+Include:
+
+- partial overlap;
+- enlargement and reduction;
+- replacement visual content;
+- a semantic update beneath covered pixels;
+- an overlay-only update;
+- notification appearance and removal.
+
+Required zero mismatch counts:
+
+```text
+outside-current-region
+old-region restoration
+post-NONE full frame
+STALE full frame
+INVALID full frame
+semantic-update-under-overlay
+overlay-only update
+notification-lifecycle restoration
+```
+
+Positive target-region mismatches must confirm that valid visuals actually changed pixels.
+
+Do not commit frames, screenshots, UI crops, or extension binaries. Retain dimensions, masks, hashes, counts, methods, commands, and representative mismatch coordinates only.
+
+## Source, build, and bytecode proof
+
+Use the accepted explicit Java 21/Maven environment.
+
+Build:
+
+1. exact accepted base `1ae0b74f383314d170a5960ca763bdf9c319e787`;
+2. exact proposed V1C source head;
+
+under the same toolchain.
+
+Retain:
+
+- exact parent/head/tree and one-commit topology;
+- exact changed-path envelope;
+- source and patch hashes;
+- build commands/results;
+- artifact size and SHA-256;
+- extracted payload comparison;
+- bytecode proving newest-model retention, hook default, Push override and pipeline selection, same-reference return, bounded state, one pipeline call, and one USB send;
+- byte-identical `PushUsbDisplay.class`;
+- byte-identical accepted V1A/V1B pipeline classes unless an explicit reviewed reason exists.
+
+## Performance and memory
+
+Measure at least 1,000 post-warmup sends for:
+
+```text
+default pass-through
+V1B static overlay
+V1C forced redraw with no visual
+V1C redraw plus visual
+```
+
+Retain p50, p95, maximum, project-owned allocation sites, existing host-render allocations, and bounded RSS/heap observations.
 
 Review bands:
 
@@ -215,102 +395,120 @@ review: p95 <= 5 ms and max <= 15 ms
 stop:   p95 > 5 ms or max > 15 ms
 ```
 
-Do not add concurrency or buffering to hide a slow result. No candidate may use a second USB writer, unbounded queue, or per-frame thread/task creation.
+A review-band result requires an explicit technical recommendation. A stop-band result halts the slice.
 
-## Build and real-fixture evidence
+Do not introduce asynchronous work or extra buffering to hide synchronous cost.
 
-For every executed candidate:
+## Real-fixture sequence
 
-- begin from exact accepted source commit/tree;
-- record temporary patch/source hash and changed paths;
-- use the accepted explicit Java 21/Maven environment;
-- retain build result and artifact hash;
-- inspect executable delta;
-- keep `PushUsbDisplay.class` byte-identical for any candidate reaching fixture use;
-- remove temporary timing/frame-dump instrumentation before a live check;
-- never commit generated extension binaries.
+Use the exact proposed source-head artifact on the accepted Mac + Bitwig 6.1 + Push 3 fixture.
 
-The leading safe candidate must receive a bounded Mac + Bitwig 6.1 + Push 3 check:
+### Phase A — default derivative
 
-- exact prototype artifact/patch hashes;
-- sole scanned extension;
-- moving/replacing/absent sequence;
-- Track, Device Parameters, and Session or Browser updates;
-- semantic change under a previously covered region;
-- coherent controls and semantic display;
-- Push audio device and audible headphone output;
-- no trail, stale content, lag, xrun, or relevant error;
-- normal quit;
-- exact official rollback and physical restored-display confirmation.
+Launch without Pushwig properties and confirm:
 
-If no candidate is safe enough, retain the precise blocker and do not install it.
+- accepted controller/audio/display baseline;
+- no dynamic visual;
+- ordinary dirty-render behavior;
+- normal quit.
 
-## Decision output
+### Phase B — V1B static regression
 
-The final evidence selects exactly one outcome.
-
-### SELECTED
-
-Name:
-
-- production ownership model;
-- exact source seam and expected changed paths for V1C;
-- public/internal interface boundary;
-- bitmap/frame lifetime rules;
-- semantic-generation/redraw rules;
-- stale/absent behavior;
-- timing/allocation budget;
-- rejected-candidate rationale.
-
-### BLOCKED
-
-Name the smallest missing API/capability, experiments performed, and next bounded research.
-
-## Expected evidence
+Launch with:
 
 ```text
-evidence/v1c0-dynamic-raster-composition/
-├── README.md
-├── accepted-source-analysis.md
-├── candidate-a-semantic-redraw.md
-├── alternative-candidates.md
-├── pixel-restoration.md
-├── performance.md
-├── real-fixture-and-rollback.md
-└── decision.md
+pushwig.syntheticOverlay=true
 ```
 
-Files may be omitted only when `decision.md` explains why the corresponding candidate was not reached.
+Confirm:
 
-## Non-goals
+- the accepted fixed mark appears;
+- dynamic redraw mode is not selected;
+- representative modes and baseline remain correct;
+- normal quit.
 
-No production source PR/merge, external-frame IPC, socket/shared memory, ScreenCaptureKit, window capture, `VisualSourceFrame` wire format, source discovery, resolver, calibration, pixel anchors, transport rewrite, second USB owner, user-facing setting, Push 2 claim, Steam Deck/Linux, yabridge, Monome, plugdata, appliance, battery, connector, or NUC work.
+### Phase C — V1C dynamic lifecycle
+
+Launch with:
+
+```text
+pushwig.dynamicLocalVisual=true
+```
+
+Confirm:
+
+- connection, pads, pressure/MPE, encoders, transport;
+- coherent semantic display;
+- Push audio device and audible headphone output;
+- A/B/C/D movement, overlap, resize, and replacement;
+- previous regions restore exactly;
+- `NONE`, `STALE`, and `INVALID` are semantic-only;
+- Track, Device Parameters, and Session or Browser work;
+- semantic update beneath previous coverage appears;
+- overlay-only update appears;
+- notification appearance, movement restoration, replacement/expiration work;
+- no clear, trail, stale block, scale error, lag, xrun, or relevant exception;
+- normal quit.
+
+### Phase D — exact rollback
+
+Restore the untouched official artifact at the canonical filename, verify accepted SHA-256, verify exactly one scanned extension, relaunch, and physically confirm the ordinary official display.
+
+## Expected central evidence
+
+```text
+evidence/v1c-dynamic-local-composition/
+├── README.md
+├── source-topology.md
+├── framework-redraw-contract.md
+├── lifecycle-and-pixel-restoration.md
+├── overlay-and-notification.md
+├── regression-paths.md
+├── performance.md
+├── build-artifact-comparison.md
+├── real-fixture-and-rollback.md
+└── manual-acceptance.md
+```
+
+Every file must state what it proves and what it does not prove.
+
+## Explicit non-goals
+
+- no external frame ingress;
+- no IPC, socket, shared memory, memory-mapped file, or producer process;
+- no final `VisualSourceFrame` type or wire format;
+- no ScreenCaptureKit or Screen Recording permission;
+- no Bitwig/editor window discovery or capture;
+- no visual adapter, resolver, calibration, or pixel-anchor implementation;
+- no second bitmap, region snapshot, backend raw-copy architecture, or transport rewrite;
+- no second USB writer;
+- no user-facing setting;
+- no POM/dependency/test-framework change;
+- no Push 2 hardware claim;
+- no Steam Deck/Linux, yabridge, Monome, plugdata, appliance, battery, connector, or NUC work.
 
 ## Acceptance
 
-V1C-0 is complete only when:
+V1C is complete only when:
 
-1. Research starts from current accepted central `origin/main` and exact DrivenByMoss integration commit/tree.
-2. Exact source lifecycle/API constraints are retained.
-3. Candidate A is tested first or explicitly rejected from source evidence.
-4. At least one candidate proves moving, replacing, absent, stale, and semantic-update-under-overlay states.
-5. Selected candidate has zero outside-region, old-region restoration, and post-absence full-frame mismatches.
-6. Stale/unavailable input produces semantic-only output.
-7. Performance/allocation evidence is retained.
-8. `PushUsbDisplay` remains unchanged and sole-owned.
-9. The leading candidate receives bounded real-fixture validation or a precise safety blocker.
-10. Exact official rollback passes after any fixture prototype.
-11. `decision.md` selects one production seam or one precise blocker.
-12. No temporary prototype/instrumentation is merged.
-13. The central evidence PR is open, non-draft, unmerged, and identifies exact basis/head/tree.
-14. Accepted branches and ordinary worktrees are clean and synchronized.
+1. the source PR is one implementation commit directly above exact accepted `pushwig/main`;
+2. source changes remain within the three-path envelope;
+3. newest-model retention and default-false redraw behavior are exact;
+4. dynamic-local selection and property precedence are exact;
+5. default and V1B paths do not gain dynamic redraw behavior;
+6. the local lifecycle covers move, overlap, resize, replacement, none, stale, and invalid;
+7. every required restoration/outside/semantic/overlay/notification mismatch count is zero;
+8. the pipeline returns the same bitmap and adds no prohibited per-send state or allocation;
+9. `PushUsbDisplay` remains byte-identical and sole-owned;
+10. exact base/head builds and bounded artifact delta pass;
+11. performance is green or explicitly reviewed within the review band;
+12. the exact source head passes all real-fixture phases;
+13. normal shutdown and exact official rollback pass;
+14. both paired PRs are open, non-draft, unmerged, and identify exact heads;
+15. relevant worktrees are clean and synchronized.
 
 ## Handoff
 
-If selected, **V1C — Dynamic Local Composition Lifecycle** implements only the chosen restoration/composition primitive with generated local frames.
+After V1C is accepted, **V1D — External Generated-Frame Ingress** may define an immutable latest-frame-wins input contract and process boundary.
 
-**V1D — External Generated-Frame Ingress** follows only after dynamic replacement, removal, and semantic fallback are proven locally.
-
-## Review standard
-
-Correct restoration outranks minimal line count, raw speed, or novelty. Do not accept a candidate that can paint changing pixels but cannot restore the exact current semantic output when the visual moves, disappears, becomes invalid, or becomes stale.
+V1D must consume the V1C lifecycle rather than replacing its restoration ownership.

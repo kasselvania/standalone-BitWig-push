@@ -9,7 +9,7 @@ This changes implementation order, not the product definition:
 - macOS provides the fastest available source/build/install/measurement loop;
 - the Steam Deck remains the first Track A appliance host and the named Linux portability fixture;
 - compositor, visual-frame, resolver, and adapter contracts remain operating-system neutral;
-- no ScreenCaptureKit, Core Graphics, or other macOS type may leak into the controller-extension or public frame contracts.
+- no ScreenCaptureKit, Core Graphics, or other macOS type may leak into controller-extension or public frame contracts.
 
 ## Accepted progress on the Mac fixture
 
@@ -41,7 +41,7 @@ Accepted source established:
 ```text
 complete semantic IBitmap
         -> PushFramePipeline
-        -> exact same IBitmap
+        -> same IBitmap
         -> unchanged PushUsbDisplay
 ```
 
@@ -58,79 +58,141 @@ startup property on  -> one fixed bounded render callback
 
 The concrete bitmap comparison observed zero outside-region changes. The real Push, controls, audio, representative modes, shutdown, recovery, and rollback passed.
 
-## Why the next Mac task is not IPC
+### V1C-0 — dynamic restoration decision
 
-The semantic display uses one persistent bitmap. `AbstractGraphicDisplay` redraws it only when `ModelInfo` changes, then sends the bitmap on every eligible update.
-
-A fixed mark can be redrawn at the same coordinates indefinitely. A changing visual cannot safely rely on that historical bitmap:
+Accepted research selected:
 
 ```text
-old visual at R1
-new visual at R2
-no visual
+newest copied ModelInfo
+        -> complete current-semantic redraw
+        -> current valid visual or no visual
+        -> same persistent IBitmap
+        -> unchanged PushUsbDisplay
 ```
 
-Without an explicit restoration model, `R1` can remain contaminated after the visual moves or disappears.
+It produced zero outside, old-region, disappearance, stale, invalid, and semantic-update mismatch counts.
 
-The same failure would occur when:
-
-- a helper process exits;
-- capture permission is revoked;
-- a plug-in editor closes;
-- the selected device changes;
-- an anchor lock becomes ambiguous;
-- an external frame becomes stale.
-
-Therefore the Mac fixture now executes V1C-0 before external-frame ingress.
-
-## V1C-0 — dynamic raster composition research
-
-V1C-0 selects one exact lifecycle:
-
-### Candidate A — redraw retained semantic state
+Real-Bitwig restore-plus-compose measured:
 
 ```text
-retained current ModelInfo
-        -> full semantic redraw
-        -> current visual
-        -> unchanged transport
+p50       0.275166 ms
+p95       0.413209 ms
+maximum   7.356958 ms
 ```
 
-This is tested first because `ModelInfo` retains copied components and overlays. The prototype must prove current-value fidelity, exact restoration, Push-specific scope, and cost.
+The real Push control/display/audio lifecycle and exact official rollback passed.
 
-### Candidate B — pristine semantic bitmap plus reusable final bitmap
+## Why V1C remains local
+
+The next source slice is production V1C, not external IPC.
+
+V1C proves the accepted restoration ownership with a bounded local state machine:
 
 ```text
-semantic bitmap
-        -> reusable full-frame copy/blit
-        -> reusable final bitmap
-        -> current visual
-        -> unchanged transport
+A
+B moved/enlarged with overlap
+C moved/reduced
+D replacement
+NONE
+STALE
+INVALID
 ```
 
-This is the preferred ownership model if the Bitwig graphics wrapper can expose a clean, host-neutral bitmap blit and the measured cost is practical.
+This isolates:
 
-### Candidate C — generation-aware region restore
+- newest-model retention;
+- current semantic redraw;
+- movement and overlap;
+- size changes;
+- disappearance and invalidity;
+- overlay-only updates;
+- notification lifecycle;
+- default and V1B regressions;
+- exact cost and allocations.
 
-This is acceptable only with an explicit semantic-generation rule. A snapshot captured before a semantic change may never be restored over newer semantics.
+Only after those production behaviors are accepted should another process be allowed to supply visual pixels.
 
-### Candidate D — narrow backend copy
+## Current Mac task: V1C
 
-A Bitwig memory-copy adapter is a fallback. It must remain behind a platform-neutral interface and declare pixel format, dimensions, bounds, allocation, and ownership.
+V1C implements:
 
-See [`V1C0_DYNAMIC_RASTER_COMPOSITION.md`](V1C0_DYNAMIC_RASTER_COMPOSITION.md).
+```text
+newest copied ModelInfo
+        -> retain before redraw decision
+        -> full semantic redraw only for dynamic-local selection
+        -> zero or one current local visual
+        -> same bitmap
+        -> one USB send
+```
+
+The expected source envelope is:
+
+```text
+AbstractGraphicDisplay.java
+Push2Display.java
+DynamicLocalPushFramePipeline.java
+```
+
+The ordinary display framework keeps its dirty-render behavior because the new redraw hook defaults false.
+
+The selected dynamic Push path alone requests current-model redraw every eligible send.
+
+See [`V1C_DYNAMIC_LOCAL_COMPOSITION.md`](V1C_DYNAMIC_LOCAL_COMPOSITION.md).
+
+## Property matrix
+
+The Mac fixture must prove:
+
+```text
+no property
+    -> pass-through
+
+pushwig.syntheticOverlay=true
+    -> accepted fixed V1B diagnostic
+
+pushwig.dynamicLocalVisual=true
+    -> V1C dynamic lifecycle
+
+both true
+    -> V1C dynamic lifecycle only
+```
+
+Properties are read before controller construction, not polled per frame.
+
+## Semantic edge cases
+
+### Overlay-only update
+
+`ModelInfo.equals/hashCode` omit overlays.
+
+V1C retains the newest copied model before its render decision, then forces current-model redraw in dynamic mode.
+
+The Mac fixture must prove that an overlay-only update appears even when equality-covered state is stable.
+
+### Notification lifecycle
+
+The Mac fixture must prove:
+
+```text
+notification appears
+        -> visual moves/disappears
+        -> current notification remains correct
+        -> notification replaces/expires
+        -> underlying semantics return
+```
+
+No stale visual or notification pixels may remain.
 
 ## What can still be proven on Mac before the Deck returns
 
 The Mac fixture can establish:
 
-1. exact dynamic restoration/frame ownership;
-2. moving/replaced/absent/stale local generated visuals;
-3. external immutable/latest-frame-wins ingress;
-4. macOS dedicated-window capture;
-5. one useful floating Bitwig native-device or plug-in lens;
-6. a local semantic-seeded anchor benchmark;
-7. most user-facing visual-mode behavior.
+1. production dynamic local composition;
+2. immutable/latest-frame-wins external ingress;
+3. macOS dedicated-window capture;
+4. one useful floating Bitwig native-device or plug-in lens;
+5. a local semantic-seeded anchor benchmark;
+6. most attached-mode user behavior.
 
 The Mac fixture cannot establish:
 
@@ -141,7 +203,7 @@ The Mac fixture cannot establish:
 
 Those remain explicit second-host slices.
 
-## Current source and process posture
+## Current source posture
 
 Accepted controller-extension source:
 
@@ -152,14 +214,17 @@ commit:     1ae0b74f383314d170a5960ca763bdf9c319e787
 tree:       a81e5c4330b31f36845c25e98e322990d62f0c67
 ```
 
-Accepted authority/evidence source:
+Accepted V1C-0 evidence:
 
 ```text
 repository: kasselvania/standalone-BitWig-push
-main:       95d93e262c33163783e23a8d3e66f6f92746918d
+commit:     c6ccc72c315bac85af53a0c2942a191a1e40e0d3
+tree:       9b1dddab50519a06b54ea873f5c07f18197238c6
 ```
 
-V1C-0 does not merge production source. It uses temporary prototype worktrees and retains hashes, changed paths, build results, pixel comparisons, performance, real-fixture results, rollback, and a final architecture decision in the central repository.
+Active issue:
+
+[#23 — V1C: Implement dynamic local visual composition lifecycle](https://github.com/kasselvania/standalone-BitWig-push/issues/23)
 
 ## Revised Track V sequence
 
@@ -168,8 +233,8 @@ S0      accepted fixture and display seam
 V1A-0   accepted fork/build/install baseline
 V1A     accepted identity frame pipeline
 V1B     accepted static bounded synthetic pixels
-V1C-0   active dynamic restoration/ownership selection
-V1C     production dynamic local composition lifecycle
+V1C-0   accepted dynamic restoration architecture
+V1C     active production dynamic local composition
 V1D     external generated-frame ingress
 V2      macOS dedicated-window capture
 V2A     semantic-seeded pixel-anchor benchmark
@@ -178,7 +243,7 @@ V2P     Linux/Steam Deck second-host checkpoint
 
 ## Future external-frame posture
 
-After V1C proves dynamic replacement/removal/fallback, a separate native macOS helper may publish a platform-neutral frame:
+After V1C proves production movement/removal/fallback, a separate helper may publish a platform-neutral frame:
 
 ```text
 VisualSourceFrame
@@ -202,13 +267,21 @@ Leading local transport remains:
 - latest-frame storage in shared memory or a memory-mapped file;
 - sequence-based latest-frame-wins behavior;
 - no unbounded queue;
-- compositor never waits for capture.
+- controller extension never waits for capture.
 
-That protocol is V1D, not V1C-0.
+That protocol is V1D.
+
+External absence, stale sequence, invalid metadata, producer restart, permission denial, and resolver abstention must consume the V1C fallback:
+
+```text
+current semantic redraw
+        -> no visual draw
+        -> semantic-only Push output
+```
 
 ## macOS capture constraints
 
-Window capture eventually requires explicit system permission. Permission denial or revocation must produce exact semantic-only fallback through the already-proven dynamic lifecycle.
+Window capture eventually requires explicit system permission. Permission denial or revocation must produce exact semantic-only fallback through V1C.
 
 The capture helper should be a normal macOS application so that:
 
@@ -223,17 +296,19 @@ Dedicated top-level windows remain the first capture target. Embedded-panel reso
 
 Mac-first does not mean Mac-shaped architecture.
 
-The following remain mandatory:
+Mandatory:
 
-- no macOS window/image handle in the compositor or frame contract;
+- no macOS window/image handle in compositor or frame contract;
 - visual adapters identify semantic roles and source-relative geometry, not physical desktop coordinates;
-- local generated-frame tests can exercise the compositor without a capture helper;
-- missing/stale/invalid visual input restores current semantic output exactly;
+- local generated tests exercise composition without capture;
+- missing/stale/invalid visual input restores exact current semantics;
 - Linux and later Windows backends can implement the same frame contract;
-- Steam Deck validation remains required before a Linux support claim.
+- Steam Deck validation is required before a Linux support claim.
 
 ## Result
 
-The Mac has already proven the display seam and first visible project-owned pixels. It now determines the exact restoration ownership needed to turn that static success into a safe live visual system.
+The Mac has proven the display seam, first project-owned pixels, and exact restoration ownership.
+
+V1C now hardens that ownership into production source before the project crosses a process boundary.
 
 The Steam Deck then receives the same contracts as a Linux portability and appliance deployment rather than becoming the machine on which core visual semantics are invented.
