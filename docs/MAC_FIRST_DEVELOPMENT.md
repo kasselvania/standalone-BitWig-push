@@ -4,39 +4,24 @@
 
 The active Track V development fixture is the maintainer's macOS computer running Bitwig Studio, the `kasselvania/DrivenByMoss` derivative, and Push 3 Controller over ordinary USB.
 
-This changes implementation order, not the product definition:
+This changes implementation order, not product scope:
 
-- macOS provides the fastest available source/build/install/measurement loop;
-- the Steam Deck remains the first Track A appliance host and the named Linux portability fixture;
-- compositor, visual-frame, resolver, and adapter contracts remain operating-system neutral;
-- no ScreenCaptureKit, Core Graphics, or other macOS type may leak into controller-extension or public frame contracts.
+- macOS supplies the fastest source/build/install/measurement loop;
+- Steam Deck remains the first Track A appliance host and named Linux portability fixture;
+- semantic, raster, frame, resolver, and adapter contracts remain operating-system neutral;
+- no ScreenCaptureKit, Core Graphics, or other macOS object may leak into the controller extension or public frame contracts.
 
-## Accepted progress on the Mac fixture
+## Accepted Mac progress
 
 ### S0 — exact fixture and display path
 
-Accepted evidence established:
-
-- Bitwig Studio 6.1 and Push 3 controls/audio/display on the real fixture;
-- official DrivenByMoss 26.4.1 artifact and exact upstream source;
-- persistent 960×160 semantic bitmap;
-- `Push2Display.send(IBitmap)` to `PushUsbDisplay.send(IBitmap)` seam;
-- unchanged USB interface/endpoint ownership.
+Accepted Bitwig 6.1, Push controls/audio/display, official DrivenByMoss 26.4.1 provenance, the persistent 960×160 bitmap, and the `Push2Display` to `PushUsbDisplay` seam.
 
 ### V1A-0 — derivative custody and build
 
-Accepted evidence established:
+Accepted the true fork, immutable source basis, explicit Java 21/Maven environment, reversible installation, real Push parity, and exact official rollback.
 
-- true `kasselvania/DrivenByMoss` fork;
-- immutable upstream basis and project integration branch;
-- explicit Java 21/Maven build environment;
-- reversible extension installation;
-- full real-device parity;
-- exact official-artifact rollback.
-
-### V1A — identity frame pipeline
-
-Accepted source established:
+### V1A — identity pipeline
 
 ```text
 complete semantic IBitmap
@@ -45,270 +30,144 @@ complete semantic IBitmap
         -> unchanged PushUsbDisplay
 ```
 
-### V1B — static bounded pixels
+### V1B — static bounded composition
 
-Accepted source and evidence established:
-
-```text
-startup property off -> pass-through
-startup property on  -> one fixed bounded render callback
-                       -> same IBitmap
-                       -> unchanged PushUsbDisplay
-```
-
-The concrete bitmap comparison observed zero outside-region changes. The real Push, controls, audio, representative modes, shutdown, recovery, and rollback passed.
+Accepted a fixed startup-gated vector mark with zero outside-region mismatches, bounded cost, representative semantic modes, real controls/audio, and exact rollback.
 
 ### V1C-0 — dynamic restoration decision
 
-Accepted research selected:
+Selected current-semantic redraw rather than historical output mutation, a second bitmap, region snapshots, or raw transport ownership.
+
+### V1C — production dynamic local lifecycle
+
+Accepted:
 
 ```text
 newest copied ModelInfo
         -> complete current-semantic redraw
-        -> current valid visual or no visual
+        -> current optional local vector visual
         -> same persistent IBitmap
         -> unchanged PushUsbDisplay
 ```
 
-It produced zero outside, old-region, disappearance, stale, invalid, and semantic-update mismatch counts.
+V1C proved movement, overlap, resize, replacement, semantic-only states, semantic changes under coverage, overlay-only updates, notification lifecycle, regression paths, bounded performance, real Push behavior, and exact rollback.
 
-Real-Bitwig restore-plus-compose measured:
-
-```text
-p50       0.275166 ms
-p95       0.413209 ms
-maximum   7.356958 ms
-```
-
-The real Push control/display/audio lifecycle and exact official rollback passed.
-
-## Why V1C remains local
-
-The next source slice is production V1C, not external IPC.
-
-V1C proves the accepted restoration ownership with a bounded local state machine:
+Accepted source:
 
 ```text
-A
-B moved/enlarged with overlap
-C moved/reduced
-D replacement
-NONE
-STALE
-INVALID
+kasselvania/DrivenByMoss: pushwig/main
+commit: 852b520933eed87fbe496a04b5c18819a10b3564
+tree:   d03a372e2efcf41b22cef46501e08efbfb0c0036
 ```
 
-This isolates:
-
-- newest-model retention;
-- current semantic redraw;
-- movement and overlap;
-- size changes;
-- disappearance and invalidity;
-- overlay-only updates;
-- notification lifecycle;
-- default and V1B regressions;
-- exact cost and allocations.
-
-Only after those production behaviors are accepted should another process be allowed to supply visual pixels.
-
-## Current Mac task: V1C
-
-V1C implements:
+Accepted central evidence:
 
 ```text
-newest copied ModelInfo
-        -> retain before redraw decision
-        -> full semantic redraw only for dynamic-local selection
-        -> zero or one current local visual
-        -> same bitmap
-        -> one USB send
+commit: e748d168ce9983bd787fad25ac03ccb5b650edb1
+tree:   2d0a7a812e25c15aa082025f6d2ec90e8595b65c
 ```
 
-The expected source envelope is:
+## Why the next Mac task is bulk raster—not IPC
+
+The current dynamic local source draws a few vector primitives through `IBitmap.render(...)`. A real captured device or plug-in view will be a raster image.
+
+The project therefore needs a production-capable bulk raster sink before another process can usefully publish frames.
+
+The relevant accepted facts are:
+
+- project `IBitmap` exposes render and encode, but no accepted region write;
+- Bitwig's bitmap exposes a `MemoryBlock` and is also an `Image`;
+- the current project wrapper does not establish writable coherence, exact row/channel/stride behavior, or pixel-exact bitmap blitting;
+- V1C semantic redraw already solves movement/removal/fallback and must remain restoration authority.
+
+V1D-0 selects the narrow raster primitive before IPC.
+
+## V1D-0 — bulk raster feasibility
+
+The first research contract is:
 
 ```text
-AbstractGraphicDisplay.java
-Push2Display.java
-DynamicLocalPushFramePipeline.java
+opaque BGRA8888
+already cropped and scaled
+explicit destination bounds
+explicit validated source stride
+synchronous current display thread
 ```
 
-The ordinary display framework keeps its dirty-render behavior because the new redraw hook defaults false.
+Candidate order:
 
-The selected dynamic Push path alone requests current-model redraw every eligible send.
+1. direct validated write into the current bitmap backing memory;
+2. one reusable source bitmap and exact bitmap-as-image blit;
+3. encode-time composition above transport;
+4. precise blocker.
 
-See [`V1C_DYNAMIC_LOCAL_COMPOSITION.md`](V1C_DYNAMIC_LOCAL_COMPOSITION.md).
+The research must prove:
 
-## Property matrix
+- buffer writeability, aliasing, lifetime, and coherence;
+- channel, row, alpha, capacity, and stride behavior;
+- small, odd padded, medium, and full-frame generated patterns;
+- validation before mutation and zero partial invalid writes;
+- exact source pixels and exact semantic restoration;
+- bounded performance/allocation;
+- unchanged `PushUsbDisplay` and one writer;
+- real Push behavior and exact official rollback for the leading candidate.
 
-The Mac fixture must prove:
+No proprietary UI capture is needed. Generated test cards are sufficient.
 
-```text
-no property
-    -> pass-through
+## What the Mac can still prove before the Deck returns
 
-pushwig.syntheticOverlay=true
-    -> accepted fixed V1B diagnostic
+The Mac can establish:
 
-pushwig.dynamicLocalVisual=true
-    -> V1C dynamic lifecycle
+1. exact bulk raster application;
+2. production local raster lifecycle;
+3. external latest-frame-wins ingress and freshness;
+4. macOS dedicated-window capture;
+5. one floating Bitwig native-device or plug-in visual lens;
+6. semantic-seeded anchor benchmarks;
+7. much of the public attached-mode experience.
 
-both true
-    -> V1C dynamic lifecycle only
-```
+The Mac cannot establish:
 
-Properties are read before controller construction, not polled per frame.
-
-## Semantic edge cases
-
-### Overlay-only update
-
-`ModelInfo.equals/hashCode` omit overlays.
-
-V1C retains the newest copied model before its render decision, then forces current-model redraw in dynamic mode.
-
-The Mac fixture must prove that an overlay-only update appears even when equality-covered state is stable.
-
-### Notification lifecycle
-
-The Mac fixture must prove:
-
-```text
-notification appears
-        -> visual moves/disappears
-        -> current notification remains correct
-        -> notification replaces/expires
-        -> underlying semantics return
-```
-
-No stale visual or notification pixels may remain.
-
-## What can still be proven on Mac before the Deck returns
-
-The Mac fixture can establish:
-
-1. production dynamic local composition;
-2. immutable/latest-frame-wins external ingress;
-3. macOS dedicated-window capture;
-4. one useful floating Bitwig native-device or plug-in lens;
-5. a local semantic-seeded anchor benchmark;
-6. most attached-mode user behavior.
-
-The Mac fixture cannot establish:
-
-- Linux X11/Wayland/portal capture behavior;
-- Flatpak IPC boundaries;
-- Steam Deck performance, power, battery, headless boot, or managed geometry;
+- Linux X11/Wayland/portal behavior;
+- Flatpak/host IPC boundaries;
+- Steam Deck power, battery, headless boot, or managed geometry;
 - Linux support claims.
 
-Those remain explicit second-host slices.
+Those remain explicit later checkpoints.
 
-## Current source posture
-
-Accepted controller-extension source:
-
-```text
-repository: kasselvania/DrivenByMoss
-branch:     pushwig/main
-commit:     1ae0b74f383314d170a5960ca763bdf9c319e787
-tree:       a81e5c4330b31f36845c25e98e322990d62f0c67
-```
-
-Accepted V1C-0 evidence:
-
-```text
-repository: kasselvania/standalone-BitWig-push
-commit:     c6ccc72c315bac85af53a0c2942a191a1e40e0d3
-tree:       9b1dddab50519a06b54ea873f5c07f18197238c6
-```
-
-Active issue:
-
-[#23 — V1C: Implement dynamic local visual composition lifecycle](https://github.com/kasselvania/standalone-BitWig-push/issues/23)
-
-## Revised Track V sequence
+## Revised sequence
 
 ```text
 S0      accepted fixture and display seam
 V1A-0   accepted fork/build/install baseline
-V1A     accepted identity frame pipeline
-V1B     accepted static bounded synthetic pixels
-V1C-0   accepted dynamic restoration architecture
-V1C     active production dynamic local composition
-V1D     external generated-frame ingress
+V1A     accepted identity pipeline
+V1B     accepted static bounded composition
+V1C-0   accepted dynamic restoration selection
+V1C     accepted dynamic local vector lifecycle
+V1D-0   active bulk raster primitive selection
+V1D-1   production local raster lifecycle
+V1D-2   external latest-frame ingress
 V2      macOS dedicated-window capture
-V2A     semantic-seeded pixel-anchor benchmark
-V2P     Linux/Steam Deck second-host checkpoint
+V2A     semantic-seeded anchor benchmark
+V2P     Linux/Steam Deck checkpoint
 ```
 
 ## Future external-frame posture
 
-After V1C proves production movement/removal/fallback, a separate helper may publish a platform-neutral frame:
+Only after V1D-1 should a helper publish a platform-neutral raster frame containing bounded metadata such as source identity/role, dimensions, stride, pixel format, sequence, timestamp, validity, stale reason, confidence, and bytes.
 
-```text
-VisualSourceFrame
-  source_id
-  source_role
-  width
-  height
-  pixel_format
-  sequence
-  timestamp
-  validity
-  stale_reason
-  confidence
-  frame_data
-  optional_metadata
-```
+The controller extension must:
 
-Leading local transport remains:
+- never wait for the producer;
+- use latest-frame-wins rather than a queue;
+- validate before applying;
+- preserve V1C current-semantic redraw;
+- map helper absence, crash, stale sequence, invalid metadata, permission failure, and resolver abstention to exact semantic-only output.
 
-- control/status over a Unix-domain socket;
-- latest-frame storage in shared memory or a memory-mapped file;
-- sequence-based latest-frame-wins behavior;
-- no unbounded queue;
-- controller extension never waits for capture.
+## macOS capture posture
 
-That protocol is V1D.
-
-External absence, stale sequence, invalid metadata, producer restart, permission denial, and resolver abstention must consume the V1C fallback:
-
-```text
-current semantic redraw
-        -> no visual draw
-        -> semantic-only Push output
-```
-
-## macOS capture constraints
-
-Window capture eventually requires explicit system permission. Permission denial or revocation must produce exact semantic-only fallback through V1C.
-
-The capture helper should be a normal macOS application so that:
-
-- permission has a stable application identity;
-- the user can inspect/revoke it in System Settings;
-- window and capture lifecycle are observable;
-- the Bitwig extension host does not embed platform capture code.
-
-Dedicated top-level windows remain the first capture target. Embedded-panel resolution and pixel anchors remain later work.
-
-## Portability guardrails
-
-Mac-first does not mean Mac-shaped architecture.
-
-Mandatory:
-
-- no macOS window/image handle in compositor or frame contract;
-- visual adapters identify semantic roles and source-relative geometry, not physical desktop coordinates;
-- local generated tests exercise composition without capture;
-- missing/stale/invalid visual input restores exact current semantics;
-- Linux and later Windows backends can implement the same frame contract;
-- Steam Deck validation is required before a Linux support claim.
+Screen capture eventually belongs in a normal macOS helper application with stable permission identity. Dedicated top-level native-device and plug-in windows remain the first targets. Embedded Bitwig panels and pixel anchors remain later work.
 
 ## Result
 
-The Mac has proven the display seam, first project-owned pixels, and exact restoration ownership.
-
-V1C now hardens that ownership into production source before the project crosses a process boundary.
-
-The Steam Deck then receives the same contracts as a Linux portability and appliance deployment rather than becoming the machine on which core visual semantics are invented.
+Mac-first development has already proven the semantic seam, visible composition, and exact dynamic restoration. It now proves the bulk raster sink and external-frame contract before the same portable architecture moves to Steam Deck/Linux.

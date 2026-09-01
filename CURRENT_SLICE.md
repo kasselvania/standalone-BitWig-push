@@ -1,39 +1,35 @@
-# Current Slice: V1C — Dynamic Local Visual Composition Lifecycle
+# Current Slice: V1D-0 — Bulk Raster Composition Feasibility
 
 ## Status
 
-Ready to execute from the current accepted central `origin/main` containing this authority card and from DrivenByMoss `origin/pushwig/main` at the exact accepted V1B integration state.
+Ready to execute from the current accepted central `origin/main` containing the merged V1C evidence and from DrivenByMoss `origin/pushwig/main` at the exact accepted V1C integration state.
 
-Active issue: [#23 — V1C: Implement dynamic local visual composition lifecycle](https://github.com/kasselvania/standalone-BitWig-push/issues/23).
+Active issue: [#26 — V1D-0: Select bulk raster composition primitive](https://github.com/kasselvania/standalone-BitWig-push/issues/26).
 
 Before work begins, fetch central `origin/main` and verify that its history contains:
 
 ```text
-c6ccc72c315bac85af53a0c2942a191a1e40e0d3  # accepted V1C-0 evidence
+e748d168ce9983bd787fad25ac03ccb5b650edb1  # accepted V1C evidence
 ```
 
-Create the central evidence branch directly from the then-current accepted `origin/main`. If `origin/main` has moved, inspect every intervening commit and stop if it changes V1C authority or scope.
+Create the central evidence branch directly from the then-current accepted `origin/main`. If `origin/main` has moved, inspect every intervening commit and stop if it changes V1D-0 authority or scope.
 
 ## Primary claim
 
-Implement the production form of the accepted V1C-0 Candidate A decision:
+Select and prove the smallest production-capable mechanism that can place an already-cropped, already-scaled raster region onto the **current V1C semantic frame in bulk** while preserving:
 
-```text
-newest copied ModelInfo
-        -> retain before render decision
-        -> complete current-semantic redraw when dynamic-local mode is selected
-        -> current valid locally generated visual, or no visual
-        -> same persistent IBitmap
-        -> one existing PushUsbDisplay.send
-```
+- exact source pixels inside the declared destination;
+- exact current semantic pixels outside it;
+- exact V1C restoration after movement, replacement, absence, staleness, invalidity, or malformed metadata;
+- bounded synchronous cost and memory;
+- one existing `PushUsbDisplay` writer;
+- a host-neutral boundary suitable for later external frames.
 
-The previous composed output is never restoration authority.
+V1C proved the complete dynamic lifecycle for project-owned vector renderers. It did not prove how a captured Bitwig or plug-in image—an array of pixels—can enter that lifecycle without thousands of drawing calls.
 
-V1C must prove that a bounded local visual can move, overlap, resize, be replaced, disappear, become stale, or become invalid while every old visual pixel is replaced by the exact newest DrivenByMoss semantic output.
+V1D-0 is an evidence-first architecture gate. It does not merge production DrivenByMoss source, open an external socket, add shared memory, define the final `VisualSourceFrame`, or capture a window.
 
-V1C is a production source slice. It does not introduce an external producer, IPC, ScreenCaptureKit, window capture, or the final `VisualSourceFrame` contract.
-
-See [`docs/V1C_DYNAMIC_LOCAL_COMPOSITION.md`](docs/V1C_DYNAMIC_LOCAL_COMPOSITION.md).
+See [`docs/V1D0_BULK_RASTER_COMPOSITION.md`](docs/V1D0_BULK_RASTER_COMPOSITION.md).
 
 ## Accepted authorities
 
@@ -41,8 +37,8 @@ See [`docs/V1C_DYNAMIC_LOCAL_COMPOSITION.md`](docs/V1C_DYNAMIC_LOCAL_COMPOSITION
 
 ```text
 repository: kasselvania/standalone-BitWig-push
-V1C-0 merge: c6ccc72c315bac85af53a0c2942a191a1e40e0d3
-tree:          9b1dddab50519a06b54ea873f5c07f18197238c6
+V1C merge:  e748d168ce9983bd787fad25ac03ccb5b650edb1
+tree:       2d0a7a812e25c15aa082025f6d2ec90e8595b65c
 ```
 
 ### DrivenByMoss implementation
@@ -50,14 +46,14 @@ tree:          9b1dddab50519a06b54ea873f5c07f18197238c6
 ```text
 repository: kasselvania/DrivenByMoss
 branch:     pushwig/main
-commit:     1ae0b74f383314d170a5960ca763bdf9c319e787
-tree:       a81e5c4330b31f36845c25e98e322990d62f0c67
+commit:     852b520933eed87fbe496a04b5c18819a10b3564
+tree:       d03a372e2efcf41b22cef46501e08efbfb0c0036
 ```
 
-That integration contains exact accepted V1B source head:
+That integration contains exact accepted V1C source head:
 
 ```text
-a2e0341b7bccfa4e6b13614f4adffc2235f785f4
+4b3326eddcf2d890de3baa10b93f6e80842d41e1
 ```
 
 Immutable upstream basis remains:
@@ -68,326 +64,277 @@ commit: fd03245ab38fa5149c45934051d937ee9fda6d08
 tree:   edd2ad636b0aa1f39919f0ffd05c968015450075
 ```
 
-Official extension SHA-256 to restore:
+Official extension SHA-256 to restore after any live prototype:
 
 ```text
 98dc3195ad8d911526e18b1005f09f69a1aedcb965b080565474104654345c5a
 ```
 
-## Accepted V1C-0 decision
+## Accepted V1C ownership rule
 
-V1C-0 selected **Candidate A — retained current semantic redraw**.
-
-It proved:
-
-- the newest copied `ModelInfo` can be retained before the render decision;
-- a protected default-false redraw hook can preserve ordinary dirty rendering;
-- the dynamic Push path can request a complete current-semantic redraw on each eligible send;
-- the current valid local visual can then be drawn synchronously into the same bitmap;
-- `NONE`, `STALE`, and `INVALID` can produce exact semantic-only output;
-- 1,000 offline cycles / 7,000 transitions produced zero outside, old-region, absence, stale, invalid, or semantic-update mismatches;
-- 1,000 real-Bitwig samples with two semantic changes under coverage produced the same zero mismatch result;
-- restore-plus-compose measured p95 `0.413209 ms` and maximum `7.356958 ms`;
-- the real Push control, display, audio, movement, disappearance, and rollback checks passed;
-- `PushUsbDisplay.class` remained byte-identical and sole-owned.
-
-The accepted research commit is evidence only:
+The accepted dynamic output lifecycle is:
 
 ```text
-local commit: 3e8df95e9cc489e69da72b9acb82f2d06c90dd00
-tree:         f448eeda923232346037074a75b71c485e56ebe8
+newest retained ModelInfo
+        -> complete current-semantic redraw
+        -> optional current visual
+        -> same persistent IBitmap
+        -> unchanged PushUsbDisplay
 ```
 
-Do not merge or cherry-pick that research commit as production source. Reimplement the accepted production model cleanly from exact `origin/pushwig/main`.
+Historical composed output is never restoration authority.
 
-## Source and PR topology
+V1D-0 may replace the temporary local vector source in a research prototype, but it must not replace this restoration model.
 
-### DrivenByMoss source work
+## First canonical raster contract
 
-Create a clean feature branch directly from exact accepted `origin/pushwig/main`:
+The research target is deliberately narrow:
 
 ```text
-pushwig/v1c-dynamic-local-composition
+pixel format: BGRA8888 opaque
+source:       already cropped and already scaled
+destination:  explicit x, y, width, height inside 960x160
+stride:       explicit and validated
+execution:    synchronous on the current display/composition thread
 ```
 
-The source PR must:
+The first sink does not perform:
 
-- target `pushwig/main`;
-- contain one final implementation commit;
-- remain ordinary, non-draft, open, and unmerged for technical-lead review;
-- identify its exact parent/head/tree and changed paths;
-- link issue #23 and the paired central evidence PR.
+- scaling;
+- alpha blending;
+- color management;
+- physical-desktop coordinate conversion;
+- capture-source discovery;
+- or operating-system image conversion.
 
-### Central evidence work
+Those belong outside the sink.
 
-From current accepted central `origin/main`, create:
+Opaque BGRA8888 is selected for the research because the accepted Bitwig bitmap observation is four-byte BGRA and ordinary captured UI regions are opaque. This is a candidate internal format, not yet the public external wire contract.
+
+## Fail-closed rule
+
+Before any destination byte is changed, the sink must validate:
+
+- supported pixel format;
+- positive dimensions;
+- destination coordinates;
+- destination bounds;
+- source stride;
+- required byte count;
+- arithmetic overflow;
+- source-buffer accessibility;
+- and current visual validity.
+
+Absent, stale, invalid, unsupported, malformed, overflowed, short, or out-of-bounds input must perform **no raster write** after the complete current-semantic redraw. The result must be exact semantic-only output.
+
+Partial writes followed by rejection are forbidden.
+
+## Candidate order
+
+Evaluate in this order and stop when one candidate satisfies every correctness, abstraction, lifecycle, one-writer, and performance requirement.
+
+### Candidate A — direct writable bitmap-region capability
+
+Temporarily add the narrowest host-neutral capability needed to copy validated BGRA8888 rows into the current V1C bitmap after semantic redraw and before the unchanged transport.
+
+Prove all of the following:
+
+1. The Bitwig bitmap `MemoryBlock` view is writable.
+2. Writes are visible to bitmap encode, debug display where useful, and the physical Push.
+3. Row order, channel order, alpha byte, capacity, and stride are exact.
+4. Destination writes do not scale, filter, translate, or alter pixels outside the declared rectangle.
+5. Validation completes before the first write.
+6. Buffer/view lifetime and thread ownership are explicit.
+7. No Bitwig API type enters the future host-neutral frame contract.
+8. Fixed or cached resources prevent unbounded native/JVM allocation.
+9. `PushUsbDisplay` remains unchanged and sole-owned.
+
+Candidate A is preferred because it can place already-prepared pixels without a second bitmap or host filtering.
+
+### Candidate B — reusable source bitmap plus bitmap-as-image blit
+
+Test only if Candidate A is unavailable, unsafe, incoherent, or architecturally unacceptable.
+
+Allocate one reusable source bitmap, populate it in bulk, and draw it onto the current semantic bitmap through a narrow project graphics capability.
+
+Prove:
+
+- one-time bitmap allocation;
+- exact source write;
+- exact destination pixels;
+- no unexpected scaling, interpolation, premultiplication, or color conversion;
+- clean project-wrapper design;
+- bounded cost;
+- and unchanged restoration/transport ownership.
+
+### Candidate C — encode-time compositing wrapper above transport
+
+Test only if A and B fail.
+
+Any encode-time design must remain above and outside `PushUsbDisplay`, preserve V1C semantic redraw as restoration authority, avoid a second USB writer, and declare every intermediate buffer and lifetime.
+
+Transport bytes may not become semantic authority.
+
+### Blocked outcome
+
+If no candidate passes, retain the smallest missing capability, exact experiments, and the next bounded research. Do not modify `PushUsbDisplay`, draw one rectangle per pixel, or hide the gap with a platform-specific capture object.
+
+## Required accepted-source inspection
+
+Before prototyping, inspect the exact accepted V1C source and actual resolved Bitwig Extension API 21 JAR.
+
+At minimum inspect:
 
 ```text
-codex/v1c-dynamic-local-composition-evidence
+IBitmap
+IImage
+IRenderer
+IGraphicsContext
+IEncoder
+IHost
+IMemoryBlock
+BitmapImpl
+ImageImpl
+GraphicsContextImpl
+HostImpl
+AbstractGraphicDisplay
+Push2Display
+DynamicLocalPushFramePipeline
+PushUsbDisplay
 ```
 
-The final central PR must contain only:
+Inspect these Bitwig API 21 classes directly with `javap` or equivalent:
 
 ```text
-evidence/v1c-dynamic-local-composition/**
+com.bitwig.extension.api.graphics.Bitmap
+com.bitwig.extension.api.graphics.Image
+com.bitwig.extension.api.graphics.GraphicsOutput
+com.bitwig.extension.api.graphics.BitmapFormat
+com.bitwig.extension.api.MemoryBlock
 ```
-
-It must include `Addresses #23`, identify the exact source PR/head/tree, and remain ordinary, non-draft, open, and unmerged.
-
-## Authorized production envelope
-
-Expected production changes are exactly:
-
-```text
-src/main/java/de/mossgrabers/framework/controller/display/AbstractGraphicDisplay.java
-src/main/java/de/mossgrabers/controller/ableton/push/controller/Push2Display.java
-src/main/java/de/mossgrabers/controller/ableton/push/controller/DynamicLocalPushFramePipeline.java
-```
-
-Any additional production path requires a stop and explicit technical justification before editing.
-
-The following are not authorized for modification:
-
-```text
-PushUsbDisplay.java
-PushFramePipeline.java
-PassThroughPushFramePipeline.java
-SyntheticOverlayPushFramePipeline.java
-ModelInfo.java
-BitmapImpl.java
-GraphicsContextImpl.java
-IBitmap.java
-pom.xml
-```
-
-Do not change extension version, IDs, MIDI discovery, USB matching, endpoint, encoding, line padding, XOR shaping, transfer scheduling, or shutdown ownership.
-
-## Required framework behavior
-
-`AbstractGraphicDisplay.send()` must:
-
-1. construct the newest copied `ModelInfo`;
-2. install that newest model before deciding whether to render;
-3. compute whether equality-covered semantic state changed;
-4. render when state changed or a protected redraw hook requests current-model redraw;
-5. preserve the existing list-clearing and send lifecycle;
-6. continue using the same persistent bitmap.
-
-Add one protected redraw-request hook whose ordinary implementation returns `false`.
-
-The hook:
-
-- is not public API;
-- does not expose the bitmap;
-- does not force unrelated displays to redraw continuously;
-- is evaluated synchronously in the existing display send path.
-
-Newest-model retention must occur even when `ModelInfo.equals()` returns true because overlay lists are not currently part of equality.
-
-## Required Push selection behavior
-
-Use the startup property:
-
-```text
-pushwig.dynamicLocalVisual=true
-```
-
-Read startup properties once during `Push2Display` construction.
-
-Selection precedence is exact:
-
-```text
-neither property
-    -> PassThroughPushFramePipeline.INSTANCE
-
-pushwig.syntheticOverlay=true only
-    -> SyntheticOverlayPushFramePipeline.INSTANCE
-
-pushwig.dynamicLocalVisual=true
-    -> DynamicLocalPushFramePipeline
-
-both properties true
-    -> DynamicLocalPushFramePipeline
-```
-
-Dynamic-local mode deliberately wins. The two diagnostic pipelines must never be stacked.
-
-Only dynamic-local mode requests the full current-model redraw hook.
-
-`Push2Display.send(IBitmap)` must preserve:
-
-```text
-shutdown/null guard
-        -> exactly one pipeline.process
-        -> exactly one PushUsbDisplay.send
-```
-
-## Required dynamic local pipeline
-
-`DynamicLocalPushFramePipeline` must be package-private and instantiated once per display.
-
-It may retain only fixed, bounded diagnostic state and reusable renderers.
-
-Required lifecycle:
-
-```text
-A — initial visual
-B — moved and enlarged, partially overlapping A
-C — moved and reduced
-D — replacement content and geometry
-NONE
-STALE
-INVALID
-```
-
-The valid states must differ in position, size, overlap, and visual content.
-
-For `NONE`, `STALE`, and `INVALID`, the pipeline performs no visual drawing after the complete semantic redraw.
-
-The pipeline must:
-
-- return the exact input `IBitmap` reference;
-- retain no bitmap, raw frame, semantic snapshot, or historical output;
-- use no second bitmap;
-- allocate no bitmap, frame, byte array, renderer, collection, queue, task, or future per send;
-- add no thread, executor, scheduler, timer, socket, shared memory, USB object, or capture type;
-- avoid per-send `Enum.values()` or equivalent hidden array creation;
-- use class-initialized reusable renderers where practical.
-
-## Required regression matrix
-
-The exact source head must prove:
-
-### Ordinary default path
-
-```text
-no Pushwig properties
-        -> pass-through pipeline
-        -> existing dirty semantic render behavior
-        -> no forced redraw
-```
-
-### Accepted V1B path
-
-```text
-pushwig.syntheticOverlay=true
-        -> fixed static overlay pipeline
-        -> no dynamic forced-redraw selection
-```
-
-### V1C path
-
-```text
-pushwig.dynamicLocalVisual=true
-        -> newest ModelInfo retained
-        -> full semantic redraw every eligible send
-        -> current valid local visual or semantic-only output
-```
-
-Also prove that an ordinary test subclass using the default hook retains the accepted dirty-render count and behavior.
-
-## Overlay and notification lifecycle
-
-V1C must explicitly prove two remaining semantic cases.
-
-### Overlay-only update
-
-With equality-covered component and notification state otherwise stable:
-
-1. change the overlay list;
-2. perform the next dynamic send;
-3. prove the newest overlay is present;
-4. prove no older overlay or visual pixels remain.
-
-### Notification lifecycle
-
-While the dynamic visual is active:
-
-1. display a notification;
-2. move or remove the visual;
-3. prove the current notification is restored correctly;
-4. replace or expire the notification;
-5. prove current underlying semantics return without stale notification or visual pixels.
-
-## Pixel correctness
-
-Use exact 960×160 aggregate comparison with the accepted BGRA8888 observation layout.
-
-Run at least 1,000 complete deterministic cycles containing:
-
-```text
-A
-B
-C
-D
-NONE
-STALE
-INVALID
-```
-
-Include:
-
-- partial overlap;
-- enlargement and reduction;
-- replacement visual content;
-- a semantic update beneath covered pixels;
-- an overlay-only update;
-- notification appearance and removal.
-
-Required zero mismatch counts:
-
-```text
-outside-current-region
-old-region restoration
-post-NONE full frame
-STALE full frame
-INVALID full frame
-semantic-update-under-overlay
-overlay-only update
-notification-lifecycle restoration
-```
-
-Positive target-region mismatches must confirm that valid visuals actually changed pixels.
-
-Do not commit frames, screenshots, UI crops, or extension binaries. Retain dimensions, masks, hashes, counts, methods, commands, and representative mismatch coordinates only.
-
-## Source, build, and bytecode proof
-
-Use the accepted explicit Java 21/Maven environment.
-
-Build:
-
-1. exact accepted base `1ae0b74f383314d170a5960ca763bdf9c319e787`;
-2. exact proposed V1C source head;
-
-under the same toolchain.
 
 Retain:
 
-- exact parent/head/tree and one-commit topology;
-- exact changed-path envelope;
-- source and patch hashes;
-- build commands/results;
-- artifact size and SHA-256;
-- extracted payload comparison;
-- bytecode proving newest-model retention, hook default, Push override and pipeline selection, same-reference return, bounded state, one pipeline call, and one USB send;
-- byte-identical `PushUsbDisplay.class`;
-- byte-identical accepted V1A/V1B pipeline classes unless an explicit reviewed reason exists.
+- API JAR path, size, and SHA-256;
+- every project implementation of `IBitmap`;
+- relevant public signatures;
+- the exact `HostImpl.createBitmap` implementation;
+- whether `ByteBuffer` is read-only or writable;
+- direct/heap status, byte order, position, limit, capacity, and reuse behavior;
+- whether two buffer views alias the same native memory;
+- row origin and orientation;
+- byte/channel order;
+- alpha behavior;
+- and whether memory writes are visible without a second host render callback.
+
+Do not rely on a flattened third-party API dump when the resolved JAR and real host object are available.
+
+## Research topology
+
+### Central evidence
+
+From the then-current accepted central `origin/main`, create:
+
+```text
+codex/v1d0-bulk-raster-composition-evidence
+```
+
+The final reviewable output is one ordinary, non-draft, open, unmerged central PR containing only:
+
+```text
+evidence/v1d0-bulk-raster-composition/**
+```
+
+Include `Addresses #26` and identify the exact basis/head/tree.
+
+### DrivenByMoss experiments
+
+Use clean temporary worktrees rooted at exact accepted `origin/pushwig/main`.
+
+Temporary branches, commits, patches, harnesses, and uncommitted instrumentation are allowed locally. They must not be merged into `pushwig/main`, and no production DrivenByMoss PR is expected from V1D-0.
+
+Retain patch/source/harness hashes, changed paths, build results, artifact hashes, and final removal/cleanliness. Do not copy DrivenByMoss source into the central repository.
+
+## Required generated-raster tests
+
+Use only project-generated test patterns. Do not use or retain Bitwig, Ableton, or third-party plug-in screenshots.
+
+Test at least:
+
+```text
+small:       64x16
+odd/padded:  117x37 with source stride > width*4
+medium:      480x80
+full frame:  960x160
+```
+
+Patterns must make orientation and channel mistakes obvious. Include at least:
+
+- asymmetric corners;
+- per-channel color bars;
+- row and column markers;
+- a checker or gradient;
+- and a recognizable generated test card.
+
+Exercise changing content, movement, overlap, enlargement, reduction, replacement, NONE, STALE, INVALID, and a semantic update beneath prior coverage through the accepted V1C lifecycle.
+
+## Exact correctness requirements
+
+Run at least 1,000 complete lifecycle cycles or an equivalent number of rigorously counted transitions.
+
+Required exact results:
+
+```text
+source-versus-target pixel mismatches           0
+outside-current-region mismatches               0
+old-region restoration mismatches               0
+post-NONE full-frame mismatches                  0
+STALE full-frame mismatches                      0
+INVALID full-frame mismatches                    0
+semantic-update-under-coverage mismatches        0
+partial writes after invalid metadata            0
+```
+
+Negative validation must include:
+
+- negative coordinates;
+- coordinates near integer limits;
+- zero/negative dimensions;
+- destination extent overflow;
+- destination out of bounds;
+- stride below `width * 4`;
+- stride arithmetic overflow;
+- short source data;
+- unsupported format;
+- and inconsistent metadata changed between validation and application where the candidate exposes that possibility.
+
+Every rejection must leave the full output equal to the freshly redrawn current semantic reference.
+
+Retain only hashes, mismatch counts, dimensions, strides, masks, commands, and representative mismatch coordinates. Do not commit frames or screenshots.
 
 ## Performance and memory
 
-Measure at least 1,000 post-warmup sends for:
+For every serious candidate, collect at least 1,000 post-warmup samples for:
 
-```text
-default pass-through
-V1B static overlay
-V1C forced redraw with no visual
-V1C redraw plus visual
-```
+- current semantic redraw with no raster;
+- small raster application;
+- odd/padded raster application;
+- medium raster application;
+- full-frame raster application;
+- validation rejection.
 
-Retain p50, p95, maximum, project-owned allocation sites, existing host-render allocations, and bounded RSS/heap observations.
+Record:
 
-Review bands:
+- p50, p95, and maximum;
+- bytes copied;
+- fixed construction-time allocation;
+- project-owned per-cycle allocation;
+- `ByteBuffer` or view creation;
+- working-set start/end/peak;
+- useful JVM heap readback;
+- and any control, display, or audio effect.
+
+Review bands for current-semantic redraw plus full-frame raster application on the accepted Mac:
 
 ```text
 green:  p95 <= 2 ms and max <= 10 ms
@@ -395,120 +342,161 @@ review: p95 <= 5 ms and max <= 15 ms
 stop:   p95 > 5 ms or max > 15 ms
 ```
 
-A review-band result requires an explicit technical recommendation. A stop-band result halts the slice.
+A review-band result requires an explicit technical recommendation. A stop-band result stops the candidate.
 
-Do not introduce asynchronous work or extra buffering to hide synchronous cost.
+Do not introduce threads, queues, another bitmap, or transport changes merely to hide synchronous cost.
 
-## Real-fixture sequence
+## Build and source custody
 
-Use the exact proposed source-head artifact on the accepted Mac + Bitwig 6.1 + Push 3 fixture.
-
-### Phase A — default derivative
-
-Launch without Pushwig properties and confirm:
-
-- accepted controller/audio/display baseline;
-- no dynamic visual;
-- ordinary dirty-render behavior;
-- normal quit.
-
-### Phase B — V1B static regression
-
-Launch with:
+Use the accepted explicit Java 21/Maven environment:
 
 ```text
-pushwig.syntheticOverlay=true
+env \
+  JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home \
+  PATH=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin \
+  mvn clean install package -Dbitwig.extension.directory=target
 ```
 
-Confirm:
+For each candidate retain:
 
-- the accepted fixed mark appears;
-- dynamic redraw mode is not selected;
-- representative modes and baseline remain correct;
-- normal quit.
+- exact parent commit/tree;
+- temporary branch/worktree;
+- complete patch or commit SHA-256;
+- changed paths;
+- `git diff --check`;
+- clean-state readback;
+- build result;
+- artifact size/SHA-256;
+- extracted class/resource delta;
+- and `PushUsbDisplay.class` identity for any candidate reaching hardware.
 
-### Phase C — V1C dynamic lifecycle
+No generated extension artifact or prototype source is committed to the central repository.
 
-Launch with:
+## Real fixture gate
+
+Take only the leading exact candidate to the real Mac + Bitwig 6.1 + Push 3 fixture after offline correctness and performance pass.
+
+Before installation, preserve the accepted safe replacement and rollback procedure.
+
+Prove on the physical fixture:
+
+1. Push connects normally.
+2. Pads, pressure/MPE, encoders, and transport work.
+3. Push remains the audio device and headphone output is audible.
+4. Generated raster cards appear at the declared bounds.
+5. Orientation and BGRA channel bars are correct.
+6. The odd-width/padded-stride pattern is not skewed.
+7. A large or full-frame pattern is coherent.
+8. Movement, replacement, resize, NONE, STALE, and INVALID restore current semantics.
+9. A semantic change beneath prior coverage reappears.
+10. Rejected malformed metadata performs no partial visible write.
+11. There is no trail, stale block, unexpected filtering, whole-frame clear, coordinate error, lag, xrun, or relevant exception.
+12. Bitwig quits normally.
+13. The exact official extension is restored as the sole scanned artifact and physically confirmed.
+
+If the candidate behaves unexpectedly, stop, quit safely, restore the official artifact, and retain the failure. Do not widen the source during the live phase.
+
+## Expected evidence
 
 ```text
-pushwig.dynamicLocalVisual=true
-```
-
-Confirm:
-
-- connection, pads, pressure/MPE, encoders, transport;
-- coherent semantic display;
-- Push audio device and audible headphone output;
-- A/B/C/D movement, overlap, resize, and replacement;
-- previous regions restore exactly;
-- `NONE`, `STALE`, and `INVALID` are semantic-only;
-- Track, Device Parameters, and Session or Browser work;
-- semantic update beneath previous coverage appears;
-- overlay-only update appears;
-- notification appearance, movement restoration, replacement/expiration work;
-- no clear, trail, stale block, scale error, lag, xrun, or relevant exception;
-- normal quit.
-
-### Phase D — exact rollback
-
-Restore the untouched official artifact at the canonical filename, verify accepted SHA-256, verify exactly one scanned extension, relaunch, and physically confirm the ordinary official display.
-
-## Expected central evidence
-
-```text
-evidence/v1c-dynamic-local-composition/
+evidence/v1d0-bulk-raster-composition/
 ├── README.md
-├── source-topology.md
-├── framework-redraw-contract.md
-├── lifecycle-and-pixel-restoration.md
-├── overlay-and-notification.md
-├── regression-paths.md
+├── accepted-source-and-api.md
+├── candidate-a-direct-write.md
+├── alternative-candidates.md
+├── raster-correctness.md
+├── negative-validation.md
 ├── performance.md
-├── build-artifact-comparison.md
 ├── real-fixture-and-rollback.md
-└── manual-acceptance.md
+└── decision.md
 ```
+
+Files may be omitted only when `decision.md` explains why the corresponding candidate was not reached.
 
 Every file must state what it proves and what it does not prove.
 
+## Decision output
+
+`decision.md` must choose exactly one status:
+
+```text
+SELECTED
+```
+
+or:
+
+```text
+BLOCKED
+```
+
+For `SELECTED`, state:
+
+- selected candidate;
+- exact production source seam and expected paths;
+- host-neutral interface shape;
+- pixel format and alpha policy;
+- validation and overflow rules;
+- source/destination buffer ownership;
+- thread and lifetime rule;
+- current-semantic fallback rule;
+- fixed and per-cycle allocation budget;
+- performance budget;
+- and alternative disposition.
+
+For `BLOCKED`, state the smallest missing API/capability, experiments performed, and next bounded research.
+
+Do not write a vague hybrid recommendation.
+
 ## Explicit non-goals
 
-- no external frame ingress;
-- no IPC, socket, shared memory, memory-mapped file, or producer process;
-- no final `VisualSourceFrame` type or wire format;
-- no ScreenCaptureKit or Screen Recording permission;
-- no Bitwig/editor window discovery or capture;
-- no visual adapter, resolver, calibration, or pixel-anchor implementation;
-- no second bitmap, region snapshot, backend raw-copy architecture, or transport rewrite;
-- no second USB writer;
-- no user-facing setting;
-- no POM/dependency/test-framework change;
-- no Push 2 hardware claim;
-- no Steam Deck/Linux, yabridge, Monome, plugdata, appliance, battery, connector, or NUC work.
+V1D-0 does not add or prove:
+
+- a production DrivenByMoss source PR;
+- an external helper process;
+- Unix-domain, TCP, HTTP, WebSocket, or OSC frame transport;
+- shared memory or memory-mapped IPC;
+- the final `VisualSourceFrame` contract;
+- sequence numbers or producer freshness;
+- ScreenCaptureKit or Screen Recording permission;
+- Bitwig/plugin window discovery or capture;
+- scaling or resampling;
+- alpha blending;
+- color management;
+- adapter/resolver/calibration/pixel anchors;
+- `PushUsbDisplay` changes;
+- a second USB writer;
+- Push 2 hardware acceptance;
+- Steam Deck/Linux;
+- appliance, battery, connector, or NUC work;
+- yabridge, Monome, or plugdata work.
 
 ## Acceptance
 
-V1C is complete only when:
+V1D-0 is complete only when:
 
-1. the source PR is one implementation commit directly above exact accepted `pushwig/main`;
-2. source changes remain within the three-path envelope;
-3. newest-model retention and default-false redraw behavior are exact;
-4. dynamic-local selection and property precedence are exact;
-5. default and V1B paths do not gain dynamic redraw behavior;
-6. the local lifecycle covers move, overlap, resize, replacement, none, stale, and invalid;
-7. every required restoration/outside/semantic/overlay/notification mismatch count is zero;
-8. the pipeline returns the same bitmap and adds no prohibited per-send state or allocation;
-9. `PushUsbDisplay` remains byte-identical and sole-owned;
-10. exact base/head builds and bounded artifact delta pass;
-11. performance is green or explicitly reviewed within the review band;
-12. the exact source head passes all real-fixture phases;
-13. normal shutdown and exact official rollback pass;
-14. both paired PRs are open, non-draft, unmerged, and identify exact heads;
-15. relevant worktrees are clean and synchronized.
+1. Research starts from the exact accepted central and DrivenByMoss states.
+2. The actual API and bitmap implementation are inspected directly.
+3. Candidate A is tested first or rejected by exact source/API evidence.
+4. One candidate applies small, padded, medium, and full-frame generated rasters in bulk.
+5. Every required pixel/restoration mismatch count is zero.
+6. Every negative-validation case is fail-closed with zero partial writes.
+7. Buffer, thread, lifetime, and abstraction ownership are explicit.
+8. Performance/allocation evidence is retained.
+9. `PushUsbDisplay` remains unchanged and sole-owned.
+10. The leading candidate receives bounded real-fixture validation or has one precise safety blocker.
+11. Exact official rollback passes after any live prototype.
+12. `decision.md` selects one production seam or one precise blocker.
+13. No temporary source or instrumentation is merged.
+14. The central evidence PR is open, non-draft, unmerged, and identifies exact basis/head/tree.
 
 ## Handoff
 
-After V1C is accepted, **V1D — External Generated-Frame Ingress** may define an immutable latest-frame-wins input contract and process boundary.
+If a candidate is selected, **V1D-1 — Production Bulk Raster Frame Lifecycle** implements only the chosen raster sink with locally generated byte frames.
 
-V1D must consume the V1C lifecycle rather than replacing its restoration ownership.
+Only after that production sink is accepted does **V1D-2 — External Latest-Frame Ingress** add a process boundary, freshness, sequence, malformed producer handling, and producer restart.
+
+Operating-system window capture remains V2.
+
+## Review standard
+
+Do not accept V1D-0 merely because a colored block appears. The candidate must prove exact source pixels, stride and bounds, no partial invalid writes, semantic restoration, bounded cost, host-neutral containment, one writer, and exact rollback.
