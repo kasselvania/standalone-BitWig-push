@@ -2,84 +2,72 @@
 
 ## Purpose
 
-Track V needs a narrow DrivenByMoss derivative, but the central project repository must not absorb or rewrite the upstream source tree.
-
-This document defines repository roles, accepted branches, build/install discipline, evidence boundaries, production source topology, and upstream synchronization.
+Track V needs a narrow DrivenByMoss derivative, while the central repository owns product authority, cross-component contracts, retained evidence, and roadmap decisions.
 
 ## Repository roles
 
-### Project authority repository
+### Central authority
 
 `kasselvania/standalone-BitWig-push`
 
 Owns:
 
-- product architecture;
-- active-slice authority;
-- cross-component contracts;
+- architecture and active-slice authority;
 - accepted source bases;
-- retained evidence and technical decisions;
-- visual-source, compositor, appliance, and hardware roadmaps.
+- evidence and technical decisions;
+- visual-source, raster, IPC, capture, appliance, and hardware roadmaps.
 
 It does not vendor DrivenByMoss source or generated extension binaries.
 
-### Controller-extension implementation repository
+### Controller implementation
 
-`kasselvania/DrivenByMoss`, a true GitHub fork of `git-moss/DrivenByMoss`.
+`kasselvania/DrivenByMoss`, a true fork of `git-moss/DrivenByMoss`.
 
 Owns:
 
 - the minimal controller-extension source delta;
-- buildable derivative source;
-- focused source tests or external verification harnesses where authorized;
-- upstream synchronization and contribution-ready commits;
-- LGPL-preserving history and notices.
+- buildable LGPL derivative source;
+- contribution-ready commits;
+- upstream synchronization;
+- production code for semantic redraw, composition, and later raster consumption.
 
-## Upstream basis and branches
+## Accepted branches and bases
 
-Accepted upstream basis:
-
-```text
-Version: 26.4.1
-Tag:     26.4.1
-Commit:  fd03245ab38fa5149c45934051d937ee9fda6d08
-Tree:    edd2ad636b0aa1f39919f0ffd05c968015450075
-```
-
-Stable fork branches:
+Immutable upstream basis:
 
 ```text
-pushwig/upstream-26.4.1  # immutable accepted upstream basis
-pushwig/main             # accepted project integration branch
+version/tag: 26.4.1
+branch:      pushwig/upstream-26.4.1
+commit:      fd03245ab38fa5149c45934051d937ee9fda6d08
+tree:        edd2ad636b0aa1f39919f0ffd05c968015450075
 ```
 
-The immutable branch never receives project implementation merges.
-
-Current accepted integration state:
+Accepted project integration:
 
 ```text
 branch: pushwig/main
-commit: 1ae0b74f383314d170a5960ca763bdf9c319e787
-tree:   a81e5c4330b31f36845c25e98e322990d62f0c67
+commit: 852b520933eed87fbe496a04b5c18819a10b3564
+tree:   d03a372e2efcf41b22cef46501e08efbfb0c0036
 ```
 
-That merge contains:
+The integration contains accepted source heads:
 
-- accepted V1A source head `6e1e4cbd2e725a7951e5b4dc1278fbb6e7b5d61c`;
-- accepted V1B source head `a2e0341b7bccfa4e6b13614f4adffc2235f785f4`.
+```text
+V1A: 6e1e4cbd2e725a7951e5b4dc1278fbb6e7b5d61c
+V1B: a2e0341b7bccfa4e6b13614f4adffc2235f785f4
+V1C: 4b3326eddcf2d890de3baa10b93f6e80842d41e1
+```
 
-Feature branches begin from the exact currently accepted `pushwig/main` unless a separate basis-upgrade decision says otherwise.
+Feature and research work begins from the exact current accepted `pushwig/main` unless a separate basis-upgrade decision authorizes otherwise.
 
 ## Local remote topology
-
-A development checkout uses:
 
 ```text
 origin   git@github.com:kasselvania/DrivenByMoss.git
 upstream https://github.com/git-moss/DrivenByMoss.git
 ```
 
-Before each source slice, record:
+Before each source or research slice, retain:
 
 ```text
 git remote -v
@@ -90,57 +78,52 @@ git rev-parse <basis>^{tree}
 git status --short
 ```
 
-Do not silently move an active slice to upstream `master` or fork `master`.
+Never silently move work to fork `master` or upstream `master`.
 
-## Branch and pull-request conventions
+## Production PR convention
 
-Production feature examples:
+Production branches include:
 
 ```text
 pushwig/v1a-no-op-frame-pipeline
 pushwig/v1b-static-synthetic-overlay
 pushwig/v1c-dynamic-local-composition
-pushwig/v1d-external-frame-ingress
+pushwig/v1d1-bulk-raster-lifecycle
+pushwig/v1d2-external-frame-ingress
 ```
 
 A production implementation slice normally produces:
 
-1. one narrow source branch and PR in `kasselvania/DrivenByMoss`, targeting `pushwig/main`;
-2. one narrow evidence PR in `kasselvania/standalone-BitWig-push`;
-3. exact cross-references between both PRs and the active central issue.
-
-Both exact heads remain unmerged until technical-lead review.
+1. one narrow source PR in `kasselvania/DrivenByMoss`, targeting `pushwig/main`;
+2. one narrow evidence PR in the central repository;
+3. exact cross-references between the two and the active issue;
+4. exact tested heads left open until technical-lead review.
 
 ## Research-slice exception
 
-V1C-0 was an architecture-selection slice rather than a production implementation slice.
+V1C-0 and V1D-0 are architecture-selection slices.
 
-It used temporary local worktrees, a local research commit, harnesses, and uncommitted instrumentation without opening a source PR.
+They may use temporary:
 
-Accepted central evidence retained:
+- local branches and worktrees;
+- commits and patches;
+- harnesses and generated test patterns;
+- aggregate-only instrumentation;
+- derivative build artifacts outside Git.
 
-- exact accepted basis;
-- candidate/patch/harness hashes;
-- changed-path summaries;
-- build and artifact hashes;
-- pixel correctness and performance;
-- real-fixture and rollback evidence;
-- one precise production decision.
+They must not:
 
-That decision selected retained current semantic redraw. The local research commit is evidence, not an accepted source branch. V1C must not cherry-pick it wholesale.
+- merge prototypes into `pushwig/main`;
+- open a production source PR merely to archive an experiment;
+- copy derivative source into the central repository;
+- leave instrumentation in an accepted artifact;
+- change `PushUsbDisplay` to avoid proving the correct higher-level ownership model.
 
-## Accepted build baseline
+The central evidence retains exact candidate identities, changed paths, build/artifact hashes, correctness and performance, real-fixture/rollback results, and one selected seam or blocker.
 
-DrivenByMoss builds use:
+## Accepted build and rollback baseline
 
-```text
-Java:  Homebrew OpenJDK 21.0.11
-Maven: 3.9.16
-```
-
-The host default Java selection is not authoritative.
-
-Use:
+Build with the explicit accepted environment:
 
 ```text
 env \
@@ -149,44 +132,30 @@ env \
   mvn clean install package -Dbitwig.extension.directory=target
 ```
 
-A successful Maven exit is necessary but does not replace artifact inspection, exact source custody, real-device acceptance, or rollback.
+Accepted toolchain:
 
-Generated `.bwextension` files are not committed.
+```text
+Java:  Homebrew OpenJDK 21.0.11
+Maven: 3.9.16
+```
 
-## Safe installation and rollback
-
-Accepted installed path:
+Canonical extension path:
 
 ```text
 $HOME/Documents/Bitwig Studio/Extensions/DrivenByMoss.bwextension
 ```
 
-Accepted official SHA-256:
+Accepted official artifact SHA-256:
 
 ```text
 98dc3195ad8d911526e18b1005f09f69a1aedcb965b080565474104654345c5a
 ```
 
-Before replacing it:
+Never overwrite the only official copy. Replace extensions only while Bitwig is stopped, keep exactly one scanned artifact, and restore/reverify the official artifact after every live derivative experiment unless explicitly directed otherwise.
 
-1. stop Bitwig normally and verify relevant processes ended;
-2. recompute the installed official hash;
-3. move the official file intact outside all extension scan paths;
-4. verify the backup hash;
-5. install exactly one tested derivative artifact at the canonical filename;
-6. verify its exact hash and sole-scanned state;
-7. run the slice-specific real-fixture acceptance;
-8. quit normally;
-9. move the derivative outside the scan path;
-10. restore the untouched official file;
-11. reverify the exact official hash and sole-scanned state;
-12. relaunch sufficiently to prove official loadability.
+## Accepted display ownership
 
-Never overwrite the only official copy. Never leave duplicate scanned DrivenByMoss artifacts.
-
-## Accepted source path
-
-### V1A identity seam
+### V1A — frame seam
 
 ```text
 complete semantic IBitmap
@@ -195,149 +164,109 @@ complete semantic IBitmap
         -> unchanged PushUsbDisplay
 ```
 
-### V1B static diagnostic composition
-
-Default:
-
-```text
-PassThroughPushFramePipeline.INSTANCE
-```
-
-Startup diagnostic:
+### V1B — static diagnostic
 
 ```text
 pushwig.syntheticOverlay=true
-        -> SyntheticOverlayPushFramePipeline.INSTANCE
-        -> one fixed bounded render callback
+        -> one fixed bounded vector render
         -> same IBitmap
 ```
 
-V1B proved zero outside-region mismatches and bounded cost for a static mark.
-
-### V1C-0 selected restoration model
+### V1C — current-semantic dynamic lifecycle
 
 ```text
 newest copied ModelInfo
         -> retain before render decision
-        -> complete semantic redraw for dynamic-local mode
-        -> current valid local visual or no visual
+        -> complete current-semantic redraw in selected dynamic mode
+        -> current valid local vector visual or no visual
         -> same persistent IBitmap
         -> unchanged PushUsbDisplay
 ```
 
-The previous composed output is never restoration authority.
+The previous composed output is never restoration authority. Default displays retain dirty rendering through a protected hook that defaults false. Only selected dynamic Push mode requests current-model redraw.
 
-## V1C production source discipline
+## V1D-0 raster research discipline
 
-V1C begins directly from accepted `pushwig/main`.
+A captured visual is raster data, not a vector-renderer sequence. Before external ingress, V1D-0 must select a bulk raster primitive.
 
-Expected source envelope:
-
-```text
-src/main/java/de/mossgrabers/framework/controller/display/AbstractGraphicDisplay.java
-src/main/java/de/mossgrabers/controller/ableton/push/controller/Push2Display.java
-src/main/java/de/mossgrabers/controller/ableton/push/controller/DynamicLocalPushFramePipeline.java
-```
-
-The production source must:
-
-- retain the newest copied `ModelInfo` before the render decision;
-- add one protected default-false redraw hook;
-- preserve ordinary dirty rendering;
-- request forced redraw only for selected dynamic-local Push mode;
-- preserve pass-through and V1B static selection;
-- use one package-private per-display dynamic pipeline;
-- cover movement, overlap, resizing, replacement, none, stale, and invalid states;
-- return the same bitmap;
-- retain no historical frame or bitmap;
-- preserve one USB writer;
-- measure exact performance and allocations;
-- prove overlay-only and notification lifecycle correctness.
-
-The local V1C-0 research commit may be inspected but must not be promoted as production merely by cherry-picking or renaming.
-
-## Property selection
-
-Startup properties are read once:
+Canonical first research shape:
 
 ```text
-pushwig.syntheticOverlay
-pushwig.dynamicLocalVisual
+opaque BGRA8888
+already cropped and scaled
+explicit x/y/width/height
+explicit validated stride
+synchronous composition thread
 ```
 
-Precedence:
+Candidate order:
+
+1. direct writable bitmap-region capability;
+2. reusable source bitmap plus bitmap-as-image blit;
+3. encode-time composition above transport;
+4. precise blocked result.
+
+Any candidate must:
+
+- preserve V1C current-semantic redraw as restoration authority;
+- validate all metadata before mutation;
+- reject malformed, unsupported, stale, invalid, short, overflowed, or out-of-bounds input with zero partial writes;
+- declare channel order, row order, alpha policy, stride, buffer lifetime, aliasing, and thread ownership;
+- keep Bitwig and operating-system types out of future public contracts;
+- retain one `PushUsbDisplay` writer;
+- avoid one drawing call per pixel, unbounded queues, and hidden asynchronous bitmap mutation;
+- prove small, padded, medium, and full-frame generated patterns;
+- prove bounded performance and exact rollback.
+
+If V1D-0 selects a candidate, V1D-1 implements only that production raster sink with local generated byte frames. V1D-2 later introduces external latest-frame ingress and freshness.
+
+## External-frame posture after V1D-1
+
+The later external contract should carry bounded host-neutral data such as:
 
 ```text
-dynamic local > static synthetic > pass-through
+source identity / role
+width / height / stride / pixel format
+sequence / timestamp
+validity / stale reason / confidence
+frame bytes
+bounded metadata
 ```
 
-Exactly one pipeline is selected.
+The controller consumer must be nonblocking, use latest-frame-wins storage, and map absence, crash, staleness, malformed data, and restart to exact semantic-only output through V1C.
 
-No user-facing setting is added in V1C.
-
-## External-frame boundary
-
-External-frame IPC is V1D, after V1C is accepted.
-
-V1D may replace the local diagnostic state source, but it may not replace semantic restoration ownership.
-
-The external input contract must map absence, stale sequence, invalid metadata, producer failure, permission denial, and resolver abstention to:
-
-```text
-current semantic redraw
-        -> no visual
-        -> semantic-only output
-```
-
-Capture/platform types remain outside the controller extension.
+IPC shape is not authorized until the raster sink is accepted.
 
 ## Upstream synchronization
 
-Upstream may advance while the project remains based on 26.4.1.
+Upstream changes require a separate basis-upgrade process:
 
-Use a dedicated basis-upgrade process:
-
-1. inspect upstream release notes and relevant diffs;
-2. identify changes to Push display, bitmap abstraction, controller setup, USB transport, or Bitwig API version;
+1. inspect release notes and relevant source diffs;
+2. identify Push display, bitmap, controller setup, USB, or Bitwig API changes;
 3. open a basis-upgrade issue;
-4. rerun the clean build and real-device baseline;
+4. rerun clean build and fixture baseline;
 5. replay accepted project changes in reviewable commits;
 6. update central authority only after acceptance.
 
-Do not let automated dependency tools or casual rebases rewrite the accepted basis.
+Do not allow automated rebases or dependency tooling to rewrite the accepted basis silently.
 
-## Licensing and redistribution
+## Licensing and evidence boundary
 
-DrivenByMoss retains its upstream LGPL license and copyright notices.
+DrivenByMoss retains upstream LGPL licensing and notices. Modified source remains available under compatible terms and must not imply upstream endorsement.
 
-The fork must:
-
-- preserve license files and source notices;
-- make modified source available under compatible terms;
-- identify project-authored changes clearly;
-- avoid implying endorsement by the upstream author;
-- avoid redistributing Bitwig, Ableton, or other proprietary binaries/assets.
-
-The central repository's MIT license applies only to original code and documentation not derived from differently licensed upstream code.
-
-## Evidence boundary
-
-Source changes belong in the DrivenByMoss fork.
-
-Cross-repository build, artifact, fixture, performance, pixel-correctness, and decision evidence belongs in the central repository.
-
-Temporary research code is identified by hashes and methodology rather than promoted into accepted source merely for archival convenience.
+Source lives in the fork. Build, artifact, pixel, performance, fixture, rollback, and decision evidence lives in the central repository. Temporary research code is retained by hashes and methodology rather than promoted into accepted source merely for archival convenience.
 
 ## Current sequence
 
 ```text
-S0      accepted fixture, source pin, and display seam
-V1A-0   accepted fork/build/install/rollback baseline
-V1A     accepted identity frame pipeline
-V1B     accepted static bounded synthetic overlay
-V1C-0   accepted dynamic restoration architecture decision
-V1C     active production dynamic local composition
-V1D     future external generated-frame ingress
+S0      accepted fixture/source/display seam
+V1A-0  accepted fork/build/install/rollback baseline
+V1A    accepted identity frame pipeline
+V1B    accepted static bounded vector composition
+V1C-0  accepted dynamic restoration architecture
+V1C    accepted production dynamic local lifecycle
+V1D-0  active bulk raster primitive selection
+V1D-1  future production local raster lifecycle
+V1D-2  future external latest-frame ingress
+V2      future macOS window capture
 ```
-
-This sequencing prevents a process boundary or capture backend from papering over frame-restoration correctness.
