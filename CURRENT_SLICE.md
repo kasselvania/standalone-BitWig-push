@@ -1,50 +1,49 @@
-# Current Slice: V1D-2 — Production External Latest-Frame Ingress
+# Current Slice: V2 — macOS Dedicated-Window Visual Lens
 
 ## Status
 
-Ready to execute from the current accepted central `origin/main` containing the merged V1D-2-0 decision and from DrivenByMoss `origin/pushwig/main` at the exact accepted V1D-1 integration state.
+Ready to execute from the current accepted central `origin/main` containing merged V1D-2 evidence and from DrivenByMoss `origin/pushwig/main` at the exact accepted V1D-2 integration.
 
-Active issue: [#35 — V1D-2: Implement production external latest-frame ingress](https://github.com/kasselvania/standalone-BitWig-push/issues/35).
+Active issue: [#38 — V2: macOS dedicated-window visual lens](https://github.com/kasselvania/standalone-BitWig-push/issues/38).
 
 Before work begins, fetch central `origin/main` and verify that its history contains:
 
 ```text
-99e09e2a651c92ac6710fdc88c4675a874a56600  # accepted V1D-2-0 decision
+198b44a838009dac0df83464501004b6e6b59d9d  # accepted V1D-2 evidence
 ```
 
-Create the central evidence branch directly from the then-current accepted `origin/main`. If `origin/main` has moved, inspect every intervening commit and stop if it changes V1D-2 authority or scope.
+Create V2 source and evidence branches directly from the then-current accepted `origin/main`. If `origin/main` has moved, inspect every intervening commit and stop if it changes V2 authority or scope.
 
 ## Primary claim
 
-Implement the production form of the selected V1D-2-0 architecture:
+Implement and prove the first real visual source:
 
 ```text
-external generated producer
-        -> TCP 127.0.0.1 protocol v1
-        -> capability-authenticated complete receive
-        -> fixed latest-frame publication
-        -> display-thread nonblocking adoption
-        -> accepted V1D-1 raster writer
-        -> same semantic IBitmap
-        -> one unchanged PushUsbDisplay.send
+unique dedicated Bitwig/plugin window
+        -> ScreenCaptureKit macOS helper
+        -> source-relative normalized crop
+        -> bounded helper-local scale
+        -> opaque BGRA8888
+        -> accepted V1D-2 protocol v1
+        -> current semantic frame + captured visual
+        -> real Push
 ```
 
-The receiver thread never calls `IRasterWritableBitmap`. The display/composition thread never performs socket I/O, waits for the producer, takes a blocking publication lock, parses incomplete messages, or joins the receiver.
+V2 must prove two dedicated-window classes:
 
-No producer, clear, disconnect, crash, staleness, malformed/truncated/oversized input, authentication/protocol/session/sequence failure, writer rejection, bind failure, or shutdown may leave external pixels visible. Fallback is always a newly redrawn current semantic frame.
+1. one floating/undocked Bitwig native-device Expanded Device View with visually meaningful content;
+2. one already-installed ordinary plug-in editor window.
 
-V1D-2 uses generated external conformance frames only. It does not add ScreenCaptureKit, discover a Bitwig or plug-in window, capture proprietary pixels, or define the public visual-adapter SDK.
-
-See [`docs/V1D2_EXTERNAL_FRAME_INGRESS.md`](docs/V1D2_EXTERNAL_FRAME_INGRESS.md).
+No DrivenByMoss source change is authorized. The accepted V1D-2 receiver/sink/USB path is the fixed consumer boundary.
 
 ## Accepted authorities
 
 ### Central
 
 ```text
-repository:        kasselvania/standalone-BitWig-push
-V1D-2-0 decision: 99e09e2a651c92ac6710fdc88c4675a874a56600
-tree:              db22ec0a845146f03861581a929ae52b30204a1b
+repository: kasselvania/standalone-BitWig-push
+V1D-2 evidence: 198b44a838009dac0df83464501004b6e6b59d9d
+tree:            76d9f92ae8ec7369790b0b8dd325cd4a602e3dbb
 ```
 
 ### DrivenByMoss
@@ -52,17 +51,17 @@ tree:              db22ec0a845146f03861581a929ae52b30204a1b
 ```text
 repository: kasselvania/DrivenByMoss
 branch:     pushwig/main
-commit:     663d719207ef58ec84b4d235c43211ec5da43605
-tree:       c4e42825d069421a44b3241349de9a7c6453a3ad
+commit:     7e3416a1bdddbcbeec4e35e6531652e1618723de
+tree:       c8bc3f9e052e8f0b7b5dd256657697349d303740
 ```
 
-That integration contains exact accepted V1D-1 source head:
+That integration contains exact accepted V1D-2 source head:
 
 ```text
-3c3ca02ff81ab5ce110ae3d714e20b5fca05a03f
+830b778b720a06f56de08861d27052228c82c63b
 ```
 
-Immutable upstream basis:
+Immutable upstream basis remains:
 
 ```text
 branch: pushwig/upstream-26.4.1
@@ -70,7 +69,7 @@ commit: fd03245ab38fa5149c45934051d937ee9fda6d08
 tree:   edd2ad636b0aa1f39919f0ffd05c968015450075
 ```
 
-Official artifact to restore after live testing:
+Official rollback artifact:
 
 ```text
 $HOME/Documents/Bitwig Studio/Extensions/DrivenByMoss.bwextension
@@ -79,347 +78,288 @@ SHA-256: 98dc3195ad8d911526e18b1005f09f69a1aedcb965b080565474104654345c5a
 
 ## Source topology
 
-Create a source branch directly from exact `origin/pushwig/main`:
+V2 adds production helper source to this central repository under:
 
 ```text
-pushwig/v1d2-external-frame-ingress
+capture/macos/**
 ```
 
-The final source branch contains exactly one implementation commit over the accepted integration basis.
-
-Expected production changes are exactly:
+Expected source files:
 
 ```text
-src/main/java/de/mossgrabers/controller/ableton/push/controller/Push2Display.java
-src/main/java/de/mossgrabers/controller/ableton/push/controller/ExternalRasterPushFramePipeline.java
-src/main/java/de/mossgrabers/controller/ableton/push/controller/ExternalRasterReceiver.java
-src/main/java/de/mossgrabers/controller/ableton/push/controller/LatestExternalRasterFrameStore.java
+capture/macos/Package.swift
+capture/macos/Resources/Info.plist
+capture/macos/scripts/build-app.sh
+capture/macos/Sources/PushwigCaptureHelper/main.swift
+capture/macos/Sources/PushwigCaptureHelper/CaptureConfiguration.swift
+capture/macos/Sources/PushwigCaptureHelper/WindowDiscovery.swift
+capture/macos/Sources/PushwigCaptureHelper/WindowCapture.swift
+capture/macos/Sources/PushwigCaptureHelper/ExternalRasterProtocolClient.swift
 ```
 
-Do not cherry-pick the V1D-2-0 research commit. Reimplement the accepted production model cleanly from the accepted integration basis.
+A narrowly different split within `capture/macos/**` is allowed only when the same responsibilities remain bounded and the change is explained before editing.
 
-Any additional production path requires an explicit stop and technical justification before editing.
+Do not edit `kasselvania/DrivenByMoss` in V2. Stop if the helper cannot use the accepted protocol without a receiver change.
 
-Do not modify:
+## Source and evidence branches
+
+Capture-helper source branch:
 
 ```text
-PushUsbDisplay.java
-BitmapImpl.java
-IRasterWritableBitmap.java
-RasterPixelFormat.java
-AbstractGraphicDisplay.java
-DynamicLocalRasterPushFramePipeline.java
-DynamicLocalPushFramePipeline.java
-SyntheticOverlayPushFramePipeline.java
-PassThroughPushFramePipeline.java
-PushFramePipeline.java
-pom.xml
+capture/v2-macos-dedicated-window-lens
 ```
 
-Do not change version, IDs, MIDI discovery, Push VID/PID, USB interface/endpoint, RGB565 conversion, line padding, XOR shaping, transfer scheduling, or the sole USB writer.
-
-## Startup selection
-
-Read these Java system properties once during `Push2Display` construction:
+Source commit subject:
 
 ```text
-pushwig.externalRasterIngress=true
-pushwig.externalRasterPort=<1024..65535>            # default 45291
-pushwig.externalRasterTokenFile=<required path>
-pushwig.externalRasterStaleTimeoutMs=<100..10000>   # default 1500
+V2: add macOS dedicated-window capture helper
 ```
 
-Required pipeline precedence:
+Source PR title:
 
 ```text
-external ingress
-    > local raster
-    > dynamic local vector
-    > static overlay
-    > pass-through
+V2: add macOS dedicated-window visual lens
 ```
 
-Exactly one pipeline is selected. Current-semantic redraw is enabled for external ingress, local raster, and dynamic vector modes. It remains disabled for static and default modes.
-
-Invalid external configuration or bind failure must create no receiver thread and must leave current semantics fully usable after one bounded error. Do not poll properties per frame.
-
-## Token and endpoint contract
-
-The V1D-2 launcher/orchestrator owns token-file creation, distribution, lifetime, and cleanup. The extension does not add discovery.
-
-Required token file:
-
-- regular file with symbolic links rejected;
-- 64 ASCII hexadecimal characters plus optional trailing ASCII whitespace;
-- exactly 32 decoded bytes;
-- no POSIX group/other permission bits; target mode `0600`;
-- current-user ownership where the host exposes owner identity;
-- capability value never logged or passed directly through process arguments/environment;
-- only path, port, and timeout appear in construction properties;
-- temporary file bytes zeroed after parse;
-- in-memory token zeroed on shutdown;
-- launcher keeps the file available for producer restarts and removes it after Bitwig/producer shutdown.
-
-The fixed/configurable port and explicit token-file path are the complete V1D-2 handoff. A friendlier rendezvous service belongs to later helper/product work.
-
-Threat model: the capability prevents unauthorized frame authority by a process without the token. It does not prove OS identity or defend availability against a same-user process able to read the token or occupy the single local connection.
-
-## Protocol v1
-
-Transport:
+Evidence branch:
 
 ```text
-TCP IPv4 127.0.0.1 only
-backlog 1
-SO_REUSEADDR before bind
-one active connection
-one daemon receiver thread
+codex/v2-macos-dedicated-window-evidence
 ```
 
-Fixed header:
+Evidence only:
 
 ```text
-magic:         0x50575852 (PWXR)
-version:       1
-header length: 80 bytes
-byte order:    network/big-endian
+evidence/v2-macos-dedicated-window/**
 ```
 
-Fields:
+Both PRs target `main`, remain open/non-draft/unmerged, and are reviewed together.
+
+## Helper identity
+
+Build a normal macOS `.app` bundle with stable development identity rather than relying on Terminal as capture authority.
+
+Preferred bundle identifier:
 
 ```text
-0   u32 magic
-4   u16 version
-6   u16 header length
-8   u32 message type
-12  u32 flags/reserved
-16  u32 pixel format
-20  u32 reserved
-24  u64 session high
-32  u64 session low
-40  i64 sequence
-48  i32 destination x
-52  i32 destination y
-56  i32 width
-60  i32 height
-64  i32 source stride
-68  i32 payload length
-72  u64 reserved
+com.kasselvania.pushwig.capture-helper
 ```
 
-Message types:
+Preferred initial build path is SwiftPM plus a retained app-bundle/ad-hoc-sign script. Stop and retain a packaging blocker before changing build systems if ScreenCaptureKit/TCC cannot attribute permission safely to that bundle.
+
+V2 makes no Developer ID, notarization, App Store, or production installer claim.
+
+## Window discovery and source identity
+
+Use `SCShareableContent` / ScreenCaptureKit shareable-window enumeration.
+
+Fixture logical descriptor:
 
 ```text
-HELLO = 1
-FRAME = 2
-CLEAR = 3
+owning application bundle identifier
++ exact window title
++ source role (native-device | plugin)
 ```
 
-Pixel formats:
+The current `SCWindow.windowID` is instance identity while the window exists.
+
+Rules:
+
+- require exactly one matching visible dedicated window;
+- zero matches -> CLEAR/semantic fallback;
+- multiple matches -> CLEAR/abstain, never guess;
+- same-display movement does not change logical identity;
+- cross-display movement does not change logical identity when a second display exists;
+- resize recomputes normalized crop from current source dimensions;
+- close revokes external authority promptly;
+- reopen may create a new windowID and must be reacquired through the same unique logical descriptor;
+- physical desktop x/y is never persisted as source identity.
+
+Ambiguous duplicate plug-in windows are intentionally not solved in V2.
+
+## Fixture targets
+
+Inventory the accepted Mac before selecting targets.
+
+Native target:
+
+- prefer a Bitwig native device with a floating/undocked Expanded Device View and useful visual content, such as Sampler when available;
+- retain exact Bitwig version, device name, bundle identifier, window title, and source dimensions;
+- keep target choice out of generic source code.
+
+Plug-in target:
+
+- use one already-installed ordinary plug-in editor;
+- retain name/vendor/version, exact window title, and dimensions;
+- do not install or purchase a plug-in merely to satisfy V2 without maintainer approval.
+
+If no suitable installed plug-in is available, stop and ask the maintainer to choose one.
+
+## Capture contract
+
+Use ScreenCaptureKit with a desktop-independent dedicated-window filter.
+
+Require:
+
+- cursor excluded;
+- complete frames only;
+- BGRA capture;
+- bounded queue depth;
+- no application-level unbounded frame queue;
+- default capture target 30 fps;
+- normalized source-relative crop `(x,y,width,height)` in `[0,1]`;
+- source rect recomputed after resize/reacquire;
+- helper-local bounded scale to declared Push destination dimensions;
+- top-to-bottom output rows;
+- B,G,R,A output bytes with alpha forced to `0xFF` before transmission;
+- destination rectangle entirely inside 960x160.
+
+Fixture/development arguments may supply owner bundle ID, exact title, source role, crop, destination, fps, V1D-2 port, and token-file path. They are not the future public adapter SDK.
+
+## Screen Recording permission
+
+Use normal public macOS permission APIs only.
+
+- preflight permission before starting capture;
+- denied/unavailable permission publishes no frame and clears any current external authority when possible;
+- emit one bounded actionable error;
+- do not impair Bitwig, DrivenByMoss, controls, or audio;
+- after permission is granted, relaunch of the same exact helper build is acceptable when macOS requires it;
+- no private TCC manipulation and no silent permission reset.
+
+## Accepted protocol producer
+
+The helper must speak accepted V1D-2 protocol v1 exactly.
+
+- connect only to the configured IPv4 loopback endpoint;
+- read the private token file without logging the capability;
+- one nonzero 128-bit session per connection;
+- HELLO once;
+- positive strictly increasing FRAME/CLEAR sequence;
+- complete opaque BGRA payloads only;
+- send CLEAR on transition to missing/ambiguous/closed source where possible;
+- receiver disconnect/failure stops boundedly rather than accumulating frames;
+- no protocol-v2 or alternate Push path.
+
+## Lifecycle proof
+
+For both accepted source classes where physically possible:
+
+1. unique source discovery;
+2. real captured pixels visible on Push;
+3. move substantially on same display;
+4. resize smaller and larger;
+5. verify normalized crop follows source geometry;
+6. close -> current semantic-only output;
+7. reopen -> reacquire new instance and resume;
+8. obscure window and verify dedicated-window capture remains coherent where ScreenCaptureKit supports it;
+9. move between displays when two displays exist, otherwise retain explicit no-claim;
+10. induce or identify ambiguity when safely possible and prove abstention.
+
+Wrong visual capture is a blocker.
+
+## Correctness evidence
+
+Retain hashes and metadata rather than proprietary frame files.
+
+For each target retain:
+
+- logical descriptor;
+- windowID lifecycle;
+- source dimensions;
+- normalized crop and computed source rect;
+- destination rect;
+- capture pixel format and bytes-per-row;
+- cropped/output hashes;
+- protocol sequences;
+- capture/publish timing;
+- lifecycle outcomes.
+
+Require zero unexplained:
 
 ```text
-NONE = 0
-OPAQUE_BGRA8888 = 1
+wrong-window captures
+frames after source authority loss
+stale pixels after CLEAR/close/permission denial
+crop-out-of-bounds events
+row/channel/alpha mismatches
+partial/torn protocol output
+old-window-instance frames after reacquire
+helper failures affecting Bitwig/Push
 ```
 
-Limits:
-
-```text
-header:          80 bytes
-maximum payload: 614400 bytes
-maximum message: 614480 bytes
-```
-
-HELLO carries a nonzero 128-bit session identity, zero sequence/geometry, and exactly 32 raw token bytes. FRAME carries the authenticated session, a positive sequence, top-to-bottom opaque BGRA bytes, destination/size/stride, and exact payload length `(height-1)*stride + width*4`. CLEAR carries the next positive sequence and zero format/geometry/payload.
-
-Reserved fields must be zero. Unknown version/type/format, invalid arithmetic/geometry, oversize, or nonopaque alpha invalidates the connection before publication. No payload allocation may depend on an untrusted length.
-
-## Complete publication
-
-Publication changes only after:
-
-1. complete 80-byte header;
-2. accepted magic/version/type/reserved fields;
-3. authenticated session and accepted sequence;
-4. overflow-safe geometry/length validation;
-5. complete bounded payload;
-6. complete opaque-alpha validation;
-7. local monotonic receipt timestamp.
-
-EOF, close, or shutdown mid-header/payload publishes nothing from that message. Slow complete input becomes visible atomically only after final validation.
-
-## Session, sequence, and freshness
-
-- Producer supplies a nonzero 128-bit session identity; receiver adds a local connection generation.
-- Sequence is a positive signed Java `long`, strictly increasing within one authenticated session.
-- Duplicate, lower, or nonpositive sequence invalidates that session and does not refresh freshness.
-- Skipped sequence is accepted and counted; no missing frame is replayed.
-- A new authenticated connection clears old authority and permits sequence reset.
-- Sequence `Long.MAX_VALUE` is the final valid value in that session; publish again only after reconnect/new session.
-- Freshness uses `System.nanoTime()` recorded only for a complete accepted FRAME publication.
-- Default stale timeout is 1,500 ms, bounded to 100–10,000 ms.
-- Producer wall-clock time is not accepted.
-
-## Fixed storage and ownership
-
-Allocate once:
-
-| Storage | Bytes | Owner |
-| --- | ---: | --- |
-| header | 80 | receiver |
-| token | 32 | construction/receiver |
-| staging | 614,400 | receiver |
-| latest publication | 614,400 | receiver under publication lock |
-| display consumer | 614,400 | display thread |
-
-Total fixed project-owned frame/security arrays: `1,843,312` bytes.
-
-Receiver owns accept, authentication, parsing, staging, session/sequence state, and publication. It never references the bitmap or raster writer.
-
-`LatestExternalRasterFrameStore` protects one complete latest publication plus primitive metadata with one `ReentrantLock`. Receiver may call blocking `lock`; display calls `tryLock` exactly once and never waits. Display copies only a newer complete publication into its own fixed array, releases the lock, then calls V1D-1 synchronously.
-
-On lock miss, display may reuse only its already-owned frame while authority epoch is unchanged and receipt remains fresh. Otherwise it returns semantics. Clear, disconnect, session invalidation, receiver close, writer rejection, and shutdown advance authority.
-
-No application FIFO exists. An unadopted publication is overwritten by a newer complete frame and counted as superseded.
-
-## Failure behavior
-
-Each of the following must end in exact current-semantic output with no partial raster:
-
-- no producer;
-- explicit clear;
-- clean disconnect;
-- forced producer exit;
-- stale timeout;
-- wrong token, magic, version, type, format, session, or reserved bits;
-- duplicate/lower/nonpositive sequence;
-- malformed geometry/stride/length;
-- oversized declaration;
-- nonopaque alpha;
-- partial header or payload;
-- receiver/bind failure;
-- V1D-1 writer rejection;
-- shutdown.
-
-A stalled connected peer may occupy the single receiver slot; it may not affect display/control/audio correctness. Closing that peer or shutting down must unblock the receiver.
-
-## Shutdown
-
-1. Mark external ingress closing.
-2. Invalidate latest/display authority.
-3. Close active client and server sockets without waiting on publication lock.
-4. Unblock `accept` or payload/header read.
-5. On the existing Push shutdown executor, join the receiver for at most two seconds.
-6. Report a failed join but continue existing USB/superclass shutdown.
-7. Accept no publication after closing begins.
-8. Ensure the final semantic shutdown message is not covered by external pixels.
-
-Prove shutdown while waiting in accept, authenticated idle, continuous receive, partial header, and partial payload. Prove immediate same-port normal restart and active-listener collision rejection.
-
-## Production proof
-
-Use an external standard-library Python or Swift conformance producer. It is a language-neutral oracle, not the capture helper.
-
-The exact source head must prove:
-
-- one source commit and exact four-path envelope;
-- exact protocol constants and field parsing;
-- token regular-file/symlink/permission/owner/content validation and zeroing;
-- fixed arrays and exactly one receiver thread;
-- display `tryLock` only;
-- complete-message publication;
-- no receiver bitmap access and no display socket access;
-- no project-owned frame-sized allocation per message or send;
-- latest-frame supersession without application backlog replay;
-- session reset, duplicate/lower/gap, and sequence-exhaustion behavior;
-- local monotonic freshness;
-- every failure maps to exact current semantics;
-- same `IBitmap` and one unchanged `PushUsbDisplay.send`;
-- byte-identical `PushUsbDisplay.class` and accepted V1D-1 sink classes.
-
-Run at least 1,000 accepted publications and require zero source-target, outside, old-region, clear/disconnect/crash/stale/malformed/truncated/oversized, old-session, duplicate/out-of-order freshness, torn-frame, consumer-mutation, partial-write, and escaped-display mismatch counts. Require positive adoption, supersession, gap, clear, stale, session, and rejection counts.
+Do not commit proprietary screenshots or raw captured frames.
 
 ## Performance
 
-After a 60-second startup exclusion and at least 100 warmups, measure receiver read/validation/publication, critical section, display try-acquire/copy, V1D-1 writer, semantic redraw, external pipeline, combined send, no-frame/stale/rejected paths, and close/join.
+Measure capture delivery separately from helper processing.
 
-Project-owned display adoption plus writer:
+After warmup, retain at least 1,000 complete frames per serious 30-fps target where practical for:
+
+- ScreenCaptureKit callback interval;
+- pixel-buffer access;
+- crop/scale preparation;
+- BGRA/alpha-normalization copy;
+- protocol header build;
+- loopback send;
+- helper capture-to-send processing;
+- V1D-2 supersession/dropped-frame observations where available.
+
+Test 15 fps and 30 fps. Test 60 fps when stable; 60 fps is not required for acceptance.
+
+Targets:
 
 ```text
-green:  p95 <= 2 ms
-review: p95 <= 5 ms
-stop:   p95 > 5 ms
+helper capture-to-ready processing p95 <= 10 ms at 30 fps
+helper copy/normalize/send p95 <= 2 ms at 30 fps
+no unbounded backlog or frame-memory growth
 ```
 
-Combined semantic/host tails are retained separately. V1D-2-0 observed a green `0.092375 ms` external-pipeline p95 and a `2.106083 ms` combined p95; production must repeat exact clean-head aggregate timing and explicitly disposition repeated above-band results.
-
-No unbounded memory growth, frame-sized per-cycle project allocation, control lag, abnormal display lag, or audio xrun/dropout is accepted.
+Retain CPU, RSS/resident growth, dropped/late-frame counts, and distinguish source cadence from processing latency.
 
 ## Real fixture
 
-Use the exact proposed-head artifact as the sole scanned extension and prove:
+Use the exact accepted V1D-2 DrivenByMoss integration artifact or an exact rebuild from accepted `pushwig/main`; do not modify it.
 
-- no-producer semantics;
-- valid 1/15/30/60 fps generated frames;
-- moving, replacement, small/medium/full and odd-stride frames;
-- burst supersession without delayed replay;
-- clear, disconnect, crash, stale, malformed/truncated/slow complete, and reconnect behavior;
-- sequence reset/gaps/duplicate/lower/exhaustion;
-- representative Track, Device Parameters, and Session/Browser modes;
-- pads, pressure/MPE, encoders, transport, Push audio, and headphones;
-- no torn frame, trail, corruption, backlog, abnormal lag, xrun, or relevant exception;
-- all five shutdown states and immediate restart.
+Prove:
 
-Restore the exact official artifact as the sole scanned extension, verify its SHA-256, relaunch without Pushwig properties, and physically confirm standard display, controls, audio, and absence of generated pixels.
+- Push connection, pads, pressure/MPE, encoders, transport;
+- Push audio device and audible headphones;
+- current semantic UI remains correct under/around the lens;
+- useful native-device pixels on Push;
+- useful plug-in pixels on Push;
+- no accidental whole-desktop capture;
+- move/resize/close/reopen and permission/missing/ambiguity fallback;
+- helper exit/crash returns to semantics through accepted ingress behavior;
+- no trail, stale block, torn frame, wrong source, control lag, abnormal display lag, xrun, or dropout;
+- normal helper and Bitwig shutdown.
 
-## PR topology
+After live testing restore the exact official DrivenByMoss artifact as the sole scanned extension and physically confirm standard display, controls, and audio.
 
-### DrivenByMoss
+## Evidence output
 
-```text
-branch: pushwig/v1d2-external-frame-ingress
-base:   pushwig/main
-commit: V1D-2: implement external latest-frame ingress
-PR:     V1D-2: implement production external latest-frame ingress
-```
-
-Leave the source PR open, non-draft, and unmerged for technical-lead review.
-
-### Central evidence
-
-Create directly from then-current central `origin/main`:
+Create only:
 
 ```text
-codex/v1d2-external-frame-ingress-evidence
+evidence/v2-macos-dedicated-window/
+├── README.md
+├── source-topology.md
+├── helper-build-and-identity.md
+├── window-discovery-and-lifecycle.md
+├── capture-pixel-contract.md
+├── native-device-result.md
+├── plugin-result.md
+├── permission-and-fallback.md
+├── performance.md
+└── real-fixture-and-rollback.md
 ```
 
-Contain only:
-
-```text
-evidence/v1d2-external-frame-ingress/**
-```
-
-Include `Addresses #35`, link exact source PR/head/tree, and leave open/non-draft/unmerged.
-
-Suggested evidence:
-
-```text
-README.md
-source-topology.md
-protocol-and-security.md
-buffer-and-thread-ownership.md
-session-sequence-freshness.md
-lifecycle-and-failure-correctness.md
-performance.md
-build-artifact-comparison.md
-real-fixture-and-rollback.md
-manual-acceptance.md
-```
+Retain exact source PR/head/tree, helper build identity, permission identity, target descriptors, window lifecycle, crop/destination metadata, hashes, timing, CPU/memory, real Push behavior, and rollback.
 
 ## Non-goals
 
-No ScreenCaptureKit, Screen Recording permission, Bitwig/native-device/plug-in window discovery or capture, scaling, blending, color management, public adapter SDK, resolver/calibration/anchors, remote-network ingress, HTTP/WebSocket/OSC frames, multiple simultaneous producers, transport rewrite, second bitmap, second USB writer, POM/dependency change, Push 2 claim, Steam Deck/Linux, yabridge, Monome, plugdata, appliance, battery, connector, or NUC work.
+No DrivenByMoss changes; no embedded Bitwig-panel resolver; no pixel-anchor matching; no public visual adapter SDK; no persistent calibration database; no mouse automation; no plug-in control automation; no Linux/Steam Deck capture; no remote network ingress; no private WindowServer/TCC APIs; no second Push bitmap or USB writer; no appliance/CM11EB work.
 
-## Acceptance
+## Completion posture
 
-Close only when both exact PR heads exist and the production source proves the selected transport/protocol/security/ownership model, complete publication, nonblocking latest-frame adoption, exact session/sequence/freshness/failure behavior, fixed memory, bounded performance, full real Push behavior, all shutdown/restart cases, normal quit, and exact official rollback.
+V2 is complete only when both exact source/evidence PR heads exist, one floating native-device window and one ordinary plug-in editor produce useful real captured pixels on Push through unchanged V1D-2, permission and lifecycle fallback are correct, wrong/ambiguous sources abstain, helper processing is bounded, Push controls/audio remain normal, and the exact official DrivenByMoss artifact is restored.
