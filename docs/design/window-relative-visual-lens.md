@@ -158,6 +158,17 @@ Stable deterministic behavior belongs in committed Swift tests:
 
 Use retained evidence only for behavior that genuinely requires the real macOS/Bitwig/Push fixture: window move/resize/recreation, visible crop correctness, capture cadence, controls/audio, and recovery.
 
+## Delivery shape
+
+V3 should land as **one implementation PR**, not a source PR plus a separate evidence PR. The implementation PR may include:
+
+- `capture/macos/**` source and committed tests;
+- one example visual profile;
+- narrow contributor documentation required to run it;
+- concise evidence under `evidence/v3-window-relative-lens/` for the real fixture claims that cannot be automated.
+
+Prefer one evidence README unless the result genuinely needs a second document. Do not reproduce the V1 pattern of many per-stage evidence files.
+
 ## Acceptance
 
 V3 succeeds when one maintained profile follows the Bitwig main window through move, supported resize, and recreation on the accepted macOS fixture; useful real pixels remain correctly mapped on Push; missing or ambiguous sources fall back cleanly to semantics; deterministic profile/selection/geometry behavior is covered by committed tests; performance stays comfortably within the visual cadence; and normal Push controls/audio remain operational.
