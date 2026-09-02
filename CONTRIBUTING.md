@@ -1,90 +1,108 @@
-# Contributing
+# Contributing to Pushwig
 
-Thanks for helping build Standalone Bitwig Push.
+Thanks for helping build Pushwig.
 
-This is an experimental hardware/software project. Useful contributions include code, protocol validation, hardware measurements, documentation, test evidence, visual-design experiments and reproducible failure reports.
+The project is experimental but the core architecture is now real: a DrivenByMoss derivative owns Push control/display output, while optional helper processes can publish bounded visual frames. Contributions should make that system more useful, portable, testable, or understandable.
 
-## Before changing code
+## Start here
 
-Read, in order:
+Read:
 
-1. `AGENTS.md`
-2. `CURRENT_SLICE.md`
-3. `docs/ARCHITECTURE.md`
-4. `docs/ROADMAP.md`
+1. [`README.md`](README.md)
+2. [`docs/README.md`](docs/README.md)
+3. [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+4. [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)
+5. [`docs/TESTING.md`](docs/TESTING.md)
 
-Open an issue for substantial work unless the change is an obvious documentation correction.
+`AGENTS.md` and `CURRENT_SLICE.md` are maintainer/coding-agent control documents. You do not need them to evaluate the project or make an ordinary contribution unless your issue explicitly says otherwise.
 
-## Branches and pull requests
+## Where the code lives
 
-Use a focused branch from current `main`. Keep one primary claim per PR.
+- `capture/macos/**` — Pushwig's maintained macOS capture helper and Swift tests.
+- [`kasselvania/DrivenByMoss`](https://github.com/kasselvania/DrivenByMoss) — the narrow controller-extension fork that owns semantic redraw, raster composition, frame ingress, and the sole Push display transport.
+- `evidence/**` — retained experiment and real-hardware acceptance records, not production code.
 
-A good PR explains:
+## Issues and scope
 
-- what claim it proves;
-- what it deliberately does not change;
-- how it was tested;
-- whether real Push/Bitwig hardware was involved;
-- what evidence was retained;
-- any upstream code/license implications.
+Open or join an issue before substantial work.
 
-Do not combine broad cleanup with experimental hardware or protocol changes.
+Prefer **meaningful product-sized changes** over micro-slices. A good PR should deliver a user-visible capability, remove an important limitation, improve portability/reliability, or make the project materially easier to build and use.
+
+Do not bundle unrelated cleanup with risky protocol, capture, hardware, or controller changes.
+
+## Branches and worktrees
+
+Follow [`docs/BRANCH_AND_WORKTREE_POLICY.md`](docs/BRANCH_AND_WORKTREE_POLICY.md).
+
+The short version:
+
+- branches are temporary review transport, not historical archives;
+- use one branch for one PR role;
+- research stays local unless there is a specific reason to push it;
+- merged branches are deleted after merge;
+- closed-unmerged branches are deleted unless explicitly quarantined;
+- worktrees are temporary execution surfaces and must be clean before removal.
+
+Do not create new `codex/*`, `status/*`, `docs/*`, or `bootstrap/*` branch families for ordinary work.
+
+## Testing
+
+Stable deterministic behavior belongs in committed tests whenever practical.
+
+For the macOS helper:
+
+```bash
+cd capture/macos
+xcrun swift test
+```
+
+See [`docs/TESTING.md`](docs/TESTING.md) for the distinction between:
+
+- committed regression tests;
+- temporary exploratory harnesses;
+- retained real-hardware/experiment evidence.
+
+A SHA for a temporary harness can be useful during research, but it is not a substitute for a repeatable repository test once the behavior becomes a stable product contract.
+
+## Pull requests
+
+A useful PR explains:
+
+- what changes for a user or contributor;
+- the issue it addresses;
+- the branch role and base;
+- the important ownership/failure implications;
+- tests run;
+- real Push/Bitwig checks, if the claim depends on hardware;
+- any evidence retained beyond the committed tests;
+- branch/worktree cleanup eligibility after merge.
+
+Production code PRs should normally use a true merge commit when preserving the exact reviewed source head matters. Documentation/evidence-only PRs may be squash merged. Rebase merge is not used for governed project work.
 
 ## Real-device claims
 
-If a change claims that something works on Push, retain enough evidence for another contributor to distinguish observation from assumption.
+If a change claims that something works on Push or inside Bitwig, make the observation reproducible enough to distinguish fact from assumption. Depending on the change, that can include:
 
-For example:
-
-- USB/ALSA/PipeWire enumeration;
+- software and device versions;
 - test commands and exit status;
-- device/host versions;
-- frame timings;
-- photographs or continuity notes;
-- short manual acceptance results.
+- exact configuration;
+- timing/counter summaries;
+- concise manual acceptance notes;
+- failure and rollback behavior.
 
-Never commit credentials, Bitwig activation data, Push serial numbers, private network details, or proprietary firmware/binaries.
+Do not commit activation data, credentials, serial numbers, private network details, capability tokens, proprietary firmware/binaries, or proprietary UI frame captures used only as test evidence.
 
-## Hardware safety
+## Third-party code and licensing
 
-Hardware modifications are performed at the contributor’s own risk.
+Keep provenance clear when working with DrivenByMoss or other upstream projects:
 
-For power work:
+- preserve copyright/license notices;
+- document important upstream revisions;
+- prefer small upstreamable patches where practical;
+- do not copy third-party code into original-code areas without verifying license compatibility.
 
-- measure first;
-- identify ground and voltage domains;
-- document source/sink direction;
-- do not tie VBUS/power rails together by assumption;
-- current-limit bench supplies during first power experiments where appropriate;
-- battery experiments require chemistry-appropriate charging and protection.
+## Hardware work
 
-A successful plugged-in appliance does not require battery support.
+Hardware experiments are optional project tracks and should be treated as a separate safety domain. Measure voltage/ground/source-sink behavior before connecting power, use current limiting where appropriate, and do not infer high-current rail behavior from connector position alone.
 
-## Upstream projects
-
-We expect to collaborate with/fork projects such as DrivenByMoss and to learn from existing Push reverse-engineering work.
-
-Keep provenance clear:
-
-- retain upstream copyright/license notices;
-- prefer upstreamable patches where practical;
-- document the exact upstream revision used for experiments;
-- do not paste third-party code into original-code directories without confirming license compatibility.
-
-## Coding style
-
-Component-specific style will be added when implementation languages are chosen. Until then:
-
-- prefer small observable services and explicit IPC contracts;
-- add diagnostics at integration boundaries;
-- avoid blocking control paths on visual work;
-- make failure modes visible;
-- keep experimental flags/configuration reversible.
-
-## Compatibility
-
-The first reference platform is Steam Deck Linux + Flatpak Bitwig + Push 3 Controller over external USB. Other Linux hosts are welcome, but new portability work must not silently break the reference path.
-
-## Project naming
-
-Bitwig, Ableton, Push, Steam Deck, Intel and DrivenByMoss are third-party names used descriptively. Do not imply endorsement or official compatibility.
+See [`docs/HARDWARE.md`](docs/HARDWARE.md) for scope and links to the detailed research dossier.

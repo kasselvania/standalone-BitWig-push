@@ -1,187 +1,82 @@
 # Roadmap
 
-The roadmap has three parallel tracks. Later achievements do not retroactively define earlier ones.
+Pushwig's roadmap is organized around product capabilities, not every internal experiment.
 
-## Valid project successes
+## Done: working visual path on real Push hardware
 
-1. Adaptive Bitwig/native-device/plug-in visuals mixed with DrivenByMoss for ordinary desktop users.
-2. A portable Steam Deck appliance using the existing stand and battery.
-3. A reproducible Framework or compact-x86 appliance.
-4. An open CM11EB diagnostic/development board.
-5. A used Compute Element native-bay instrument.
+The project has already established:
 
-# Track V — Universal visual/controller software
+- a narrow DrivenByMoss display-composition seam;
+- reliable restoration of the current semantic Push display;
+- a validated opaque-BGRA raster sink;
+- bounded authenticated latest-frame ingress from a separate local process;
+- a maintained macOS ScreenCaptureKit helper;
+- live Bitwig Sampler pixels on a physical Push 3 Controller while controls, audio, and headphone output remain operational.
 
-The Mac is the first implementation fixture; Steam Deck/Linux is the named second-host and appliance checkpoint.
+Detailed historical experiments and measurements remain under `evidence/**` and the completed slice dossiers.
 
-## Accepted foundations
+## Next: adaptive Bitwig-window visual lens
 
-### S0 through V1B
+Turn the fixed-layout V2 fixture into something usable in an ordinary desktop session:
 
-Accepted the exact Mac/Bitwig/Push fixture, source/artifact provenance, reversible DrivenByMoss derivative workflow, frame seam, and first bounded project-owned pixels.
+- identify the Bitwig application window;
+- define the visual crop relative to that window instead of the physical display;
+- survive window move, resize, and recreation;
+- load/save a visual profile;
+- provide a straightforward launch/configuration path;
+- keep the current semantic fallback and one-writer ownership model.
 
-### V1C-0 and V1C — current-semantic restoration
+This should be delivered as one coherent product milestone rather than a chain of tiny research slices.
 
-```text
-newest retained semantic model
-        -> complete semantic redraw
-        -> current optional visual
-        -> same persistent bitmap
-        -> unchanged PushUsbDisplay
-```
+## Then: stronger visual localization
 
-Accepted movement, overlap, resize, replacement, semantic-only states, semantic updates under coverage, overlay/notification lifecycle, prior-mode regressions, one writer, real Push controls/audio/display, and exact rollback.
+Once the window-relative lens works, improve how the desired device/panel region is found:
 
-### V1D-0 and V1D-1 — production bulk raster sink
+- use selected-device/layout semantics where Bitwig exposes them;
+- add bounded calibration where necessary;
+- benchmark semantic-seeded pixel anchors only where geometry/semantics are insufficient;
+- prefer abstention to a wrong visual lock.
 
-```text
-current semantic redraw
-        -> validate complete OPAQUE_BGRA8888 request
-        -> absolute bulk row copies, or zero write
-        -> same logical bitmap
-        -> unchanged PushUsbDisplay
-```
+The detailed anchor-resolver document is a design hypothesis, not current product behavior.
 
-Accepted the host-neutral `byte[]` region writer, adapter-private destination memory, exact geometry/stride/alpha/thread validation, padded/full-frame tests, zero partial invalid writes, bounded writer timing/allocation, prior-path regressions, real Push behavior, and rollback.
+## Usability and packaging
 
-### V1D-2-0 and V1D-2 — production external latest-frame ingress
+Before calling Pushwig an end-user release, improve:
 
-```text
-external producer
-        -> capability-authenticated TCP 127.0.0.1 protocol v1
-        -> one receiver thread
-        -> complete latest-frame publication in fixed storage
-        -> display-thread tryLock adoption
-        -> local monotonic freshness
-        -> accepted raster sink
-        -> unchanged PushUsbDisplay
-```
+- installation and first-run setup;
+- configuration/profile management;
+- helper/DrivenByMoss version compatibility;
+- diagnostics and recovery that do not require reading evidence logs;
+- release packaging and upgrade/rollback behavior;
+- contributor-facing build/test automation.
 
-Accepted exact protocol/security/session/sequence/freshness behavior, fixed storage, no application frame FIFO, complete publication, nonblocking display adoption, exact semantic fallback, 1/15/30/60 fps, supersession, reconnect, five blocked-receive shutdown states, collision/restart, production source/evidence, real Push controls/audio/display, and exact rollback.
+## Linux and Steam Deck
 
-Accepted source integration:
+Port the established contracts rather than redesigning them:
 
-```text
-kasselvania/DrivenByMoss: pushwig/main
-commit: 7e3416a1bdddbcbeec4e35e6531652e1618723de
-tree:   c8bc3f9e052e8f0b7b5dd256657697349d303740
-```
+- prove Push control/audio/display on Linux;
+- add a Linux visual-source backend appropriate to X11/Xwayland or Wayland/portal environments;
+- characterize Flatpak boundaries;
+- measure CPU/power on the Steam Deck fixture;
+- preserve semantic fallback and one Push display writer.
 
-Accepted central V1D-2 evidence:
+## Optional appliance work
 
-```text
-commit: 198b44a838009dac0df83464501004b6e6b59d9d
-tree:   76d9f92ae8ec7369790b0b8dd325cd4a602e3dbb
-```
+A self-contained Linux host, battery, boot/recovery services, and wireless desktop management can package the same Pushwig software into a portable instrument. The Steam Deck is the first available appliance fixture; Framework/compact-x86 systems are possible later hosts.
 
-## V2 strategy correction
+## Optional internal-compute / connector research
 
-The original dedicated-window hypothesis did not hold on the accepted Bitwig/macOS fixture: native-device and plug-in editor surfaces were not exposed as useful independently capturable ScreenCaptureKit windows.
+Push's internal compute bay and CM11EB carrier remain a separate hardware research track. Useful outcomes include safe connector characterization, diagnostic hardware, and eventual evaluation of a native-bay compute installation.
 
-The branch:
+These hardware tracks do not block the desktop visual/controller product.
 
-```text
-capture/v2-macos-dedicated-window-lens
-f5bd7fd990ee74956aa1168ba8b747f0f63286ab
-```
+## Release direction
 
-is quarantined, has no PR, and is not accepted source.
+A credible first public release should let another Push 3 + Bitwig user:
 
-A temporary override proved that an explicit `SCDisplay` plus a bounded normalized crop of the Bitwig main-window device-chain region can deliver real Sampler pixels to Push through unchanged V1D-2. The proof sent 7,192 frames at a requested 30 fps and returned cleanly to semantics, but the rough mapping visibly distorted the image.
-
-That result selects the next production tactic without completing V2.
-
-## V2 — macOS display-crop visual lens — active
-
-**Claim:** implement a normal macOS helper that captures one explicit display-relative crop containing the Bitwig device-chain region, maps it without distortion, and publishes useful live Sampler pixels through unchanged V1D-2.
-
-Production helper source lives under:
-
-```text
-capture/macos/**
-```
-
-Required authority:
-
-```text
-exact SCDisplay id
-+ expected display dimensions
-+ bounded normalized crop
-+ declared Push destination
-+ bounded Bitwig source-validity guard
-+ explicit aspect-preserving mapping
-```
-
-Acceptance requires:
-
-- no DrivenByMoss change;
-- no reuse of the quarantined branch as implementation basis;
-- stable `.app`/TCC identity;
-- normal Screen Recording permission and semantic fallback;
-- explicit display inventory and selection, never implicit first-display choice;
-- source crop validated against selected display dimensions;
-- a public-API Bitwig active-context guard;
-- no full-display transmission;
-- one explicit uniform aspect mapping with no visible distortion;
-- opaque BGRA output through accepted protocol v1;
-- useful live Sampler/device-chain pixels on the actual Push;
-- meaningful captured content change while the fixture remains stable;
-- CLEAR/semantic fallback on invalid permission, display, crop, guard, helper loss, or Bitwig quit;
-- bounded 15/30 fps processing and memory; 60 fps optional;
-- normal Push controls, audio, headphones, helper/Bitwig shutdown;
-- exact official DrivenByMoss rollback.
-
-V2 is a fixture proof. It does not claim automatic response to Bitwig window movement, resize, panel rearrangement, UI scaling, or cross-display migration.
-
-It does not require a dedicated native-device window or plug-in editor and makes no VST/VST3/CLAP identity claim.
-
-See [`V2_MACOS_DISPLAY_CROP_LENS.md`](V2_MACOS_DISPLAY_CROP_LENS.md).
-
-## V2A — semantic-seeded pixel-anchor benchmark
-
-Use the accepted display-crop path as the source image plane, then benchmark normalized grayscale, correlation, edge-map, coarse-to-fine, and only then feature-based methods.
-
-Require DrivenByMoss selected-device semantics as the search seed, strong positive and negative fixture states, multiple geometrically consistent anchors, zero wrong locks in the retained matrix, abstention on ambiguity, and explicit acquisition, validation, CPU, memory, and relock metrics.
-
-V2A does not yet become the production resolver.
-
-## V2P — Linux/Steam Deck checkpoint
-
-Reproduce Push control/audio/display, current-semantic restoration, raster sink, external-frame contract, and one useful visual source on Linux.
-
-The first Linux source may use managed geometry or an explicit crop; it must not redesign Mac-neutral contracts.
-
-Characterize Flatpak/host IPC, capture backend behavior, CPU, power, and semantic fallback.
-
-## V3–V7 — public portability
-
-- **V3:** public visual-source and adapter SDK.
-- **V4:** adaptive embedded Bitwig-panel resolver using semantic/layout state, confidence-validated anchors, and bounded abstention.
-- **V5:** bounded calibration and portable local descriptors.
-- **V6:** attached-mode release across a defined Mac/Linux/layout matrix.
-- **V7:** an additional OS backend without compositor or adapter redesign.
-
-Dedicated-window/VST identity may return as a separate acquisition research item if a host exposes those surfaces lawfully. It is not assumed.
-
-# Track A — All-in-one appliance
-
-Track A consumes Track V; it does not define it.
-
-- **A0:** measure the wooden base, battery, power cable, USB topology, airflow, and service access.
-- **A1:** managed/headless Steam Deck profile with safe boot, save, restart, and shutdown.
-- **A2:** battery-powered maintainer appliance with measured runtime/thermals and wireless full desktop.
-- **A3:** reproducible Framework/compact-x86 appliance with public BOM and service procedure.
-
-# Track H — Connector and native compute
-
-- **H0:** measured Push bay/carrier survey.
-- **H1:** passive CM11EB diagnostic edge card with power disconnected by default.
-- **H2:** protected selectable USB development card with ESD and explicit VBUS control.
-- **H3:** internal carrier-path enumeration of display, MIDI/control, and audio.
-- **H4:** purpose-specific high-speed or sideband tooling.
-- **H5:** used Compute Element Linux bring-up and Track V acceptance.
-- **H6:** native-bay battery, charging, thermal, shutdown, service, and recovery final form.
-
-# Optional ecosystem work
-
-Wine/yabridge, plugdata/Pure Data, Monome/serialosc, device-specific analyzers, and alternative controller integrations remain independent efforts that may consume public interfaces without owning the core roadmap.
+1. install the supported DrivenByMoss derivative and capture helper;
+2. grant the required platform permission;
+3. select or load a visual profile;
+4. see useful Bitwig visuals on Push;
+5. retain normal controls/audio when visuals disappear;
+6. understand and reproduce the supported configuration from conventional docs and tests.

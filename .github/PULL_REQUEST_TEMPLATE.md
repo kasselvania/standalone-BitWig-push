@@ -1,36 +1,56 @@
-## Claim
+## Summary
 
-What single project claim does this PR prove or improve?
+What changes for a user, contributor, or maintainer?
+
+## Issue / branch role
+
+- Issue:
+- Branch role: source / evidence / documentation / authority / research
+- Base:
+- Cleanup event after merge:
 
 ## Scope
 
-What is changed?
+What changed? What important adjacent work is intentionally not included?
 
-## Explicit non-goals
+## Ownership / failure behavior
 
-What adjacent work is intentionally not included?
+If this crosses a controller, capture, frame, protocol, or hardware boundary, what owns what and what happens when it fails?
 
-## Validation
+## Testing
 
-Describe tests performed, including real Push/Bitwig hardware where relevant.
+Committed tests run:
+
+```text
+commands / results
+```
+
+Temporary harnesses used (if any) and why they remain temporary:
+
+```text
+none / details
+```
+
+Real Push / Bitwig / hardware checks required by this claim:
+
+```text
+none / concise result
+```
 
 ## Evidence
 
-Link retained evidence, logs, measurements, screenshots/photos, or explain why none is required.
+Link any retained evidence that cannot be represented by committed tests. Do not duplicate implementation prose just to create an evidence section.
 
-## Upstream / licensing impact
+## Third-party / licensing impact
 
-Does this change copy, patch, fork, vendor, or depend on third-party code? If yes, name the exact upstream revision and license implications.
-
-## Failure / recovery behavior
-
-For integration changes, what happens if this component crashes, disconnects, or cannot find its expected device/window?
+Does this change patch, copy, vendor, or depend on third-party code? If yes, state the upstream project/revision and license implications.
 
 ## Checklist
 
-- [ ] I read `AGENTS.md` and `CURRENT_SLICE.md`.
-- [ ] The PR has one primary claim.
-- [ ] I did not widen the current slice silently.
-- [ ] Real-device claims have retained evidence where appropriate.
-- [ ] No credentials, activation data, serial numbers, private network details, or proprietary binaries are committed.
-- [ ] Visual work does not introduce a dependency from musical control/audio onto capture/render latency.
+- [ ] The PR has one primary product/maintenance claim.
+- [ ] Stable deterministic behavior is covered by committed tests where practical.
+- [ ] Real-device claims have enough evidence to distinguish observation from assumption.
+- [ ] No credentials, capability tokens, activation data, serial numbers, private network details, or proprietary binaries are committed.
+- [ ] Visual work does not make musical control/audio wait on capture/render/network work.
+- [ ] Branch/worktree cleanup eligibility is stated.
+- [ ] Maintainer/agent-governed work follows `AGENTS.md` and `CURRENT_SLICE.md` when applicable.
