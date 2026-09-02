@@ -57,20 +57,7 @@ external producer
         -> unchanged PushUsbDisplay
 ```
 
-Accepted:
-
-- exact 80-byte network-order protocol and 614,400-byte payload cap;
-- HELLO / FRAME / CLEAR;
-- private 32-byte capability-file authentication;
-- producer session + receiver-local generation;
-- strictly increasing sequence, legal gaps, exhaustion/reconnect behavior;
-- fixed staging/publication/display arrays and one daemon receiver;
-- no application frame FIFO;
-- complete publication only after receive/auth/session/geometry/alpha validation;
-- display `tryLock` only;
-- exact semantic fallback for no producer, clear, disconnect, crash, stale, auth/protocol/session failure, malformed/truncated/oversized data, writer rejection, bind failure, and shutdown;
-- 1/15/30/60 fps, supersession, reconnect, five blocked-receive shutdown states, active-listener collision, immediate same-port restart;
-- production source/evidence, real Push controls/audio/display, and exact rollback.
+Accepted exact protocol/security/session/sequence/freshness behavior, fixed storage, no application frame FIFO, complete publication, nonblocking display adoption, exact semantic fallback, 1/15/30/60 fps, supersession, reconnect, five blocked-receive shutdown states, collision/restart, production source/evidence, real Push controls/audio/display, and exact rollback.
 
 Accepted source integration:
 
@@ -87,14 +74,26 @@ commit: 198b44a838009dac0df83464501004b6e6b59d9d
 tree:   76d9f92ae8ec7369790b0b8dd325cd4a602e3dbb
 ```
 
-## V2 — macOS dedicated-window visual lens — active
+## V2 strategy correction
 
-**Claim:** capture real pixels from dedicated top-level Bitwig windows through the unchanged accepted external ingress and show them usefully on Push.
+The original dedicated-window hypothesis did not hold on the accepted Bitwig/macOS fixture: native-device and plug-in editor surfaces were not exposed as useful independently capturable ScreenCaptureKit windows.
 
-Required source classes:
+The branch:
 
-1. one floating/undocked Bitwig native-device Expanded Device View;
-2. one already-installed ordinary plug-in editor.
+```text
+capture/v2-macos-dedicated-window-lens
+f5bd7fd990ee74956aa1168ba8b747f0f63286ab
+```
+
+is quarantined, has no PR, and is not accepted source.
+
+A temporary override proved that an explicit `SCDisplay` plus a bounded normalized crop of the Bitwig main-window device-chain region can deliver real Sampler pixels to Push through unchanged V1D-2. The proof sent 7,192 frames at a requested 30 fps and returned cleanly to semantics, but the rough mapping visibly distorted the image.
+
+That result selects the next production tactic without completing V2.
+
+## V2 — macOS display-crop visual lens — active
+
+**Claim:** implement a normal macOS helper that captures one explicit display-relative crop containing the Bitwig device-chain region, maps it without distortion, and publishes useful live Sampler pixels through unchanged V1D-2.
 
 Production helper source lives under:
 
@@ -102,46 +101,67 @@ Production helper source lives under:
 capture/macos/**
 ```
 
-The helper uses ScreenCaptureKit, a stable macOS app identity, normal Screen Recording permission, logical window descriptors, normalized source-relative crops, bounded helper-local scaling, opaque BGRA output, and accepted V1D-2 protocol v1.
+Required authority:
+
+```text
+exact SCDisplay id
++ expected display dimensions
++ bounded normalized crop
++ declared Push destination
++ bounded Bitwig source-validity guard
++ explicit aspect-preserving mapping
+```
 
 Acceptance requires:
 
 - no DrivenByMoss change;
-- unique-window selection by owner bundle id + exact title + source role;
-- abstention on zero/multiple matches;
-- same-display movement;
-- resize smaller/larger with normalized crop recomputation;
-- close -> semantic fallback;
-- reopen/new windowID -> reacquire;
-- occlusion behavior retained;
-- cross-display move when two displays exist, otherwise explicit no-claim;
-- Screen Recording denial -> semantic fallback, then same-build success after normal permission grant/relaunch;
-- useful real native-device pixels on the actual Push;
-- useful real plug-in pixels on the actual Push;
-- no accidental whole-desktop/wrong-window capture;
-- bounded 15/30 fps capture/processing; 60 fps optional;
-- normal Push controls/audio and helper/Bitwig shutdown;
+- no reuse of the quarantined branch as implementation basis;
+- stable `.app`/TCC identity;
+- normal Screen Recording permission and semantic fallback;
+- explicit display inventory and selection, never implicit first-display choice;
+- source crop validated against selected display dimensions;
+- a public-API Bitwig active-context guard;
+- no full-display transmission;
+- one explicit uniform aspect mapping with no visible distortion;
+- opaque BGRA output through accepted protocol v1;
+- useful live Sampler/device-chain pixels on the actual Push;
+- meaningful captured content change while the fixture remains stable;
+- CLEAR/semantic fallback on invalid permission, display, crop, guard, helper loss, or Bitwig quit;
+- bounded 15/30 fps processing and memory; 60 fps optional;
+- normal Push controls, audio, headphones, helper/Bitwig shutdown;
 - exact official DrivenByMoss rollback.
 
-V2 does not solve embedded Bitwig panels, pixel anchors, public adapter SDK, or Linux capture.
+V2 is a fixture proof. It does not claim automatic response to Bitwig window movement, resize, panel rearrangement, UI scaling, or cross-display migration.
 
-See [`V2_MACOS_DEDICATED_WINDOW_LENS.md`](V2_MACOS_DEDICATED_WINDOW_LENS.md).
+It does not require a dedicated native-device window or plug-in editor and makes no VST/VST3/CLAP identity claim.
+
+See [`V2_MACOS_DISPLAY_CROP_LENS.md`](V2_MACOS_DISPLAY_CROP_LENS.md).
 
 ## V2A — semantic-seeded pixel-anchor benchmark
 
-Benchmark normalized grayscale, correlation, edge-map, coarse-to-fine, and only then feature-based methods. Require strong negatives, multiple consistent anchors, zero wrong locks in the retained matrix, abstention on ambiguity, and explicit acquisition/validation/CPU/memory metrics.
+Use the accepted display-crop path as the source image plane, then benchmark normalized grayscale, correlation, edge-map, coarse-to-fine, and only then feature-based methods.
+
+Require DrivenByMoss selected-device semantics as the search seed, strong positive and negative fixture states, multiple geometrically consistent anchors, zero wrong locks in the retained matrix, abstention on ambiguity, and explicit acquisition, validation, CPU, memory, and relock metrics.
+
+V2A does not yet become the production resolver.
 
 ## V2P — Linux/Steam Deck checkpoint
 
-Reproduce Push control/audio/display, current-semantic restoration, raster sink, external-frame contract, and one useful visual source on Linux. Characterize Flatpak/host IPC, capture backend behavior, CPU, and power without redesigning Mac-neutral contracts.
+Reproduce Push control/audio/display, current-semantic restoration, raster sink, external-frame contract, and one useful visual source on Linux.
+
+The first Linux source may use managed geometry or an explicit crop; it must not redesign Mac-neutral contracts.
+
+Characterize Flatpak/host IPC, capture backend behavior, CPU, power, and semantic fallback.
 
 ## V3–V7 — public portability
 
 - **V3:** public visual-source and adapter SDK.
-- **V4:** adaptive embedded Bitwig-panel resolver.
+- **V4:** adaptive embedded Bitwig-panel resolver using semantic/layout state, confidence-validated anchors, and bounded abstention.
 - **V5:** bounded calibration and portable local descriptors.
 - **V6:** attached-mode release across a defined Mac/Linux/layout matrix.
 - **V7:** an additional OS backend without compositor or adapter redesign.
+
+Dedicated-window/VST identity may return as a separate acquisition research item if a host exposes those surfaces lawfully. It is not assumed.
 
 # Track A — All-in-one appliance
 

@@ -4,7 +4,7 @@ An open-source effort to make **Ableton Push 3 Controller** a substantially rich
 
 The primary software product is Track V: combine DrivenByMoss semantic control with useful live Bitwig/native-device/plug-in visuals while preserving exact semantic fallback and one Push display owner.
 
-> **Status:** S0, V1A-0, V1A, V1B, V1C-0, V1C, V1D-0, V1D-1, V1D-2-0, and V1D-2 are accepted. The active slice is **V2 — macOS dedicated-window visual lens**: the first real ScreenCaptureKit visual source feeding the accepted external raster boundary.
+> **Status:** S0, V1A-0, V1A, V1B, V1C-0, V1C, V1D-0, V1D-1, V1D-2-0, and V1D-2 are accepted. The active slice is **V2 — macOS display-crop visual lens**: the first production ScreenCaptureKit source for real Bitwig pixels.
 
 ## Three independent tracks
 
@@ -18,10 +18,11 @@ Bitwig / plug-in visuals ---> adaptive visual source ------+--> Push display
 optional direct sources ----> generated/analyzer frames ---+
 ```
 
-Track V should work for ordinary Push/Bitwig users on existing computers.
+Track V should ultimately work for ordinary Push/Bitwig users on existing computers.
 
 - **Attached mode** adapts to existing windows and monitor layouts.
 - **Managed mode** may use controlled geometry for an appliance/test fixture.
+- Earlier fixture proofs are valid milestones when their limitations are explicit.
 
 ### Track A — all-in-one appliance
 
@@ -99,52 +100,59 @@ tree:   76d9f92ae8ec7369790b0b8dd325cd4a602e3dbb
 
 The boundary has explicit authentication, session, sequence, freshness, complete-message, fixed-memory, latest-frame-wins, malformed-input, disconnect/crash, shutdown, and exact semantic-fallback behavior.
 
-## Active V2 work — real macOS window pixels
+## Active V2 work — real macOS display-crop pixels
 
-V2 is intentionally the first slice after infrastructure that handles **real application pixels**.
+The original V2 plan assumed Bitwig native-device and plug-in editors would be available as independently capturable ScreenCaptureKit windows. On the accepted fixture, that assumption did not hold.
 
-The target path is:
+The incomplete branch:
 
 ```text
-unique dedicated Bitwig/plugin window
-        -> ScreenCaptureKit helper
-        -> normalized source-relative crop
-        -> bounded helper-local scaling
-        -> opaque BGRA8888
+capture/v2-macos-dedicated-window-lens
+f5bd7fd990ee74956aa1168ba8b747f0f63286ab
+```
+
+is quarantined and has no PR.
+
+A temporary override proved the viable path:
+
+```text
+explicit SCDisplay
+        -> bounded normalized crop of the Bitwig main-window device chain
+        -> opaque BGRA
         -> accepted V1D-2 ingress
-        -> real Push
+        -> real Sampler pixels on Push
 ```
 
-V2 must prove:
+The temporary helper sent 7,192 real frames at a requested 30 fps, produced one CLEAR on exit, retained responsive controls/audio, and restored ordinary semantics cleanly. Its rough mapping visibly distorted the image, so it selected the tactic but did not complete V2.
 
-1. one floating/undocked Bitwig native-device Expanded Device View;
-2. one already-installed ordinary plug-in editor.
+Production V2 now requires:
 
-The helper lives in `capture/macos/**`, keeps all Apple capture/window types inside the helper, uses a stable app bundle identity for Screen Recording permission, and does not modify DrivenByMoss.
+- a stable signed/ad-hoc macOS helper app identity;
+- exact explicit `SCDisplay` selection and expected dimensions;
+- a bounded normalized display-relative crop;
+- a public-API Bitwig source-validity guard;
+- one explicit aspect-preserving mapping with no visible stretch;
+- opaque BGRA output through unchanged V1D-2;
+- live Sampler/device-chain pixels on the real Push;
+- permission/configuration/guard/helper-loss fallback to semantics;
+- bounded 15/30 fps processing and memory;
+- normal Push controls/audio;
+- exact official DrivenByMoss rollback.
 
-Window identity is logical rather than physical-desktop based:
+The V2 crop is fixture configuration, not universal device identity. Main-window movement, resize, panel rearrangement, UI-scale changes, cross-display migration, plug-in identity, and automatic localization remain later work.
 
-```text
-owner bundle identifier
-+ exact window title
-+ source role
-```
-
-Move/resize/close/reopen behavior, missing/ambiguous source fallback, Screen Recording denial, source-relative crop behavior, processing cost, real Push controls/audio, and exact official rollback are part of acceptance.
-
-See [`docs/V2_MACOS_DEDICATED_WINDOW_LENS.md`](docs/V2_MACOS_DEDICATED_WINDOW_LENS.md).
+See [`docs/V2_MACOS_DISPLAY_CROP_LENS.md`](docs/V2_MACOS_DISPLAY_CROP_LENS.md).
 
 ## Visual portability strategy
 
-Dedicated windows are the first acquisition class because they can be captured directly and identified without physical desktop rectangles.
+The current acquisition progression is:
 
-Later acquisition order remains:
-
-1. dedicated top-level plug-in or floating native-device window;
-2. embedded Bitwig panel prediction from semantic/layout state;
+1. explicit display crop as the first real-pixel fixture proof;
+2. selected-device/layout-aware embedded Bitwig-panel prediction;
 3. confidence-validated semantic-seeded pixel anchors;
 4. bounded local calibration where necessary;
-5. direct project-owned analyzer frames.
+5. dedicated top-level sources when a host actually exposes them;
+6. direct project-owned analyzer frames.
 
 Wrong visual selection is worse than semantic fallback.
 
@@ -163,7 +171,7 @@ V1D-0     accepted bulk raster decision
 V1D-1     accepted production raster sink
 V1D-2-0   accepted external-ingress architecture
 V1D-2     accepted production external latest-frame ingress
-V2        active macOS dedicated-window visual lens
+V2        active macOS display-crop visual lens
 V2A       semantic-seeded pixel-anchor benchmark
 V2P       Linux/Steam Deck portability checkpoint
 V3        public visual-source/adapter SDK
@@ -173,11 +181,13 @@ V6        attached-mode release matrix
 V7        additional OS backend
 ```
 
+Dedicated-window/VST identity is deferred rather than treated as a V2 completion gate.
+
 ## Start here
 
 1. [`AGENTS.md`](AGENTS.md)
 2. [`CURRENT_SLICE.md`](CURRENT_SLICE.md)
-3. [`docs/V2_MACOS_DEDICATED_WINDOW_LENS.md`](docs/V2_MACOS_DEDICATED_WINDOW_LENS.md)
+3. [`docs/V2_MACOS_DISPLAY_CROP_LENS.md`](docs/V2_MACOS_DISPLAY_CROP_LENS.md)
 4. [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 5. [`docs/VISUAL_PORTABILITY.md`](docs/VISUAL_PORTABILITY.md)
 6. [`docs/ROADMAP.md`](docs/ROADMAP.md)
