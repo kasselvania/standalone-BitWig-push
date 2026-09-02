@@ -8,7 +8,7 @@ Owning issue: [#45 — V3: Adaptive Bitwig window-relative visual lens](https://
 
 Durable design: [`docs/design/window-relative-visual-lens.md`](docs/design/window-relative-visual-lens.md)
 
-The owning issue records the exact accepted `origin/main` commit/tree from which the V3 implementation branch must start.
+Implementation branches start from the current accepted `origin/main` after this V3 activation update.
 
 V2 is accepted and merged. The repository-entry cleanup is complete enough to resume product development; branch-ref/worktree housekeeping tracked by #41 must not widen or block V3.
 
