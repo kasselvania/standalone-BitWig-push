@@ -24,7 +24,7 @@ Today the system can:
 - capture a configured crop of Bitwig's macOS display and show live Sampler pixels on Push;
 - fail back to the semantic DrivenByMoss display when capture permission, source validity, the helper, or the external frame connection is lost.
 
-The current macOS visual source is intentionally a **fixed-layout fixture**: the display and crop are configured explicitly. It proves the real pixel path, but it does not yet automatically follow Bitwig window movement, resize, panel changes, or arbitrary devices.
+The current accepted macOS source is intentionally a **fixed-layout fixture**: the display and crop are configured explicitly. It proves the real pixel path. Active V3 work is replacing that physical-display dependency with a Bitwig-window-relative visual profile.
 
 ## How it works
 
@@ -83,11 +83,13 @@ Start with:
 
 Pushwig keeps detailed hardware/experiment evidence under [`evidence/`](evidence/). That material is there for audit and reproduction; it is **not** required reading to understand the project.
 
-## Roadmap
+## Current development
 
-The next product-shaped step is to make the working visual lens adaptive: identify the Bitwig application window, express the crop relative to it instead of the physical display, and survive window movement, resize, and recreation. After that, the project can add saved visual profiles, stronger device/panel localization, and Linux portability.
+[V3 — Adaptive Bitwig window-relative visual lens](https://github.com/kasselvania/standalone-BitWig-push/issues/45) is active.
 
-See [Roadmap](docs/ROADMAP.md).
+The goal is to make the working visual lens follow the Bitwig application window instead of a fixed physical display coordinate: load a small visual profile, capture relative to the current Bitwig window, and survive window move, supported resize, and recreation while preserving semantic fallback and normal Push controls/audio.
+
+See the [active design](docs/design/window-relative-visual-lens.md) and [roadmap](docs/ROADMAP.md).
 
 ## Contributing
 
