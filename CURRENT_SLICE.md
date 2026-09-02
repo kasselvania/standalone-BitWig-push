@@ -8,6 +8,13 @@ Owning issue: [#45 — V3: Adaptive Bitwig window-relative visual lens](https://
 
 Durable design: [`docs/design/window-relative-visual-lens.md`](docs/design/window-relative-visual-lens.md)
 
+Implementation basis:
+
+```text
+commit: 349634919236cb361d274903ce22559b10a7812c
+tree:   a7a730cbf84eaecf6fe982aba10d12f8a7bf28ba
+```
+
 V2 is accepted and merged. The repository-entry cleanup is complete enough to resume product development; branch-ref/worktree housekeeping tracked by #41 must not widen or block V3.
 
 ## Goal
