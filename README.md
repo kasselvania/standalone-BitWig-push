@@ -21,10 +21,17 @@ Today the system can:
 - compose live raster visuals onto part of Push's 960×160 display;
 - restore the current DrivenByMoss display when a visual source disappears, becomes stale, or fails;
 - receive the newest complete visual frame from a separate local process without blocking the Push display/control path;
-- capture a configured crop of Bitwig's macOS display and show live Sampler pixels on Push;
+- load a small JSON profile and capture a normalized region of the unique Bitwig main window;
+- keep that window-relative source active through ordinary movement, supported resize, loss, and recreation;
 - fail back to the semantic DrivenByMoss display when capture permission, source validity, the helper, or the external frame connection is lost.
 
-The current accepted macOS source is intentionally a **fixed-layout fixture**: the display and crop are configured explicitly. It proves the real pixel path. Active V3 work is replacing that physical-display dependency with a Bitwig-window-relative visual profile.
+The V3 window lens does not identify Sampler automatically. A profile explicitly describes a supported region inside the Bitwig main window. Bitwig may reflow devices and panels inside that region while its window is resized; V3 recomputes the normalized window crop but does not anchor to an internal device object. The accepted V2 physical-display crop remains available as a diagnostic/reference mode.
+
+In window-profile mode, ScreenCaptureKit supplies the complete selected window
+at a bounded resolution. The helper then applies the normalized crop and one
+uniform centered-cover scale locally before publishing the fixed Push region.
+This explicit step is required because ScreenCaptureKit does not apply
+`SCStreamConfiguration.sourceRect` to a single-window capture.
 
 ## How it works
 
@@ -58,6 +65,27 @@ The accepted development fixture uses:
 
 Linux and Steam Deck are planned portability targets. Push 2 has not received the same hardware acceptance testing.
 
+## Run the window-relative lens
+
+Build the packaged helper as described in [Development](docs/DEVELOPMENT.md), then inspect only Bitwig-owned capture candidates:
+
+```bash
+PushwigCaptureHelper \
+  --list-windows \
+  --owner-bundle-id com.bitwig.studio
+```
+
+Run the maintained device-chain profile against an already configured local frame receiver:
+
+```bash
+PushwigCaptureHelper \
+  --profile capture/macos/Profiles/bitwig-device-chain.json \
+  --port 45291 \
+  --token-file /path/to/private-token
+```
+
+The profile contains product geometry and selection only. The token path, capability, socket session, physical desktop position, and current macOS window ID are deliberately runtime state.
+
 ## What Pushwig is not yet
 
 Pushwig is not currently:
@@ -85,9 +113,9 @@ Pushwig keeps detailed hardware/experiment evidence under [`evidence/`](evidence
 
 ## Current development
 
-[V3 — Adaptive Bitwig window-relative visual lens](https://github.com/kasselvania/standalone-BitWig-push/issues/45) is active.
+[V3 — Adaptive Bitwig window-relative visual lens](https://github.com/kasselvania/standalone-BitWig-push/issues/45) is the current milestone.
 
-The goal is to make the working visual lens follow the Bitwig application window instead of a fixed physical display coordinate: load a small visual profile, capture relative to the current Bitwig window, and survive window move, supported resize, and recreation while preserving semantic fallback and normal Push controls/audio.
+It makes the working visual lens follow the Bitwig application window instead of a fixed physical display coordinate: load a small visual profile, capture relative to the uniquely selected Bitwig window, and survive move, supported resize, and recreation while preserving semantic fallback and normal Push controls/audio.
 
 See the [active design](docs/design/window-relative-visual-lens.md) and [roadmap](docs/ROADMAP.md).
 

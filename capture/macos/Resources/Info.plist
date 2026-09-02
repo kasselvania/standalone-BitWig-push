@@ -27,6 +27,6 @@
     <key>NSHighResolutionCapable</key>
     <true/>
     <key>NSScreenCaptureUsageDescription</key>
-    <string>Pushwig captures only an explicitly configured display crop to show a visual lens on Push.</string>
+    <string>Pushwig captures an explicitly profiled Bitwig window region to show a visual lens on Push.</string>
 </dict>
 </plist>

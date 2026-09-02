@@ -84,14 +84,51 @@ On each source acquisition or supported resize:
 ```text
 normalized profile crop
         -> current window/filter content rect
-        -> bounded source rect in the documented ScreenCaptureKit point space
-        -> aspect-preserving mapping
+        -> bounded full-window ScreenCaptureKit pixel buffer
+        -> helper-local normalized pixel crop
+        -> uniform centered-cover mapping
         -> Push destination pixels
 ```
 
 Global desktop x/y must not enter profile identity or crop math.
 
 Moving the same window should therefore require no crop change. Resizing recomputes the source rect from the same normalized profile.
+
+The profile identifies a region of the Bitwig window, not a Bitwig device or panel object. If Bitwig reflows its internal layout during resize, the pictured device can move within the correctly recomputed region. Locating and anchoring to an internal device would require a separate visual-semantic design and is not part of V3.
+
+On the accepted macOS fixture, `SCContentFilter(desktopIndependentWindow:)`
+reports `contentRect` with the current global window origin. [Apple documents
+that `SCStreamConfiguration.sourceRect` is not referenced for single-window
+capture](https://developer.apple.com/documentation/screencapturekit/scstreamconfiguration/sourcerect),
+so assigning the profile crop there cannot establish crop authority. The
+maintained path deliberately leaves that property unset.
+
+The stream instead captures the complete independent window at native backing
+scale when it fits, with hard limits of 2560x1600 and 4,096,000 pixels. The
+integer stream dimensions define the observed point-to-pixel scales. The helper
+applies the profile normalization again against those actual full-window pixel
+bounds and computes a maximal fractional centered-cover rectangle with exactly
+the destination aspect.
+
+This explicit translation is what removes desktop position from capture identity:
+
+```text
+profile crop + current contentRect size and pointPixelScale
+        -> bounded full-window stream dimensions
+        -> profile crop in actual top-left pixel coordinates
+        -> maximal centered-cover source rectangle
+        -> Core Image lower-left crop translation
+        -> edge-clamped uniform Lanczos scale
+        -> fixed destination pixels
+```
+
+Core Image renders directly into the existing reusable destination array and a
+final in-place alpha pass enforces `0xFF`. The ScreenCaptureKit queue still has
+depth 2, the existing serial sample/output queue remains the only
+project-owned frame path, and no full-window payload crosses protocol v1. The
+helper logs the point geometry, full-window pixel dimensions, point-to-pixel
+scales, and final pixel crop so this contract can be read back on another
+fixture.
 
 ## Lifecycle
 
@@ -109,6 +146,8 @@ If the same window instance moves without changing its captured content dimensio
 
 When the same window's usable dimensions change, recompute the profile crop and aspect mapping against the new content size. Update or recreate the ScreenCaptureKit stream using the simplest public API path that remains bounded and race-safe.
 
+The V3 implementation uses bounded stream recreation. One main-actor discovery loop polls at 500 ms; the existing single serial sample/output queue remains the only project-owned frame path. A resize revokes the old generation before stopping its stream, sends at most one `CLEAR`, and activates a newly configured generation. Global-origin-only changes do not recreate the stream.
+
 ### Close / missing / ambiguity
 
 Revoke visual authority, send one CLEAR when a live protocol session exists, stop publishing FRAME messages, and leave the current semantic DrivenByMoss display visible.
@@ -116,6 +155,8 @@ Revoke visual authority, send one CLEAR when a live protocol session exists, sto
 ### Reopen / recreation
 
 When the profile selector again resolves to exactly one eligible window, acquire the new window instance, increment the helper-local generation, recompute geometry, and resume current capture. Old-generation callbacks must not publish after authority moves to the new window.
+
+Generation acceptance is enforced on the serial output queue before pixel access and checked again before publication accounting. Discovery, selection, and stream replacement remain on the main actor; they add no frame FIFO, worker pool, or second output queue.
 
 ## Runtime interface
 
@@ -129,6 +170,14 @@ PushwigCaptureHelper \
 ```
 
 A bounded `--list-windows` or equivalent discovery mode should help a user construct the selector without dumping unrelated personal window titles by default.
+
+The maintained form requires an owner filter:
+
+```text
+PushwigCaptureHelper --list-windows --owner-bundle-id com.bitwig.studio
+```
+
+The example profile is [`../../capture/macos/Profiles/bitwig-device-chain.json`](../../capture/macos/Profiles/bitwig-device-chain.json).
 
 The existing V2 explicit-display mode remains a supported diagnostic/reference path during V3 unless a concrete conflict requires its removal.
 
@@ -150,6 +199,8 @@ Stable deterministic behavior belongs in committed Swift tests:
 - profile decoding and validation;
 - unique/missing/ambiguous selector results;
 - normalized window-relative crop math;
+- generated-pixel proof for two non-overlapping normalized crops;
+- nonzero source stride, crop bounds, opaque alpha, and stable destination storage;
 - resize recomputation;
 - centered-cover aspect behavior;
 - generation/recreation authority transitions;

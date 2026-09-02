@@ -39,6 +39,30 @@ struct VisualAuthorityState: Equatable {
   }
 }
 
+struct CaptureGenerationAuthority: Equatable {
+  private(set) var activeGeneration: UInt64?
+
+  mutating func activate(_ generation: UInt64) {
+    precondition(generation > 0)
+    precondition(activeGeneration == nil)
+    activeGeneration = generation
+  }
+
+  mutating func deactivate(_ generation: UInt64) -> Bool {
+    guard activeGeneration == generation else { return false }
+    activeGeneration = nil
+    return true
+  }
+
+  mutating func deactivateAll() {
+    activeGeneration = nil
+  }
+
+  func permits(_ generation: UInt64) -> Bool {
+    activeGeneration == generation
+  }
+}
+
 enum BGRANormalizerError: LocalizedError, Equatable {
   case invalidGeometry
   case insufficientSource
@@ -142,10 +166,13 @@ private struct FixedNanosecondSeries {
 
 private final class CaptureMetrics {
   var callbackInterval = FixedNanosecondSeries()
-  var cropScaleDelivery = FixedNanosecondSeries()
+  var screenCaptureDelivery = FixedNanosecondSeries()
   var statusValidation = FixedNanosecondSeries()
   var pixelBufferAccess = FixedNanosecondSeries()
   var copyAndNormalize = FixedNanosecondSeries()
+  var helperLocalCrop = FixedNanosecondSeries()
+  var helperLocalScale = FixedNanosecondSeries()
+  var alphaNormalization = FixedNanosecondSeries()
   var protocolHeader = FixedNanosecondSeries()
   var socketSend = FixedNanosecondSeries()
   var copyMapNormalizeSend = FixedNanosecondSeries()
@@ -153,6 +180,8 @@ private final class CaptureMetrics {
   var cropCalculation = FixedNanosecondSeries()
   var aspectCalculation = FixedNanosecondSeries()
   var streamConfiguration = FixedNanosecondSeries()
+  var resizeReconfiguration = FixedNanosecondSeries()
+  var reacquisition = FixedNanosecondSeries()
 
   var callbacks: UInt64 = 0
   var completeSamples: UInt64 = 0
@@ -176,10 +205,15 @@ private final class CaptureMetrics {
   var streamFailures: UInt64 = 0
   var fullDisplayPayloads: UInt64 = 0
   var wrongDestinationPublications: UInt64 = 0
+  var captureGenerations: UInt64 = 0
+  var staleGenerationCallbacks: UInt64 = 0
+  var framesAfterAuthorityLoss: UInt64 = 0
   var firstCallback: UInt64?
   var lastCallback: UInt64?
   var lastPixelFormat: OSType = 0
   var lastSourceBytesPerRow = 0
+  var lastSourceWidth = 0
+  var lastSourceHeight = 0
   var firstSourceSHA256: String?
   var firstOutputSHA256: String?
   var finalOutputSHA256: String?
@@ -210,13 +244,18 @@ private final class CaptureMetrics {
 
     return [
       callbackInterval.summary(name: "callback_interval"),
-      cropScaleDelivery.summary(name: "sck_crop_scale_delivery_to_callback"),
+      screenCaptureDelivery.summary(name: "sck_frame_delivery_to_callback"),
       statusValidation.summary(name: "frame_status_validation"),
       pixelBufferAccess.summary(name: "pixel_buffer_lock_access"),
       cropCalculation.summary(name: "normalized_crop_calculation"),
       aspectCalculation.summary(name: "centered_cover_aspect_calculation"),
       streamConfiguration.summary(name: "sck_stream_configuration"),
+      resizeReconfiguration.summary(name: "window_resize_reconfiguration"),
+      reacquisition.summary(name: "window_reacquisition"),
       copyAndNormalize.summary(name: "bgra_copy_alpha_normalize"),
+      helperLocalCrop.summary(name: "helper_local_crop_setup"),
+      helperLocalScale.summary(name: "helper_local_crop_scale_render"),
+      alphaNormalization.summary(name: "bgra_alpha_normalize"),
       protocolHeader.summary(name: "protocol_header_prepare"),
       socketSend.summary(name: "loopback_socket_send"),
       copyMapNormalizeSend.summary(name: "copy_map_normalize_send"),
@@ -233,11 +272,16 @@ private final class CaptureMetrics {
         + "authority_revocations=\(authorityRevocations) guard_valid_transitions=\(guardValidTransitions) "
         + "guard_invalid_transitions=\(guardInvalidTransitions) protocol_failures=\(protocolFailures) "
         + "stream_failures=\(streamFailures) full_display_payloads=\(fullDisplayPayloads) "
-        + "wrong_destination_publications=\(wrongDestinationPublications)",
+        + "wrong_destination_publications=\(wrongDestinationPublications) "
+        + "capture_generations=\(captureGenerations) "
+        + "stale_generation_callbacks=\(staleGenerationCallbacks) "
+        + "frames_after_authority_loss=\(framesAfterAuthorityLoss)",
       "PROTOCOL first_sequence=\(protocolSnapshot.firstFrameSequence.map(String.init) ?? "none") "
         + "last_sequence=\(protocolSnapshot.lastSequence) frames_sent=\(protocolSnapshot.framesSent) "
         + "clears_sent=\(protocolSnapshot.clearsSent)",
-      "PIXELS pixel_format=\(Self.fourCC(lastPixelFormat)) source_bytes_per_row=\(lastSourceBytesPerRow) "
+      "PIXELS pixel_format=\(Self.fourCC(lastPixelFormat)) "
+        + "source_dimensions=\(lastSourceWidth)x\(lastSourceHeight) "
+        + "source_bytes_per_row=\(lastSourceBytesPerRow) "
         + "output_stride=\(destination.stride) output_bytes=\(destination.payloadBytes) "
         + "buffer_count=1 buffer_capacity=\(outputBuffer.count) "
         + "first_source_sha256=\(firstSourceSHA256 ?? "none") "
@@ -283,11 +327,13 @@ final class CaptureOutputCoordinator {
   private let destination: PushDestination
   private var outputBuffer: [UInt8]
   private var authority = VisualAuthorityState()
-  private var activeGeneration: UInt64?
+  private var generationAuthority = CaptureGenerationAuthority()
   private var currentGuardValid = false
   private var lastCallbackNanoseconds: UInt64?
   private var fatalErrorDescription: String?
   private var metrics = CaptureMetrics()
+  private var activeWindowFramePlan: WindowFramePlan?
+  private var windowFrameProcessor: WindowFrameProcessor?
 
   init(client: ExternalRasterProtocolClient, destination: PushDestination) {
     self.client = client
@@ -300,10 +346,12 @@ final class CaptureOutputCoordinator {
     guardValid: Bool,
     cropCalculationNanoseconds: UInt64,
     aspectCalculationNanoseconds: UInt64,
-    streamConfigurationNanoseconds: UInt64
+    streamConfigurationNanoseconds: UInt64,
+    windowFramePlan: WindowFramePlan? = nil
   ) {
     queue.sync {
-      activeGeneration = generation
+      generationAuthority.activate(generation)
+      metrics.captureGenerations += 1
       currentGuardValid = guardValid
       _ = authority.setCaptureActive(true)
       _ = authority.setGuardValid(guardValid)
@@ -311,6 +359,10 @@ final class CaptureOutputCoordinator {
       metrics.cropCalculation.record(cropCalculationNanoseconds)
       metrics.aspectCalculation.record(aspectCalculationNanoseconds)
       metrics.streamConfiguration.record(streamConfigurationNanoseconds)
+      activeWindowFramePlan = windowFramePlan
+      if windowFramePlan != nil, windowFrameProcessor == nil {
+        windowFrameProcessor = WindowFrameProcessor(destination: destination)
+      }
       if guardValid {
         metrics.guardValidTransitions += 1
       } else {
@@ -335,8 +387,8 @@ final class CaptureOutputCoordinator {
 
   func deactivateAndClear(generation: UInt64) {
     queue.sync {
-      guard activeGeneration == generation else { return }
-      activeGeneration = nil
+      guard generationAuthority.deactivate(generation) else { return }
+      activeWindowFramePlan = nil
       let shouldClear = authority.setCaptureActive(false)
       if shouldClear { clearCurrentAuthority() }
     }
@@ -344,6 +396,14 @@ final class CaptureOutputCoordinator {
 
   func recordStreamFailure() {
     queue.async { self.metrics.streamFailures += 1 }
+  }
+
+  func recordResizeReconfiguration(nanoseconds: UInt64) {
+    queue.sync { metrics.resizeReconfiguration.record(nanoseconds) }
+  }
+
+  func recordReacquisition(nanoseconds: UInt64) {
+    queue.sync { metrics.reacquisition.record(nanoseconds) }
   }
 
   func failureDescription() -> String? {
@@ -362,7 +422,10 @@ final class CaptureOutputCoordinator {
     }
     lastCallbackNanoseconds = callbackStart
 
-    guard activeGeneration == generation else { return }
+    guard generationAuthority.permits(generation) else {
+      metrics.staleGenerationCallbacks += 1
+      return
+    }
     guard authority.mayPublish else {
       metrics.guardSuppressedSamples += 1
       return
@@ -401,16 +464,31 @@ final class CaptureOutputCoordinator {
     let bytesPerRow = CVPixelBufferGetBytesPerRow(pixelBuffer)
     metrics.lastPixelFormat = pixelFormat
     metrics.lastSourceBytesPerRow = bytesPerRow
+    metrics.lastSourceWidth = width
+    metrics.lastSourceHeight = height
     guard pixelFormat == kCVPixelFormatType_32BGRA else {
       metrics.pixelFormatMismatches += 1
       return
     }
-    guard width == destination.width, height == destination.height else {
+    let expectedWidth = activeWindowFramePlan?.sourceWidth ?? destination.width
+    let expectedHeight = activeWindowFramePlan?.sourceHeight ?? destination.height
+    guard width == expectedWidth, height == expectedHeight else {
       metrics.dimensionMismatches += 1
       return
     }
-    guard bytesPerRow >= destination.stride else {
+    guard bytesPerRow >= width * 4 else {
       metrics.rowStrideMismatches += 1
+      return
+    }
+
+    if let plan = activeWindowFramePlan {
+      handleWindowFrame(
+        pixelBuffer: pixelBuffer,
+        plan: plan,
+        generation: generation,
+        callbackStart: callbackStart,
+        isPostWarmup: isPostWarmup
+      )
       return
     }
 
@@ -467,6 +545,10 @@ final class CaptureOutputCoordinator {
     do {
       let timing = try client.sendFrame(destination: destination, pixels: outputBuffer)
       let sendEnd = DispatchTime.now().uptimeNanoseconds
+      guard generationAuthority.permits(generation) else {
+        metrics.framesAfterAuthorityLoss += 1
+        return
+      }
       authority.markFramePublished()
       metrics.completeSamples += 1
       if isPostWarmup {
@@ -488,9 +570,91 @@ final class CaptureOutputCoordinator {
     }
   }
 
+  private func handleWindowFrame(
+    pixelBuffer: CVPixelBuffer,
+    plan: WindowFramePlan,
+    generation: UInt64,
+    callbackStart: UInt64,
+    isPostWarmup: Bool
+  ) {
+    guard let windowFrameProcessor else {
+      metrics.invalidPixelBuffers += 1
+      markFatal(WindowFrameProcessorError.invalidSourceGeometry)
+      return
+    }
+
+    let shouldHashFirst = metrics.firstSourceSHA256 == nil
+    if shouldHashFirst {
+      metrics.firstSourceSHA256 = hashPixelBuffer(pixelBuffer)
+    }
+
+    let processStart = DispatchTime.now().uptimeNanoseconds
+    let processing: WindowFrameProcessingTiming
+    do {
+      processing = try windowFrameProcessor.render(
+        pixelBuffer: pixelBuffer,
+        plan: plan,
+        destinationBytes: &outputBuffer
+      )
+    } catch {
+      metrics.invalidPixelBuffers += 1
+      markFatal(error)
+      return
+    }
+    metrics.lastSourceBytesPerRow = processing.sourceBytesPerRow
+
+    do {
+      let timing = try client.sendFrame(destination: destination, pixels: outputBuffer)
+      let sendEnd = DispatchTime.now().uptimeNanoseconds
+      guard generationAuthority.permits(generation) else {
+        metrics.framesAfterAuthorityLoss += 1
+        return
+      }
+      authority.markFramePublished()
+      metrics.completeSamples += 1
+      if isPostWarmup {
+        metrics.pixelBufferAccess.record(processing.pixelBufferAccessNanoseconds)
+        metrics.helperLocalCrop.record(processing.cropSetupNanoseconds)
+        metrics.helperLocalScale.record(processing.scaleRenderNanoseconds)
+        metrics.alphaNormalization.record(processing.alphaNormalizationNanoseconds)
+        metrics.protocolHeader.record(timing.headerPreparationNanoseconds)
+        metrics.socketSend.record(timing.socketSendNanoseconds)
+        metrics.copyMapNormalizeSend.record(sendEnd - processStart)
+        metrics.acceptedSampleToSend.record(sendEnd - callbackStart)
+      }
+      if shouldHashFirst {
+        metrics.firstOutputSHA256 = CaptureMetrics.sha256(outputBuffer)
+      }
+    } catch {
+      metrics.protocolFailures += 1
+      markFatal(error)
+    }
+  }
+
+  private func hashPixelBuffer(_ pixelBuffer: CVPixelBuffer) -> String? {
+    guard CVPixelBufferLockBaseAddress(pixelBuffer, .readOnly) == kCVReturnSuccess else {
+      return nil
+    }
+    defer { CVPixelBufferUnlockBaseAddress(pixelBuffer, .readOnly) }
+    guard let baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer) else { return nil }
+    let width = CVPixelBufferGetWidth(pixelBuffer)
+    let height = CVPixelBufferGetHeight(pixelBuffer)
+    let bytesPerRow = CVPixelBufferGetBytesPerRow(pixelBuffer)
+    var hasher = SHA256()
+    for row in 0..<height {
+      hasher.update(
+        bufferPointer: UnsafeRawBufferPointer(
+          start: baseAddress.advanced(by: row * bytesPerRow),
+          count: width * 4
+        )
+      )
+    }
+    return hasher.finalize().map { String(format: "%02x", $0) }.joined()
+  }
+
   func shutdown() -> String {
     queue.sync {
-      activeGeneration = nil
+      generationAuthority.deactivateAll()
       if authority.setCaptureActive(false) { clearCurrentAuthority() }
       let snapshot = client.snapshot()
       let report = metrics.report(
@@ -551,11 +715,11 @@ final class CaptureOutputCoordinator {
     guard seconds.isFinite, seconds >= 0,
       seconds <= Double(UInt64.max) / 1_000_000_000
     else { return }
-    metrics.cropScaleDelivery.record(UInt64(seconds * 1_000_000_000))
+    metrics.screenCaptureDelivery.record(UInt64(seconds * 1_000_000_000))
   }
 }
 
-final class DisplayCropSampleOutput: NSObject, SCStreamOutput {
+final class CaptureSampleOutput: NSObject, SCStreamOutput {
   private let coordinator: CaptureOutputCoordinator
   private let generation: UInt64
 
@@ -578,7 +742,7 @@ final class DisplayCropCapture: NSObject, SCStreamDelegate {
   let metadata: DisplayCropMetadata
 
   private var stream: SCStream!
-  private var sampleOutput: DisplayCropSampleOutput!
+  private var sampleOutput: CaptureSampleOutput!
   private let outputCoordinator: CaptureOutputCoordinator
   private let failureLock = NSLock()
   private var failureMessage: String?
@@ -586,7 +750,7 @@ final class DisplayCropCapture: NSObject, SCStreamDelegate {
 
   init(
     candidate: DisplayCandidate,
-    configuration: CaptureConfiguration,
+    configuration: DisplayModeConfiguration,
     mapping: AspectMapping,
     generation: UInt64,
     initialGuardValid: Bool,
@@ -594,12 +758,11 @@ final class DisplayCropCapture: NSObject, SCStreamDelegate {
     aspectCalculationNanoseconds: UInt64,
     outputCoordinator: CaptureOutputCoordinator
   ) throws {
-    guard let display = candidate.display,
-      let fps = configuration.fps,
-      let destination = configuration.destination
-    else {
+    guard let display = candidate.display else {
       throw CaptureConfigurationError.invalid("display capture configuration is incomplete")
     }
+    let fps = configuration.fps
+    let destination = configuration.destination
 
     let configurationStart = DispatchTime.now().uptimeNanoseconds
     let filter = SCContentFilter(display: display, excludingWindows: [])
@@ -621,7 +784,7 @@ final class DisplayCropCapture: NSObject, SCStreamDelegate {
       width: candidate.fact.width,
       height: candidate.fact.height
     )
-    guard displayPointBounds.contains(sourceRect),
+    guard AspectMapping.contains(sourceRect, within: displayPointBounds),
       sourceRect.width < displayPointBounds.width
         || sourceRect.height < displayPointBounds.height
     else {
@@ -665,7 +828,7 @@ final class DisplayCropCapture: NSObject, SCStreamDelegate {
     )
     self.outputCoordinator = outputCoordinator
     super.init()
-    sampleOutput = DisplayCropSampleOutput(
+    sampleOutput = CaptureSampleOutput(
       coordinator: outputCoordinator,
       generation: generation
     )

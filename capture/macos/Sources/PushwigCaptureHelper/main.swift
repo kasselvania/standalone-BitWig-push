@@ -6,10 +6,12 @@ import CoreGraphics
 import Darwin
 import Foundation
 
-private enum SourceState: String {
+enum SourceState: String {
   case permissionUnavailable = "PERMISSION_UNAVAILABLE"
   case invalidConfiguration = "INVALID_CONFIGURATION"
   case displayUnavailable = "DISPLAY_UNAVAILABLE"
+  case windowUnavailable = "WINDOW_UNAVAILABLE"
+  case windowAmbiguous = "WINDOW_AMBIGUOUS"
   case guardInvalid = "GUARD_INVALID"
   case capturing = "CAPTURING"
   case captureFailed = "CAPTURE_FAILED"
@@ -17,7 +19,7 @@ private enum SourceState: String {
   case stopping = "STOPPING"
 }
 
-private enum CaptureApplicationError: LocalizedError {
+enum CaptureApplicationError: LocalizedError {
   case wrongBundleIdentity(String?)
   case permissionDenied
   case permissionChangedRelaunchRequired
@@ -38,7 +40,7 @@ private enum CaptureApplicationError: LocalizedError {
     case .outputFailed(let message):
       return "external raster output failed: \(message)"
     case .captureFailed(let message):
-      return "display crop capture failed: \(message)"
+      return "capture failed: \(message)"
     case .displayInvalid(let message):
       return "selected display is no longer valid: \(message)"
     }
@@ -46,8 +48,8 @@ private enum CaptureApplicationError: LocalizedError {
 }
 
 @MainActor
-private final class CaptureApplication {
-  private let configuration: CaptureConfiguration
+private final class DisplayCaptureApplication {
+  private let configuration: DisplayModeConfiguration
   private let capture: DisplayCropCapture
   private let outputCoordinator: CaptureOutputCoordinator
   private var currentState: SourceState?
@@ -59,7 +61,7 @@ private final class CaptureApplication {
   private var permissionRevalidationCount: UInt64 = 0
 
   init(
-    configuration: CaptureConfiguration,
+    configuration: DisplayModeConfiguration,
     capture: DisplayCropCapture,
     outputCoordinator: CaptureOutputCoordinator,
     initialGuardDecision: SourceValidityDecision
@@ -93,7 +95,7 @@ private final class CaptureApplication {
         }
 
         let guardDecision = SourceValidityGate.evaluate(
-          requiredBundleIdentifier: configuration.requiredFrontmostBundleIdentifier!,
+          requiredBundleIdentifier: configuration.requiredFrontmostBundleIdentifier,
           snapshot: SourceValidityGate.observe()
         )
         if guardDecision != currentGuardDecision {
@@ -196,12 +198,20 @@ private func runMain() async -> Int32 {
     print(CaptureConfiguration.usage)
     return 0
   } catch {
-    fputs(
-      "STATE value=\(SourceState.invalidConfiguration.rawValue)\n"
-        + "error: \(error.localizedDescription)\n\(CaptureConfiguration.usage)\n",
-      stderr
-    )
+    reportInvalidConfiguration(error)
     return 64
+  }
+
+  let profile: VisualProfile?
+  if case .profile(let profileConfiguration) = configuration.mode {
+    do {
+      profile = try VisualProfile.load(from: profileConfiguration.profileFile)
+    } catch {
+      reportInvalidConfiguration(error)
+      return 64
+    }
+  } else {
+    profile = nil
   }
 
   let actualBundleIdentifier = Bundle.main.bundleIdentifier
@@ -233,6 +243,44 @@ private func runMain() async -> Int32 {
     return 77
   }
 
+  switch configuration.mode {
+  case .listDisplays:
+    do {
+      DisplayDiscovery.printInventory(candidates: try await DisplayDiscovery.currentCandidates())
+      return 0
+    } catch {
+      fputs("error: display inventory failed: \(error.localizedDescription)\n", stderr)
+      return 69
+    }
+  case .listWindows(let ownerBundleIdentifier):
+    do {
+      let candidates = try await WindowDiscovery.currentCandidates(
+        ownerBundleIdentifier: ownerBundleIdentifier
+      )
+      WindowDiscovery.printInventory(
+        candidates: candidates,
+        ownerBundleIdentifier: ownerBundleIdentifier
+      )
+      return 0
+    } catch {
+      fputs("error: window inventory failed: \(error.localizedDescription)\n", stderr)
+      return 69
+    }
+  case .display(let displayConfiguration):
+    return await runDisplayMode(displayConfiguration)
+  case .profile(let profileConfiguration):
+    guard let profile else {
+      reportInvalidConfiguration(
+        CaptureConfigurationError.invalid("internal missing visual profile")
+      )
+      return 64
+    }
+    return await runProfileMode(profileConfiguration, profile: profile)
+  }
+}
+
+@MainActor
+private func runDisplayMode(_ configuration: DisplayModeConfiguration) async -> Int32 {
   let candidates: [DisplayCandidate]
   do {
     candidates = try await DisplayDiscovery.currentCandidates()
@@ -241,31 +289,13 @@ private func runMain() async -> Int32 {
     return 69
   }
 
-  if configuration.listDisplays {
-    DisplayDiscovery.printInventory(candidates: candidates)
-    return 0
-  }
-
-  guard let displayID = configuration.displayID,
-    let expectedWidth = configuration.expectedDisplayWidth,
-    let expectedHeight = configuration.expectedDisplayHeight,
-    let crop = configuration.normalizedCrop,
-    let destination = configuration.destination,
-    let port = configuration.port,
-    let tokenFile = configuration.tokenFile,
-    let requiredBundleID = configuration.requiredFrontmostBundleIdentifier
-  else {
-    fputs("error: internal incomplete capture configuration\n", stderr)
-    return 64
-  }
-
   let selected: DisplayCandidate
   do {
     selected = try DisplayDiscovery.select(
       candidates: candidates,
-      displayID: displayID,
-      expectedWidth: expectedWidth,
-      expectedHeight: expectedHeight
+      displayID: configuration.displayID,
+      expectedWidth: configuration.expectedDisplayWidth,
+      expectedHeight: configuration.expectedDisplayHeight
     )
   } catch {
     fputs(
@@ -282,7 +312,7 @@ private func runMain() async -> Int32 {
     requestedSourceRect = try AspectMapping.requestedSourceRect(
       displayWidth: selected.fact.width,
       displayHeight: selected.fact.height,
-      crop: crop
+      crop: configuration.normalizedCrop
     )
   } catch {
     fputs("error: \(error.localizedDescription)\n", stderr)
@@ -290,14 +320,13 @@ private func runMain() async -> Int32 {
   }
   let cropEnd = DispatchTime.now().uptimeNanoseconds
 
-  let aspectStart = cropEnd
   let mapping: AspectMapping
   do {
     mapping = try AspectMapping.centeredCover(
       requestedSourceRect: requestedSourceRect,
       displayWidth: selected.fact.width,
       displayHeight: selected.fact.height,
-      destination: destination
+      destination: configuration.destination
     )
   } catch {
     fputs("error: \(error.localizedDescription)\n", stderr)
@@ -306,43 +335,36 @@ private func runMain() async -> Int32 {
   let aspectEnd = DispatchTime.now().uptimeNanoseconds
 
   print(
-    "SELECTION display_id=\(selected.fact.displayID) width=\(selected.fact.width) "
-      + "height=\(selected.fact.height) unit=screen-points main=\(selected.fact.isMain)"
+    "MODE value=explicit-display SELECTION display_id=\(selected.fact.displayID) "
+      + "width=\(selected.fact.width) height=\(selected.fact.height) "
+      + "unit=screen-points main=\(selected.fact.isMain)"
   )
   print(
-    "CROP normalized=\(format(crop)) "
+    "CROP normalized=\(format(configuration.normalizedCrop)) "
       + "requested_points=\(DisplayDiscovery.format(requestedSourceRect)) "
       + "effective_points=\(mapping.effectiveSourceRect) policy=\(mapping.policy.rawValue)"
   )
+  printAspect(mapping)
+  printOutput(configuration.destination)
   print(
-    String(
-      format: "ASPECT requested=%.9f effective=%.9f destination=%.9f scale=%.9f "
-        + "crop_left=%.3f crop_top=%.3f crop_right=%.3f crop_bottom=%.3f",
-      mapping.requestedSourceAspect,
-      mapping.effectiveSourceAspect,
-      mapping.destinationAspect,
-      mapping.uniformScale,
-      mapping.croppedLeft,
-      mapping.croppedTop,
-      mapping.croppedRight,
-      mapping.croppedBottom
-    )
+    "GUARD required_running_and_frontmost_bundle_id="
+      + configuration.requiredFrontmostBundleIdentifier
   )
-  print(
-    "OUTPUT destination=\(destination.x),\(destination.y),\(destination.width),\(destination.height) "
-      + "stride=\(destination.stride) payload_bytes=\(destination.payloadBytes) "
-      + "pixel_format=OPAQUE_BGRA8888 row_order=top-to-bottom"
-  )
-  print("GUARD required_running_and_frontmost_bundle_id=\(requiredBundleID)")
 
   let initialGuard = SourceValidityGate.evaluate(
-    requiredBundleIdentifier: requiredBundleID,
+    requiredBundleIdentifier: configuration.requiredFrontmostBundleIdentifier,
     snapshot: SourceValidityGate.observe()
   )
 
   do {
-    let client = try ExternalRasterProtocolClient(port: port, tokenFile: tokenFile)
-    let coordinator = CaptureOutputCoordinator(client: client, destination: destination)
+    let client = try ExternalRasterProtocolClient(
+      port: configuration.port,
+      tokenFile: configuration.tokenFile
+    )
+    let coordinator = CaptureOutputCoordinator(
+      client: client,
+      destination: configuration.destination
+    )
     let capture = try DisplayCropCapture(
       candidate: selected,
       configuration: configuration,
@@ -350,7 +372,7 @@ private func runMain() async -> Int32 {
       generation: 1,
       initialGuardValid: initialGuard.isValid,
       cropCalculationNanoseconds: cropEnd - cropStart,
-      aspectCalculationNanoseconds: aspectEnd - aspectStart,
+      aspectCalculationNanoseconds: aspectEnd - cropEnd,
       outputCoordinator: coordinator
     )
     let metadata = capture.metadata
@@ -358,15 +380,60 @@ private func runMain() async -> Int32 {
       "SCK content_rect_points=\(DisplayDiscovery.format(metadata.filterContentRect)) "
         + String(format: "point_pixel_scale=%.6f ", metadata.pointPixelScale)
         + "source_rect_points=\(metadata.mapping.effectiveSourceRect) "
-        + "output_pixels=\(destination.width)x\(destination.height) "
-        + "preserves_aspect=true scales_to_fit=true cursor=false queue_depth=2 fps=\(metadata.fps)"
+        + "output_pixels=\(configuration.destination.width)x\(configuration.destination.height) "
+        + "preserves_aspect=true scales_to_fit=true cursor=false queue_depth=2 fps="
+        + String(metadata.fps)
     )
 
-    let application = CaptureApplication(
+    let application = DisplayCaptureApplication(
       configuration: configuration,
       capture: capture,
       outputCoordinator: coordinator,
       initialGuardDecision: initialGuard
+    )
+    let signals = SignalController {
+      Task { @MainActor in application.requestStop() }
+    }
+    _ = signals
+    try await application.run()
+    return 0
+  } catch {
+    fputs("error: \(error.localizedDescription)\n", stderr)
+    return 70
+  }
+}
+
+@MainActor
+private func runProfileMode(
+  _ configuration: ProfileModeConfiguration,
+  profile: VisualProfile
+) async -> Int32 {
+  print(
+    "MODE value=window-profile profile_id=\(profile.id) "
+      + "owner_bundle_id=\(profile.window.ownerBundleIdentifier) "
+      + "title_contains=\(profile.window.titleContains.map(quoted) ?? "none") "
+      + String(
+        format: "minimum_points=%.3fx%.3f ",
+        profile.window.minimumWidthPoints,
+        profile.window.minimumHeightPoints
+      )
+      + "crop_normalized=\(format(profile.crop)) policy=\(profile.aspectPolicy.rawValue)"
+  )
+  printOutput(profile.destination)
+  print("GUARD unique_window=true frontmost_required=false physical_origin_identity=false")
+
+  do {
+    let client = try ExternalRasterProtocolClient(
+      port: configuration.port,
+      tokenFile: configuration.tokenFile
+    )
+    let coordinator = CaptureOutputCoordinator(
+      client: client,
+      destination: profile.destination
+    )
+    let application = WindowCaptureApplication(
+      profile: profile,
+      outputCoordinator: coordinator
     )
     let signals = SignalController {
       Task { @MainActor in application.requestStop() }
@@ -393,8 +460,17 @@ private func ensureScreenRecordingPermission() -> PermissionResult {
   }
   let granted = CGRequestScreenCaptureAccess()
   print(
-    "PERMISSION preflight=denied request=\(granted ? "granted" : "denied") attribution=helper-app")
+    "PERMISSION preflight=denied request=\(granted ? "granted" : "denied") attribution=helper-app"
+  )
   return granted ? .grantedNeedsRelaunch : .denied
+}
+
+private func reportInvalidConfiguration(_ error: Error) {
+  fputs(
+    "STATE value=\(SourceState.invalidConfiguration.rawValue)\n"
+      + "error: \(error.localizedDescription)\n\(CaptureConfiguration.usage)\n",
+    stderr
+  )
 }
 
 private func format(_ crop: NormalizedCrop) -> String {
@@ -405,6 +481,36 @@ private func format(_ crop: NormalizedCrop) -> String {
     crop.width,
     crop.height
   )
+}
+
+private func printAspect(_ mapping: AspectMapping) {
+  print(
+    String(
+      format: "ASPECT requested=%.9f effective=%.9f destination=%.9f scale=%.9f "
+        + "crop_left=%.3f crop_top=%.3f crop_right=%.3f crop_bottom=%.3f",
+      mapping.requestedSourceAspect,
+      mapping.effectiveSourceAspect,
+      mapping.destinationAspect,
+      mapping.uniformScale,
+      mapping.croppedLeft,
+      mapping.croppedTop,
+      mapping.croppedRight,
+      mapping.croppedBottom
+    )
+  )
+}
+
+private func printOutput(_ destination: PushDestination) {
+  print(
+    "OUTPUT destination=\(destination.x),\(destination.y),\(destination.width),"
+      + "\(destination.height) stride=\(destination.stride) "
+      + "payload_bytes=\(destination.payloadBytes) "
+      + "pixel_format=OPAQUE_BGRA8888 row_order=top-to-bottom"
+  )
+}
+
+private func quoted(_ value: String) -> String {
+  "\"\(value.replacingOccurrences(of: "\"", with: "\\\""))\""
 }
 
 _ = NSApplication.shared.setActivationPolicy(.accessory)

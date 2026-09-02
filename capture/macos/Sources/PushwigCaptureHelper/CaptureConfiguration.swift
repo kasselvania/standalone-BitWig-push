@@ -71,23 +71,41 @@ struct PushDestination: Equatable {
   var payloadBytes: Int { stride * height }
 }
 
+struct DisplayModeConfiguration: Equatable {
+  let displayID: UInt32
+  let expectedDisplayWidth: Int
+  let expectedDisplayHeight: Int
+  let normalizedCrop: NormalizedCrop
+  let destination: PushDestination
+  let fps: Int
+  let port: Int
+  let tokenFile: URL
+  let requiredFrontmostBundleIdentifier: String
+}
+
+struct ProfileModeConfiguration: Equatable {
+  let profileFile: URL
+  let port: Int
+  let tokenFile: URL
+}
+
+enum CaptureMode: Equatable {
+  case listDisplays
+  case listWindows(ownerBundleIdentifier: String)
+  case display(DisplayModeConfiguration)
+  case profile(ProfileModeConfiguration)
+}
+
 struct CaptureConfiguration: Equatable {
   static let expectedBundleIdentifier = "com.kasselvania.pushwig.capture-helper"
   static let streamQueueDepth = 2
   static let guardPollNanoseconds: UInt64 = 100_000_000
   static let displayRevalidationPollInterval: UInt64 = 5
   static let permissionRevalidationPollInterval: UInt64 = 50
+  static let windowDiscoveryPollNanoseconds: UInt64 = 500_000_000
+  static let windowPermissionRevalidationPollInterval: UInt64 = 10
 
-  let listDisplays: Bool
-  let displayID: UInt32?
-  let expectedDisplayWidth: Int?
-  let expectedDisplayHeight: Int?
-  let normalizedCrop: NormalizedCrop?
-  let destination: PushDestination?
-  let fps: Int?
-  let port: Int?
-  let tokenFile: URL?
-  let requiredFrontmostBundleIdentifier: String?
+  let mode: CaptureMode
 
   static func parse(arguments: [String]) throws -> CaptureConfiguration {
     var values: [String: String] = [:]
@@ -97,14 +115,14 @@ struct CaptureConfiguration: Equatable {
     while index < arguments.count {
       let argument = arguments[index]
       switch argument {
-      case "--help", "-h", "--list-displays":
+      case "--help", "-h", "--list-displays", "--list-windows":
         guard flags.insert(argument).inserted else {
           throw CaptureConfigurationError.invalid("duplicate option: \(argument)")
         }
         index += 1
-      case "--display-id", "--expected-display-width", "--expected-display-height",
-        "--crop-normalized", "--destination", "--fps", "--port", "--token-file",
-        "--required-frontmost-bundle-id":
+      case "--profile", "--owner-bundle-id", "--display-id", "--expected-display-width",
+        "--expected-display-height", "--crop-normalized", "--destination", "--fps", "--port",
+        "--token-file", "--required-frontmost-bundle-id":
         guard values[argument] == nil else {
           throw CaptureConfigurationError.invalid("duplicate option: \(argument)")
         }
@@ -125,27 +143,60 @@ struct CaptureConfiguration: Equatable {
     if flags.contains("--list-displays") {
       guard values.isEmpty, flags.count == 1 else {
         throw CaptureConfigurationError.invalid(
-          "--list-displays cannot be combined with capture options"
+          "--list-displays cannot be combined with other options"
         )
       }
-      return CaptureConfiguration(
-        listDisplays: true,
-        displayID: nil,
-        expectedDisplayWidth: nil,
-        expectedDisplayHeight: nil,
-        normalizedCrop: nil,
-        destination: nil,
-        fps: nil,
-        port: nil,
-        tokenFile: nil,
-        requiredFrontmostBundleIdentifier: nil
-      )
+      return CaptureConfiguration(mode: .listDisplays)
+    }
+
+    if flags.contains("--list-windows") {
+      guard flags.count == 1, values.keys.allSatisfy({ $0 == "--owner-bundle-id" }) else {
+        throw CaptureConfigurationError.invalid(
+          "--list-windows requires only --owner-bundle-id"
+        )
+      }
+      guard let owner = nonblank(values["--owner-bundle-id"]), isBundleIdentifier(owner) else {
+        throw CaptureConfigurationError.invalid(
+          "--list-windows requires a valid --owner-bundle-id"
+        )
+      }
+      return CaptureConfiguration(mode: .listWindows(ownerBundleIdentifier: owner))
     }
 
     guard flags.isEmpty else {
       throw CaptureConfigurationError.invalid("unsupported flag combination")
     }
 
+    if let profileText = values["--profile"] {
+      let profileOptions: Set<String> = ["--profile", "--port", "--token-file"]
+      guard values.keys.allSatisfy(profileOptions.contains) else {
+        throw CaptureConfigurationError.invalid(
+          "--profile mode cannot be mixed with display or window-inventory options"
+        )
+      }
+      guard let profilePath = nonblank(profileText) else {
+        throw CaptureConfigurationError.invalid("--profile path must not be blank")
+      }
+      let port = try requiredInteger(values["--port"], range: 1_024...65_535, label: "port")
+      guard let tokenText = nonblank(values["--token-file"]) else {
+        throw CaptureConfigurationError.invalid("--token-file is required")
+      }
+      return CaptureConfiguration(
+        mode: .profile(
+          ProfileModeConfiguration(
+            profileFile: URL(fileURLWithPath: profilePath).standardizedFileURL,
+            port: port,
+            tokenFile: URL(fileURLWithPath: tokenText).standardizedFileURL
+          )
+        )
+      )
+    }
+
+    guard values["--owner-bundle-id"] == nil else {
+      throw CaptureConfigurationError.invalid(
+        "--owner-bundle-id is valid only with --list-windows"
+      )
+    }
     let displayID = try requiredUInt32(values["--display-id"], label: "display ID")
     let expectedWidth = try requiredInteger(
       values["--expected-display-width"], range: 1...65_535,
@@ -178,29 +229,46 @@ struct CaptureConfiguration: Equatable {
     }
 
     return CaptureConfiguration(
-      listDisplays: false,
-      displayID: displayID,
-      expectedDisplayWidth: expectedWidth,
-      expectedDisplayHeight: expectedHeight,
-      normalizedCrop: try parseCrop(cropText),
-      destination: try parseDestination(destinationText),
-      fps: fps,
-      port: port,
-      tokenFile: URL(fileURLWithPath: tokenText).standardizedFileURL,
-      requiredFrontmostBundleIdentifier: guardBundleID
+      mode: .display(
+        DisplayModeConfiguration(
+          displayID: displayID,
+          expectedDisplayWidth: expectedWidth,
+          expectedDisplayHeight: expectedHeight,
+          normalizedCrop: try parseCrop(cropText),
+          destination: try parseDestination(destinationText),
+          fps: fps,
+          port: port,
+          tokenFile: URL(fileURLWithPath: tokenText).standardizedFileURL,
+          requiredFrontmostBundleIdentifier: guardBundleID
+        )
+      )
     )
   }
 
   static var usage: String {
     """
     usage:
+      PushwigCaptureHelper --list-windows --owner-bundle-id ID
+      PushwigCaptureHelper --profile PATH --port 1024...65535 --token-file PATH
       PushwigCaptureHelper --list-displays
-      PushwigCaptureHelper --display-id ID \\
-        --expected-display-width POINTS --expected-display-height POINTS \\
-        --crop-normalized x,y,width,height --destination x,y,width,height \\
-        --fps 1...60 --port 1024...65535 --token-file PATH \\
+      PushwigCaptureHelper --display-id ID \
+        --expected-display-width POINTS --expected-display-height POINTS \
+        --crop-normalized x,y,width,height --destination x,y,width,height \
+        --fps 1...60 --port 1024...65535 --token-file PATH \
         --required-frontmost-bundle-id ID
     """
+  }
+
+  static func isBundleIdentifier(_ value: String) -> Bool {
+    let parts = value.split(separator: ".", omittingEmptySubsequences: false)
+    guard parts.count >= 2 else { return false }
+    return parts.allSatisfy { part in
+      !part.isEmpty
+        && part.utf8.allSatisfy {
+          ($0 >= 48 && $0 <= 57) || ($0 >= 65 && $0 <= 90)
+            || ($0 >= 97 && $0 <= 122) || $0 == 45
+        }
+    }
   }
 
   private static func nonblank(_ value: String?) -> String? {
@@ -254,17 +322,5 @@ struct CaptureConfiguration: Equatable {
       throw CaptureConfigurationError.invalid("destination values must be integers")
     }
     return try PushDestination(x: x, y: y, width: width, height: height)
-  }
-
-  private static func isBundleIdentifier(_ value: String) -> Bool {
-    let parts = value.split(separator: ".", omittingEmptySubsequences: false)
-    guard parts.count >= 2 else { return false }
-    return parts.allSatisfy { part in
-      !part.isEmpty
-        && part.utf8.allSatisfy {
-          ($0 >= 48 && $0 <= 57) || ($0 >= 65 && $0 <= 90)
-            || ($0 >= 97 && $0 <= 122) || $0 == 45
-        }
-    }
   }
 }

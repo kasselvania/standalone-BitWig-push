@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "bitwig-device-chain",
+  "window": {
+    "ownerBundleIdentifier": "com.bitwig.studio",
+    "titleContains": null,
+    "minimumWidthPoints": 800,
+    "minimumHeightPoints": 500
+  },
+  "crop": {
+    "x": 0.14,
+    "y": 0.68,
+    "width": 0.45,
+    "height": 0.305
+  },
+  "destination": {
+    "x": 400,
+    "y": 0,
+    "width": 560,
+    "height": 160
+  },
+  "fps": 30,
+  "aspectPolicy": "centered-cover"
+}

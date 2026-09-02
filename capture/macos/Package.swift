@@ -19,6 +19,7 @@ let package = Package(
       linkerSettings: [
         .linkedFramework("AppKit"),
         .linkedFramework("CoreGraphics"),
+        .linkedFramework("CoreImage"),
         .linkedFramework("CoreMedia"),
         .linkedFramework("CoreVideo"),
         .linkedFramework("ScreenCaptureKit"),

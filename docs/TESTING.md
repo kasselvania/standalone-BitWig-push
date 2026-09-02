@@ -13,7 +13,7 @@ cd capture/macos
 xcrun swift test
 ```
 
-Current committed tests cover configuration parsing, display selection, aspect mapping, BGRA normalization, protocol layout/sequence behavior, and bounded authority transitions.
+Current committed tests cover strict visual-profile parsing, window/display selection, nonzero-origin window geometry, resize and capture-generation behavior, aspect mapping, BGRA normalization, protocol layout/sequence behavior, and bounded authority transitions.
 
 As the product grows, stable deterministic contracts should continue to graduate into committed tests instead of remaining only as one-off harness evidence.
 
