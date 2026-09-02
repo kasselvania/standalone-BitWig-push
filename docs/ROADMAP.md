@@ -15,18 +15,19 @@ The project has already established:
 
 Detailed historical experiments and measurements remain under `evidence/**` and the completed slice dossiers.
 
-## Next: adaptive Bitwig-window visual lens
+## Active: V3 adaptive Bitwig-window visual lens
 
-Turn the fixed-layout V2 fixture into something usable in an ordinary desktop session:
+[V3 / issue #45](https://github.com/kasselvania/standalone-BitWig-push/issues/45) turns the fixed-layout V2 fixture into something usable in an ordinary desktop session:
 
-- identify the Bitwig application window;
+- identify one intended Bitwig main window or abstain;
 - define the visual crop relative to that window instead of the physical display;
-- survive window move, resize, and recreation;
-- load/save a visual profile;
+- survive window move, supported resize, and recreation;
+- load a small human-readable visual profile;
 - provide a straightforward launch/configuration path;
-- keep the current semantic fallback and one-writer ownership model.
+- keep the current semantic fallback and one-writer ownership model;
+- preserve the V2 explicit-display mode as a diagnostic/reference path where practical.
 
-This should be delivered as one coherent product milestone rather than a chain of tiny research slices.
+This is one coherent product milestone, not a chain of tiny research slices. See [`design/window-relative-visual-lens.md`](design/window-relative-visual-lens.md).
 
 ## Then: stronger visual localization
 
