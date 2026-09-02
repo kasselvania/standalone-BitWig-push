@@ -80,6 +80,8 @@ Before deleting a worktree, verify it is clean and contains no unpushed/unique w
 - After merge, delete the remote feature branch when safe and report local cleanup eligibility.
 - Do not preserve completed work by inventing archive branches.
 
+For V3 specifically, use **one implementation PR** containing source, committed tests, the example profile, necessary contributor docs, and concise real-fixture evidence. Do not create a separate evidence branch/PR unless review finds a concrete reason to split it.
+
 ## Final report expectations
 
 For implementation work, report:
@@ -106,4 +108,8 @@ The project has accepted:
 - authenticated bounded external latest-frame ingress;
 - a maintained macOS ScreenCaptureKit helper that displays real Bitwig Sampler pixels on a physical Push 3 Controller.
 
-The next functional work should move that fixed-layout visual lens toward a usable adaptive Bitwig-window-relative experience, after the repository-maintenance interval is complete.
+**V3 is active** under issue #45 and `docs/design/window-relative-visual-lens.md`.
+
+Its product claim is to replace V2's fixed physical-display crop with an explicit Bitwig-window-relative visual profile that survives window move, supported resize, and recreation while preserving semantic fallback, bounded capture, committed deterministic tests, normal controls/audio, and the existing one-writer architecture.
+
+Do not split V3 into prerequisite micro-slices for profile parsing, window discovery, resize math, or lifecycle unless a real blocker proves one of those uncertainties must be isolated first.
