@@ -23,12 +23,14 @@ final class PushwigCaptureHelperTests: XCTestCase {
 
   func testValidConfigurationIsExplicit() throws {
     let configuration = try CaptureConfiguration.parse(arguments: validArguments)
-    XCTAssertFalse(configuration.listDisplays)
-    XCTAssertEqual(configuration.displayID, 5)
-    XCTAssertEqual(configuration.expectedDisplayWidth, 3430)
-    XCTAssertEqual(configuration.expectedDisplayHeight, 1447)
+    guard case .display(let display) = configuration.mode else {
+      return XCTFail("expected explicit display mode")
+    }
+    XCTAssertEqual(display.displayID, 5)
+    XCTAssertEqual(display.expectedDisplayWidth, 3430)
+    XCTAssertEqual(display.expectedDisplayHeight, 1447)
     XCTAssertEqual(
-      configuration.normalizedCrop,
+      display.normalizedCrop,
       try NormalizedCrop(
         x: 0.14,
         y: 0.68,
@@ -36,21 +38,21 @@ final class PushwigCaptureHelperTests: XCTestCase {
         height: 0.305
       ))
     XCTAssertEqual(
-      configuration.destination,
+      display.destination,
       try PushDestination(
         x: 400,
         y: 0,
         width: 560,
         height: 160
       ))
-    XCTAssertEqual(configuration.fps, 30)
-    XCTAssertEqual(configuration.port, 45_291)
-    XCTAssertEqual(configuration.requiredFrontmostBundleIdentifier, "com.bitwig.studio")
+    XCTAssertEqual(display.fps, 30)
+    XCTAssertEqual(display.port, 45_291)
+    XCTAssertEqual(display.requiredFrontmostBundleIdentifier, "com.bitwig.studio")
   }
 
   func testListDisplaysCannotCarryCaptureConfiguration() throws {
     let configuration = try CaptureConfiguration.parse(arguments: ["--list-displays"])
-    XCTAssertTrue(configuration.listDisplays)
+    XCTAssertEqual(configuration.mode, .listDisplays)
     assertInvalid(["--list-displays", "--display-id", "5"])
   }
 

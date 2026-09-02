@@ -70,25 +70,29 @@ struct AspectMapping: Equatable {
     displayHeight: Int,
     crop: NormalizedCrop
   ) throws -> CGRect {
-    guard displayWidth > 0, displayHeight > 0 else {
-      throw CaptureConfigurationError.invalid("display point dimensions must be positive")
-    }
+    try requestedSourceRect(
+      sourceBounds: CGRect(x: 0, y: 0, width: displayWidth, height: displayHeight),
+      crop: crop
+    )
+  }
 
-    let displayWidthDouble = Double(displayWidth)
-    let displayHeightDouble = Double(displayHeight)
+  static func requestedSourceRect(
+    sourceBounds: CGRect,
+    crop: NormalizedCrop
+  ) throws -> CGRect {
+    try validate(bounds: sourceBounds, label: "source")
     let requested = CGRect(
-      x: crop.x * displayWidthDouble,
-      y: crop.y * displayHeightDouble,
-      width: crop.width * displayWidthDouble,
-      height: crop.height * displayHeightDouble
+      x: sourceBounds.minX + crop.x * sourceBounds.width,
+      y: sourceBounds.minY + crop.y * sourceBounds.height,
+      width: crop.width * sourceBounds.width,
+      height: crop.height * sourceBounds.height
     )
     guard requested.minX.isFinite, requested.minY.isFinite,
       requested.width.isFinite, requested.height.isFinite,
-      requested.minX >= 0, requested.minY >= 0,
-      requested.maxX <= displayWidthDouble,
-      requested.maxY <= displayHeightDouble
+      requested.width > 0, requested.height > 0,
+      contains(requested, within: sourceBounds)
     else {
-      throw CaptureConfigurationError.invalid("computed source crop is outside the display")
+      throw CaptureConfigurationError.invalid("computed crop is outside the source point bounds")
     }
     return requested
   }
@@ -99,14 +103,26 @@ struct AspectMapping: Equatable {
     displayHeight: Int,
     destination: PushDestination
   ) throws -> AspectMapping {
+    try centeredCover(
+      requestedSourceRect: requested,
+      sourceBounds: CGRect(x: 0, y: 0, width: displayWidth, height: displayHeight),
+      destination: destination
+    )
+  }
+
+  static func centeredCover(
+    requestedSourceRect requested: CGRect,
+    sourceBounds: CGRect,
+    destination: PushDestination
+  ) throws -> AspectMapping {
+    try validate(bounds: sourceBounds, label: "source")
     guard requested.minX.isFinite, requested.minY.isFinite,
       requested.width.isFinite, requested.height.isFinite,
       requested.width > 0, requested.height > 0,
-      requested.minX >= 0, requested.minY >= 0,
-      requested.maxX <= Double(displayWidth),
-      requested.maxY <= Double(displayHeight)
+      contains(requested, within: sourceBounds)
     else {
-      throw CaptureConfigurationError.invalid("requested source crop is outside the display")
+      throw CaptureConfigurationError.invalid(
+        "requested source crop is outside the source point bounds")
     }
     // ScreenCaptureKit source rectangles are expressed in screen points and
     // accept fractional CGRect geometry. Keep the maximal centered cover
@@ -139,15 +155,11 @@ struct AspectMapping: Equatable {
     )
 
     guard effective.x.isFinite, effective.y.isFinite,
-      effective.x >= requested.minX, effective.y >= requested.minY,
-      effective.width <= requested.maxX - effective.x,
-      effective.height <= requested.maxY - effective.y,
-      effective.x >= 0, effective.y >= 0,
-      effective.width <= Double(displayWidth) - effective.x,
-      effective.height <= Double(displayHeight) - effective.y
+      contains(effective.cgRect, within: requested),
+      contains(effective.cgRect, within: sourceBounds)
     else {
       throw CaptureConfigurationError.invalid(
-        "aspect-preserving source rectangle is outside the display point bounds"
+        "aspect-preserving source rectangle is outside the source point bounds"
       )
     }
 
@@ -168,5 +180,31 @@ struct AspectMapping: Equatable {
       croppedRight: requested.maxX - (effective.x + effective.width),
       croppedBottom: requested.maxY - (effective.y + effective.height)
     )
+  }
+
+  private static func validate(bounds: CGRect, label: String) throws {
+    guard bounds.minX.isFinite, bounds.minY.isFinite,
+      bounds.width.isFinite, bounds.height.isFinite,
+      bounds.width > 0, bounds.height > 0
+    else {
+      throw CaptureConfigurationError.invalid("\(label) point bounds must be finite and positive")
+    }
+  }
+
+  static func contains(_ inner: CGRect, within outer: CGRect) -> Bool {
+    let magnitude = max(
+      1,
+      abs(outer.minX),
+      abs(outer.minY),
+      abs(outer.maxX),
+      abs(outer.maxY),
+      outer.width,
+      outer.height
+    )
+    let tolerance = magnitude * 1e-9
+    return inner.minX >= outer.minX - tolerance
+      && inner.minY >= outer.minY - tolerance
+      && inner.maxX <= outer.maxX + tolerance
+      && inner.maxY <= outer.maxY + tolerance
   }
 }

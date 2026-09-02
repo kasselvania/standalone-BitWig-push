@@ -40,7 +40,7 @@ cd capture/macos
 xcrun swift test
 ```
 
-These tests cover maintained deterministic contracts such as configuration validation, display selection, aspect mapping, BGRA normalization, protocol header layout, sequence behavior, and bounded authority transitions.
+These tests cover maintained deterministic contracts such as profile/configuration validation, window and display selection, window-relative geometry, capture generations, aspect mapping, BGRA normalization, protocol header layout, sequence behavior, and bounded authority transitions.
 
 See [`TESTING.md`](TESTING.md).
 
@@ -73,6 +73,38 @@ com.kasselvania.pushwig.capture-helper
 ```
 
 A stable installed app identity matters because macOS Screen Recording permission is attached to that application identity.
+
+## Window-profile mode
+
+List only windows owned by the intended application bundle:
+
+```bash
+/path/to/PushwigCaptureHelper.app/Contents/MacOS/PushwigCaptureHelper \
+  --list-windows \
+  --owner-bundle-id com.bitwig.studio
+```
+
+The inventory reports public ScreenCaptureKit facts. Configure the selector so exactly one on-screen candidate satisfies its bundle, optional title substring, and minimum point dimensions. Zero or multiple eligible windows produce semantic-only fallback; the helper never selects the first or largest candidate.
+
+Run the maintained profile:
+
+```bash
+/path/to/PushwigCaptureHelper.app/Contents/MacOS/PushwigCaptureHelper \
+  --profile Profiles/bitwig-device-chain.json \
+  --port 45291 \
+  --token-file /path/to/private-token
+```
+
+The window profile is independent of the receiver capability and the current `SCWindow.windowID`. The helper polls bounded public window inventory, keeps the same capture while only global position changes, and uses a new capture generation after supported resize or window recreation. The existing explicit `--display-id ...` form remains the V2 diagnostic/reference mode; profile and display arguments cannot be mixed.
+
+ScreenCaptureKit ignores `SCStreamConfiguration.sourceRect` for a
+desktop-independent single-window stream. Profile mode therefore requests the
+complete selected window at native backing scale when it fits, bounded to
+2560x1600 and 4,096,000 pixels. On the existing serial sample/output queue, one
+reused Core Image context maps the normalized region into pixel space, clamps
+its edges, applies a uniform Lanczos centered-cover scale, writes directly into
+the one reusable opaque-BGRA protocol buffer, and sends it through protocol v1.
+There is no helper frame FIFO or per-frame destination array.
 
 ## Screen Recording permission
 
