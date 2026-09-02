@@ -11,9 +11,14 @@ Read these first:
 3. [`../CONTRIBUTING.md`](../CONTRIBUTING.md) — how to contribute.
 4. [`DEVELOPMENT.md`](DEVELOPMENT.md) — build and local development setup.
 5. [`TESTING.md`](TESTING.md) — committed tests versus temporary harnesses and real-hardware evidence.
-6. [`ROADMAP.md`](ROADMAP.md) — product-shaped next milestones.
+6. [`ROADMAP.md`](ROADMAP.md) — product-shaped current and next milestones.
 
 A competent developer should not need `AGENTS.md`, `CURRENT_SLICE.md`, or evidence hashes to understand the project.
+
+## Active product design
+
+- [`design/window-relative-visual-lens.md`](design/window-relative-visual-lens.md) — active V3 design: move from a fixed display crop to a Bitwig-window-relative visual profile that survives move, supported resize, and recreation.
+- [Issue #45](https://github.com/kasselvania/standalone-BitWig-push/issues/45) — V3 product claim, acceptance, and implementation scope.
 
 ## Current durable references
 
