@@ -1,40 +1,80 @@
-# Current Slice: V2 — macOS Dedicated-Window Visual Lens
+# Current Slice: V2 — macOS Display-Crop Visual Lens
 
 ## Status
 
-Ready to execute from the current accepted central `origin/main` containing merged V1D-2 evidence and from DrivenByMoss `origin/pushwig/main` at the exact accepted V1D-2 integration.
+Ready to execute from the current accepted central `origin/main` after this authority correction is merged.
 
-Active issue: [#38 — V2: macOS dedicated-window visual lens](https://github.com/kasselvania/standalone-BitWig-push/issues/38).
+Active issue: [#38 — V2: macOS display-crop visual lens](https://github.com/kasselvania/standalone-BitWig-push/issues/38).
 
-Before work begins, fetch central `origin/main` and verify that its history contains:
+Create fresh V2 source and evidence branches directly from the merged authority basis. Do not use the quarantined dedicated-window branch as the implementation basis.
+
+## Why the V2 authority changed
+
+The original V2 authority assumed that Bitwig native-device Expanded Device Views and ordinary plug-in editors would appear as independent ScreenCaptureKit windows.
+
+On the accepted macOS 26.4.1 / Bitwig Studio 6.1 fixture, the reconnaissance implementation did not expose those device/editor surfaces as useful independently capturable system windows.
+
+That source remains quarantined at:
 
 ```text
-198b44a838009dac0df83464501004b6e6b59d9d  # accepted V1D-2 evidence
+branch:
+capture/v2-macos-dedicated-window-lens
+
+commit:
+f5bd7fd990ee74956aa1168ba8b747f0f63286ab
 ```
 
-Create V2 source and evidence branches directly from the then-current accepted `origin/main`. If `origin/main` has moved, inspect every intervening commit and stop if it changes V2 authority or scope.
+It has no pull request, is not accepted source, and must not be merged or used as the new production branch.
+
+The maintainer then authorized a temporary display-crop override. That experiment succeeded:
+
+```text
+ScreenCaptureKit SCDisplay 5
+display dimensions 3430x1447
+normalized crop 0.14,0.68,0.45,0.305
+computed source rect 480.2,983.96,1543.5,441.335
+Push destination 400,0,560,160
+opaque BGRA8888
+queue depth 2
+requested 30 fps
+7192 FRAME messages
+protocol sequence 1..7193
+one CLEAR on exit
+zero incomplete/format/dimension/alpha failures
+approximately 1% helper CPU
+34320 KB helper RSS
+```
+
+Real Sampler pixels reached the physical Push through unchanged V1D-2, controls remained responsive, and fallback was clean.
+
+The proof was temporary and uncommitted. It selected the tactic but did not complete production V2. Its rough source-to-destination mapping visibly distorted the image, and the helper source/app/evidence were removed.
 
 ## Primary claim
 
-Implement and prove the first real visual source:
+Implement and prove the first production real-pixel visual source:
 
 ```text
-unique dedicated Bitwig/plugin window
-        -> ScreenCaptureKit macOS helper
-        -> source-relative normalized crop
-        -> bounded helper-local scale
+explicitly selected SCDisplay
+        -> bounded normalized display-relative crop
+        -> explicit aspect-preserving helper-local mapping
         -> opaque BGRA8888
         -> accepted V1D-2 protocol v1
         -> current semantic frame + captured visual
         -> real Push
 ```
 
-V2 must prove two dedicated-window classes:
+V2 must prove one real source:
 
-1. one floating/undocked Bitwig native-device Expanded Device View with visually meaningful content;
-2. one already-installed ordinary plug-in editor window.
+- the Bitwig main-window device-chain region showing useful live Sampler content on the accepted Mac fixture.
 
-No DrivenByMoss source change is authorized. The accepted V1D-2 receiver/sink/USB path is the fixed consumer boundary.
+V2 does not require:
+
+- a dedicated native-device top-level window;
+- an ordinary plug-in editor;
+- VST/VST3/CLAP source identity;
+- automatic device or panel localization.
+
+No DrivenByMoss source change is authorized. The accepted V1D-2 receiver, V1D-1 raster sink, semantic redraw, and Push USB transport are fixed consumer authority.
 
 ## Accepted authorities
 
@@ -42,8 +82,11 @@ No DrivenByMoss source change is authorized. The accepted V1D-2 receiver/sink/US
 
 ```text
 repository: kasselvania/standalone-BitWig-push
-V1D-2 evidence: 198b44a838009dac0df83464501004b6e6b59d9d
-tree:            76d9f92ae8ec7369790b0b8dd325cd4a602e3dbb
+accepted V1D-2 evidence:
+198b44a838009dac0df83464501004b6e6b59d9d
+
+tree:
+76d9f92ae8ec7369790b0b8dd325cd4a602e3dbb
 ```
 
 ### DrivenByMoss
@@ -61,7 +104,7 @@ That integration contains exact accepted V1D-2 source head:
 830b778b720a06f56de08861d27052228c82c63b
 ```
 
-Immutable upstream basis remains:
+Immutable upstream basis:
 
 ```text
 branch: pushwig/upstream-26.4.1
@@ -73,18 +116,61 @@ Official rollback artifact:
 
 ```text
 $HOME/Documents/Bitwig Studio/Extensions/DrivenByMoss.bwextension
-SHA-256: 98dc3195ad8d911526e18b1005f09f69a1aedcb965b080565474104654345c5a
+SHA-256:
+98dc3195ad8d911526e18b1005f09f69a1aedcb965b080565474104654345c5a
 ```
 
-## Source topology
+## Repository and branch topology
 
-V2 adds production helper source to this central repository under:
+Production helper source belongs under:
 
 ```text
 capture/macos/**
 ```
 
-Expected source files:
+Create a fresh source branch from the merged V2 authority basis:
+
+```text
+capture/v2-macos-display-crop-lens
+```
+
+Commit subject:
+
+```text
+V2: add macOS display-crop capture helper
+```
+
+Source PR title:
+
+```text
+V2: add macOS display-crop visual lens
+```
+
+Create a separate evidence branch from the same basis:
+
+```text
+codex/v2-macos-display-crop-evidence
+```
+
+Evidence belongs only under:
+
+```text
+evidence/v2-macos-display-crop/**
+```
+
+Both PRs target `main` and remain open, non-draft, and unmerged for technical-lead review.
+
+Do not:
+
+- merge the quarantined branch;
+- cherry-pick its commit;
+- base the new source branch on it.
+
+The agent may inspect generic Swift packaging or protocol-client work from the quarantined branch, but any reused idea must be reimplemented from the accepted authority basis after dedicated-window assumptions are removed.
+
+## Expected production source envelope
+
+Expected files are:
 
 ```text
 capture/macos/Package.swift
@@ -92,52 +178,27 @@ capture/macos/Resources/Info.plist
 capture/macos/scripts/build-app.sh
 capture/macos/Sources/PushwigCaptureHelper/main.swift
 capture/macos/Sources/PushwigCaptureHelper/CaptureConfiguration.swift
-capture/macos/Sources/PushwigCaptureHelper/WindowDiscovery.swift
-capture/macos/Sources/PushwigCaptureHelper/WindowCapture.swift
+capture/macos/Sources/PushwigCaptureHelper/DisplayDiscovery.swift
+capture/macos/Sources/PushwigCaptureHelper/DisplayCropCapture.swift
+capture/macos/Sources/PushwigCaptureHelper/AspectMapping.swift
+capture/macos/Sources/PushwigCaptureHelper/SourceValidityGate.swift
 capture/macos/Sources/PushwigCaptureHelper/ExternalRasterProtocolClient.swift
 ```
 
-A narrowly different split within `capture/macos/**` is allowed only when the same responsibilities remain bounded and the change is explained before editing.
+A narrowly different split inside `capture/macos/**` is allowed only when responsibilities remain bounded and the reason is explained before editing.
 
-Do not edit `kasselvania/DrivenByMoss` in V2. Stop if the helper cannot use the accepted protocol without a receiver change.
+Do not modify:
 
-## Source and evidence branches
+- `kasselvania/DrivenByMoss`;
+- accepted V1D-2 protocol or receiver;
+- accepted V1D-1 raster contract;
+- Push transport;
+- prior evidence;
+- authority/status files in the implementation PR.
 
-Capture-helper source branch:
+## Helper identity and permission
 
-```text
-capture/v2-macos-dedicated-window-lens
-```
-
-Source commit subject:
-
-```text
-V2: add macOS dedicated-window capture helper
-```
-
-Source PR title:
-
-```text
-V2: add macOS dedicated-window visual lens
-```
-
-Evidence branch:
-
-```text
-codex/v2-macos-dedicated-window-evidence
-```
-
-Evidence only:
-
-```text
-evidence/v2-macos-dedicated-window/**
-```
-
-Both PRs target `main`, remain open/non-draft/unmerged, and are reviewed together.
-
-## Helper identity
-
-Build a normal macOS `.app` bundle with stable development identity rather than relying on Terminal as capture authority.
+Build a normal macOS `.app` with stable development identity.
 
 Preferred bundle identifier:
 
@@ -145,221 +206,268 @@ Preferred bundle identifier:
 com.kasselvania.pushwig.capture-helper
 ```
 
-Preferred initial build path is SwiftPM plus a retained app-bundle/ad-hoc-sign script. Stop and retain a packaging blocker before changing build systems if ScreenCaptureKit/TCC cannot attribute permission safely to that bundle.
-
-V2 makes no Developer ID, notarization, App Store, or production installer claim.
-
-## Window discovery and source identity
-
-Use `SCShareableContent` / ScreenCaptureKit shareable-window enumeration.
-
-Fixture logical descriptor:
+Preferred build:
 
 ```text
-owning application bundle identifier
-+ exact window title
-+ source role (native-device | plugin)
+SwiftPM release executable
+        -> deterministic .app wrapper
+        -> Info.plist
+        -> ad-hoc development signature
 ```
 
-The current `SCWindow.windowID` is instance identity while the window exists.
+Use public Screen Recording permission APIs only.
+
+Required behavior:
+
+- preflight permission;
+- denied or unavailable permission publishes no frame;
+- send CLEAR when a live visual authority existed;
+- emit one bounded actionable error;
+- leave Bitwig, DrivenByMoss, Push controls, and audio unaffected;
+- relaunch the same exact helper build after permission grant when macOS requires it;
+- no private TCC manipulation or global reset.
+
+No Developer ID, notarization, installer, or App Store claim is required.
+
+## Display inventory and exact selection
+
+The helper must provide a bounded display-list mode.
+
+Retain only relevant sanitized inventory:
+
+- `SCDisplay.displayID`;
+- width;
+- height;
+- selected/main state where public API exposes it;
+- backing/logical relationship where deterministically observable.
+
+Capture configuration must require:
+
+```text
+display id
+expected display width
+expected display height
+normalized crop x,y,width,height
+Push destination x,y,width,height
+requested fps
+V1D-2 port
+V1D-2 token-file path
+source-validity guard
+```
 
 Rules:
 
-- require exactly one matching visible dedicated window;
-- zero matches -> CLEAR/semantic fallback;
-- multiple matches -> CLEAR/abstain, never guess;
-- same-display movement does not change logical identity;
-- cross-display movement does not change logical identity when a second display exists;
-- resize recomputes normalized crop from current source dimensions;
-- close revokes external authority promptly;
-- reopen may create a new windowID and must be reacquired through the same unique logical descriptor;
-- physical desktop x/y is never persisted as source identity.
+- never auto-select the first display;
+- exactly one `SCDisplay` must match the supplied ID;
+- observed width/height must equal the declared fixture dimensions;
+- selected display absence or unexpected dimension change revokes visual authority;
+- no physical display coordinate becomes universal device identity;
+- changing display or display mode requires explicit reconfiguration or restart in V2.
 
-Ambiguous duplicate plug-in windows are intentionally not solved in V2.
+The accepted fixture should begin from the successful reconnaissance values unless final evidence justifies corrected geometry:
 
-## Fixture targets
+```text
+display id:            5
+display size:          3430x1447
+normalized crop:       0.14,0.68,0.45,0.305
+reconnaissance rect:   480.2,983.96,1543.5,441.335
+destination:           400,0,560,160
+```
 
-Inventory the accepted Mac before selecting targets.
+## Source-validity guard
 
-Native target:
+Display capture can otherwise show unrelated content when the operator leaves Bitwig or another application occupies the crop.
 
-- prefer a Bitwig native device with a floating/undocked Expanded Device View and useful visual content, such as Sampler when available;
-- retain exact Bitwig version, device name, bundle identifier, window title, and source dimensions;
-- keep target choice out of generic source code.
+V2 must use one bounded public-API guard. At minimum it must prove that the intended Bitwig application is running and is the active capture context.
 
-Plug-in target:
+An exact frontmost-application bundle-identifier gate is an acceptable first implementation.
 
-- use one already-installed ordinary plug-in editor;
-- retain name/vendor/version, exact window title, and dimensions;
-- do not install or purchase a plug-in merely to satisfy V2 without maintainer approval.
+The final source must state the exact guard.
 
-If no suitable installed plug-in is available, stop and ask the maintainer to choose one.
+When invalid:
+
+```text
+send one CLEAR when connected
+stop FRAME publication
+semantic-only Push output
+```
+
+When valid again, the helper may resume with current pixels.
+
+The guard is not device identity and is not an embedded-panel resolver.
+
+## Crop validation
+
+Normalized crop values must be finite, positive, contained in `[0,1]`, and produce a positive source rectangle inside the selected display.
+
+Destination must be positive and contained in:
+
+```text
+960x160
+```
+
+Reject invalid display, crop, destination, frame format, or dimension configuration before capture/publish.
+
+The helper must crop locally before protocol transmission. It may not send a full-display payload and rely on DrivenByMoss to crop it.
 
 ## Capture contract
 
-Use ScreenCaptureKit with a desktop-independent dedicated-window filter.
+Use ScreenCaptureKit with an exact selected-display content filter.
 
 Require:
 
 - cursor excluded;
 - complete frames only;
 - BGRA capture;
-- bounded queue depth;
-- no application-level unbounded frame queue;
-- default capture target 30 fps;
-- normalized source-relative crop `(x,y,width,height)` in `[0,1]`;
-- source rect recomputed after resize/reacquire;
-- helper-local bounded scale to declared Push destination dimensions;
-- top-to-bottom output rows;
-- B,G,R,A output bytes with alpha forced to `0xFF` before transmission;
-- destination rectangle entirely inside 960x160.
+- queue depth `2`, unless retained evidence proves a different bounded value;
+- target cadence 30 fps;
+- no project-owned unbounded frame queue;
+- no historical frame replay;
+- output rows top-to-bottom;
+- output bytes B,G,R,A;
+- alpha forced to `0xFF`;
+- one bounded reusable output buffer;
+- no full-frame allocation per callback when avoidable;
+- payload within V1D-2's 614,400-byte cap.
 
-Fixture/development arguments may supply owner bundle ID, exact title, source role, crop, destination, fps, V1D-2 port, and token-file path. They are not the future public adapter SDK.
+## Aspect-preserving mapping
 
-## Screen Recording permission
+The temporary proof visibly distorted the image. Production V2 must close that defect.
 
-Use normal public macOS permission APIs only.
+The implementation must:
 
-- preflight permission before starting capture;
-- denied/unavailable permission publishes no frame and clears any current external authority when possible;
-- emit one bounded actionable error;
-- do not impair Bitwig, DrivenByMoss, controls, or audio;
-- after permission is granted, relaunch of the same exact helper build is acceptable when macOS requires it;
-- no private TCC manipulation and no silent permission reset.
+1. retain source crop width/height and aspect;
+2. retain destination width/height and aspect;
+3. identify whether the temporary distortion came from coordinate-space mapping, nonuniform scaling, or both;
+4. select one explicit aspect-preserving rule;
+5. never stretch width and height independently.
 
-## Accepted protocol producer
+Accepted first-slice choices are:
 
-The helper must speak accepted V1D-2 protocol v1 exactly.
+- centered `cover`, with the effective source rectangle adjusted to the destination aspect; or
+- uniform `contain`, with opaque black padding in unused destination pixels.
 
-- connect only to the configured IPv4 loopback endpoint;
-- read the private token file without logging the capability;
-- one nonzero 128-bit session per connection;
-- HELLO once;
-- positive strictly increasing FRAME/CLEAR sequence;
-- complete opaque BGRA payloads only;
-- send CLEAR on transition to missing/ambiguous/closed source where possible;
-- receiver disconnect/failure stops boundedly rather than accumulating frames;
-- no protocol-v2 or alternate Push path.
+Choose exactly one before the final source commit and retain original/effective source rectangles, scale, crop or padding, output dimensions, and visual operator result.
 
-## Lifecycle proof
+No general fit-policy SDK is introduced.
 
-For both accepted source classes where physically possible:
+Acceptance requires zero unexplained visible aspect distortion.
 
-1. unique source discovery;
-2. real captured pixels visible on Push;
-3. move substantially on same display;
-4. resize smaller and larger;
-5. verify normalized crop follows source geometry;
-6. close -> current semantic-only output;
-7. reopen -> reacquire new instance and resume;
-8. obscure window and verify dedicated-window capture remains coherent where ScreenCaptureKit supports it;
-9. move between displays when two displays exist, otherwise retain explicit no-claim;
-10. induce or identify ambiguity when safely possible and prove abstention.
+## V1D-2 protocol client
 
-Wrong visual capture is a blocker.
-
-## Correctness evidence
-
-Retain hashes and metadata rather than proprietary frame files.
-
-For each target retain:
-
-- logical descriptor;
-- windowID lifecycle;
-- source dimensions;
-- normalized crop and computed source rect;
-- destination rect;
-- capture pixel format and bytes-per-row;
-- cropped/output hashes;
-- protocol sequences;
-- capture/publish timing;
-- lifecycle outcomes.
-
-Require zero unexplained:
+Use accepted protocol v1 exactly:
 
 ```text
-wrong-window captures
-frames after source authority loss
-stale pixels after CLEAR/close/permission denial
-crop-out-of-bounds events
-row/channel/alpha mismatches
-partial/torn protocol output
-old-window-instance frames after reacquire
-helper failures affecting Bitwig/Push
+magic:         0x50575852
+version:       1
+header:        80 bytes
+messages:      HELLO=1 FRAME=2 CLEAR=3
+formats:       NONE=0 OPAQUE_BGRA8888=1
+max payload:   614400
+transport:     configured IPv4 loopback
 ```
 
-Do not commit proprietary screenshots or raw captured frames.
+Requirements:
+
+- read the existing private capability file without logging the capability;
+- create one nonzero 128-bit session per connection;
+- send HELLO once;
+- send positive strictly increasing FRAME/CLEAR sequence values;
+- send only complete valid frames;
+- send CLEAR once on transition from valid visual authority to none;
+- stop boundedly on receiver loss;
+- no application frame FIFO or retry backlog;
+- no protocol v2;
+- no second Push or USB path.
+
+## Fixture posture
+
+The V2 crop is explicitly fixture-relative.
+
+While capture is armed:
+
+- selected display and dimensions are fixed;
+- Bitwig main-window placement is fixed;
+- device-chain panel location and panel sizes are fixed;
+- display scaling is fixed;
+- normalized crop is operator-supplied.
+
+V2 does not claim that the crop follows Bitwig window movement, Bitwig window resize, panel layout changes, cross-display migration, or UI-scale changes.
+
+Those require later semantic/layout resolution, anchors, or calibration.
+
+## Required real visual proof
+
+Use Bitwig Sampler in the main-window device-chain region.
+
+Prove:
+
+- actual live Sampler/device-chain pixels appear on Push;
+- at least one meaningful Sampler visual change is visible live;
+- the captured region is confined to the declared Push destination;
+- semantic UI remains current outside/under the visual lens;
+- no full display is transmitted or displayed;
+- row order, BGRA channels, alpha, and geometry are correct;
+- aspect mapping is visibly correct;
+- no stale pixels remain after CLEAR, guard failure, helper exit, or Bitwig quit.
+
+A plug-in may be observed through the same crop if convenient, but it is not a V2 acceptance requirement and creates no plug-in identity claim.
+
+## Lifecycle acceptance
+
+Prove valid capture, permission denial/grant, guard false/true, invalid display/dimensions/crop/destination, normal helper exit, forced helper exit, Bitwig quit, restart, and no wrong/full-display visual authority.
+
+Moving/resizing the Bitwig main window and automatic crop reacquisition are explicitly not tested claims.
 
 ## Performance
 
-Measure capture delivery separately from helper processing.
+At 30 fps, after warmup, retain at least 1,000 complete frames where practical.
 
-After warmup, retain at least 1,000 complete frames per serious 30-fps target where practical for:
-
-- ScreenCaptureKit callback interval;
-- pixel-buffer access;
-- crop/scale preparation;
-- BGRA/alpha-normalization copy;
-- protocol header build;
-- loopback send;
-- helper capture-to-send processing;
-- V1D-2 supersession/dropped-frame observations where available.
-
-Test 15 fps and 30 fps. Test 60 fps when stable; 60 fps is not required for acceptance.
+Separate callback interval, frame-status acceptance, pixel-buffer access, crop/coordinate computation, aspect mapping/scaling, BGRA/alpha normalization, protocol preparation, socket send, and complete accepted-sample-to-send processing.
 
 Targets:
 
 ```text
-helper capture-to-ready processing p95 <= 10 ms at 30 fps
-helper copy/normalize/send p95 <= 2 ms at 30 fps
-no unbounded backlog or frame-memory growth
+helper accepted-sample processing p95 <= 10 ms
+copy/map/normalize/send p95 <= 2 ms
+no unbounded backlog
+no unbounded memory growth
 ```
 
-Retain CPU, RSS/resident growth, dropped/late-frame counts, and distinguish source cadence from processing latency.
+Test 15 and 30 fps. 60 fps is optional.
 
-## Real fixture
+Retain samples, p50/p95/max, incomplete/dropped frames, protocol frames/CLEAR count, guard transitions, CPU, RSS/resident start/end/peak, helper queue/thread topology, and any observable V1D-2 supersession.
 
-Use the exact accepted V1D-2 DrivenByMoss integration artifact or an exact rebuild from accepted `pushwig/main`; do not modify it.
+The temporary estimate of approximately 1% CPU and 34,320 KB RSS is reconnaissance context, not accepted production measurement.
 
-Prove:
+## Real Push acceptance
 
-- Push connection, pads, pressure/MPE, encoders, transport;
-- Push audio device and audible headphones;
-- current semantic UI remains correct under/around the lens;
-- useful native-device pixels on Push;
-- useful plug-in pixels on Push;
-- no accidental whole-desktop capture;
-- move/resize/close/reopen and permission/missing/ambiguity fallback;
-- helper exit/crash returns to semantics through accepted ingress behavior;
-- no trail, stale block, torn frame, wrong source, control lag, abnormal display lag, xrun, or dropout;
-- normal helper and Bitwig shutdown.
+Using the exact accepted V1D-2 integration artifact, prove Push connection, pads, pressure/MPE, encoders, transport, current semantic display, Push audio/headphones, real Sampler pixels only in the declared destination, no visible aspect distortion, semantic fallback on permission/configuration/guard/helper loss, no trail/stale block/torn frame/full-display leak/control lag/display lag/xrun/dropout, and normal helper/Bitwig quit.
 
-After live testing restore the exact official DrivenByMoss artifact as the sole scanned extension and physically confirm standard display, controls, and audio.
+Then restore the exact official DrivenByMoss artifact as the sole scanned extension and physically confirm standard display, controls, audio/headphones, and absence of captured pixels.
 
 ## Evidence output
 
 Create only:
 
 ```text
-evidence/v2-macos-dedicated-window/
+evidence/v2-macos-display-crop/
 ├── README.md
 ├── source-topology.md
 ├── helper-build-and-identity.md
-├── window-discovery-and-lifecycle.md
-├── capture-pixel-contract.md
-├── native-device-result.md
-├── plugin-result.md
+├── display-selection-and-guard.md
+├── crop-aspect-and-pixel-contract.md
+├── sampler-result.md
 ├── permission-and-fallback.md
 ├── performance.md
-└── real-fixture-and-rollback.md
+├── real-fixture-and-rollback.md
+└── limitations-and-next-resolution.md
 ```
 
-Retain exact source PR/head/tree, helper build identity, permission identity, target descriptors, window lifecycle, crop/destination metadata, hashes, timing, CPU/memory, real Push behavior, and rollback.
+Retain exact source PR/head/tree, source hashes, helper build identity, permission attribution, display identity/dimensions, guard rule, crop math, aspect mapping, pixel contract, Sampler result, protocol counts, performance, real Push behavior, rollback, and explicit limitations.
 
-## Non-goals
+Do not commit proprietary screenshots/raw frames, `.app` bundles/Swift build products, capability tokens/files, full logs, private projects/presets, serials/UUIDs/hostnames, unrelated display/window inventories, or unsanitized personal paths.
 
-No DrivenByMoss changes; no embedded Bitwig-panel resolver; no pixel-anchor matching; no public visual adapter SDK; no persistent calibration database; no mouse automation; no plug-in control automation; no Linux/Steam Deck capture; no remote network ingress; no private WindowServer/TCC APIs; no second Push bitmap or USB writer; no appliance/CM11EB work.
+## Completion condition
 
-## Completion posture
-
-V2 is complete only when both exact source/evidence PR heads exist, one floating native-device window and one ordinary plug-in editor produce useful real captured pixels on Push through unchanged V1D-2, permission and lifecycle fallback are correct, wrong/ambiguous sources abstain, helper processing is bounded, Push controls/audio remain normal, and the exact official DrivenByMoss artifact is restored.
+V2 is complete only when exact source and evidence PR heads exist; source is built from the corrected authority basis; the dedicated-window branch remains unmerged; stable helper/TCC identity, exact display selection, crop validation, aspect-preserving mapping, real Sampler pixels, fallback, bounded performance, Push controls/audio, and exact official rollback all pass.
