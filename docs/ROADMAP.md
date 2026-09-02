@@ -18,9 +18,9 @@ The Mac is the first implementation fixture; Steam Deck/Linux is the named secon
 
 ### S0 through V1B
 
-Accepted the exact Mac/Bitwig/Push fixture, source and artifact provenance, derivative build/install/rollback, the frame-pipeline seam, and bounded static project-owned pixels.
+Accepted the exact Mac/Bitwig/Push fixture, source/artifact provenance, reversible DrivenByMoss derivative workflow, frame seam, and first bounded project-owned pixels.
 
-### V1C-0 and V1C — current-semantic dynamic restoration
+### V1C-0 and V1C — current-semantic restoration
 
 ```text
 newest retained semantic model
@@ -30,102 +30,102 @@ newest retained semantic model
         -> unchanged PushUsbDisplay
 ```
 
-Accepted movement, overlap, resize, replacement, semantic-only states, semantic updates under coverage, overlay-only updates, notification lifecycle, regression paths, one writer, real Push behavior, and exact rollback.
+Accepted movement, overlap, resize, replacement, semantic-only states, semantic updates under coverage, overlay/notification lifecycle, prior-mode regressions, one writer, real Push controls/audio/display, and exact rollback.
 
 ### V1D-0 and V1D-1 — production bulk raster sink
 
 ```text
 current semantic redraw
         -> validate complete OPAQUE_BGRA8888 request
-        -> absolute bulk row copies, or zero writes
+        -> absolute bulk row copies, or zero write
         -> same logical bitmap
         -> unchanged PushUsbDisplay
 ```
 
-Accepted a caller-owned `byte[]` host-neutral sink, adapter-private cached destination view, complete alpha/geometry/overflow/thread validation, padded/medium/full-frame writes, malformed fallback, zero restoration mismatches, bounded writer timing/allocation, all prior-mode regressions, real Push behavior, and exact rollback.
+Accepted the host-neutral `byte[]` region writer, adapter-private destination memory, exact geometry/stride/alpha/thread validation, padded/full-frame tests, zero partial invalid writes, bounded writer timing/allocation, prior-path regressions, real Push behavior, and rollback.
 
-Accepted implementation:
-
-```text
-kasselvania/DrivenByMoss: pushwig/main
-commit: 663d719207ef58ec84b4d235c43211ec5da43605
-tree:   c4e42825d069421a44b3241349de9a7c6453a3ad
-```
-
-Accepted V1D-1 evidence:
+### V1D-2-0 and V1D-2 — production external latest-frame ingress
 
 ```text
-commit: a02c9c772da38bfdbc89dfff751c9617cd397c02
-tree:   62b4edce8d649266cda65a638d26113692eaef04
-```
-
-### V1D-2-0 — external ingress architecture
-
-Selected Candidate A:
-
-```text
-external generated producer
+external producer
         -> capability-authenticated TCP 127.0.0.1 protocol v1
-        -> complete-message receive in one receiver thread
-        -> fixed latest-publication storage
-        -> display-thread nonblocking adoption
+        -> one receiver thread
+        -> complete latest-frame publication in fixed storage
+        -> display-thread tryLock adoption
         -> local monotonic freshness
-        -> accepted V1D-1 sink
+        -> accepted raster sink
         -> unchanged PushUsbDisplay
 ```
 
 Accepted:
 
-- 80-byte network-order header and 614,400-byte payload cap;
-- HELLO/FRAME/CLEAR messages;
-- 32-byte capability, producer session identity, receiver-local generation, and strictly increasing sequence;
-- legal gaps and latest-frame supersession without application backlog;
-- fixed staging/publication/display arrays and one daemon receiver thread;
-- complete publication only after full receive and validation;
+- exact 80-byte network-order protocol and 614,400-byte payload cap;
+- HELLO / FRAME / CLEAR;
+- private 32-byte capability-file authentication;
+- producer session + receiver-local generation;
+- strictly increasing sequence, legal gaps, exhaustion/reconnect behavior;
+- fixed staging/publication/display arrays and one daemon receiver;
+- no application frame FIFO;
+- complete publication only after receive/auth/session/geometry/alpha validation;
 - display `tryLock` only;
-- exact semantic fallback on absence, clear, disconnect, crash, stale, protocol/authentication/session failure, truncation, malformed data, writer rejection, bind failure, and shutdown;
-- 1/15/30/60 fps and burst tests;
-- five blocked-receive shutdown states and immediate same-port restart;
-- full real Push controls/audio/display acceptance and exact rollback.
+- exact semantic fallback for no producer, clear, disconnect, crash, stale, auth/protocol/session failure, malformed/truncated/oversized data, writer rejection, bind failure, and shutdown;
+- 1/15/30/60 fps, supersession, reconnect, five blocked-receive shutdown states, active-listener collision, immediate same-port restart;
+- production source/evidence, real Push controls/audio/display, and exact rollback.
 
-Accepted evidence:
-
-```text
-commit: 99e09e2a651c92ac6710fdc88c4675a874a56600
-tree:   db22ec0a845146f03861581a929ae52b30204a1b
-```
-
-## V1D-2 — production external latest-frame ingress — active
-
-Implement the selected receiver/store/pipeline in production DrivenByMoss source.
-
-Production envelope:
+Accepted source integration:
 
 ```text
-Push2Display.java
-ExternalRasterPushFramePipeline.java
-ExternalRasterReceiver.java
-LatestExternalRasterFrameStore.java
+kasselvania/DrivenByMoss: pushwig/main
+commit: 7e3416a1bdddbcbeec4e35e6531652e1618723de
+tree:   c8bc3f9e052e8f0b7b5dd256657697349d303740
 ```
 
-Startup contract:
+Accepted central V1D-2 evidence:
 
 ```text
-pushwig.externalRasterIngress=true
-pushwig.externalRasterPort=<port>
-pushwig.externalRasterTokenFile=<private file>
-pushwig.externalRasterStaleTimeoutMs=<timeout>
+commit: 198b44a838009dac0df83464501004b6e6b59d9d
+tree:   76d9f92ae8ec7369790b0b8dd325cd4a602e3dbb
 ```
 
-The launcher owns the private token file; the extension validates/loads it, binds only `127.0.0.1`, receives into fixed storage, and exposes only complete authenticated latest frames to the display thread. External mode has precedence over local diagnostic sources and enables current-semantic redraw.
+## V2 — macOS dedicated-window visual lens — active
 
-Acceptance requires exact protocol/security/session/sequence/freshness behavior, no receiver bitmap access, no display socket access, fixed memory, one receiver thread, nonblocking display adoption, zero torn/partial/old-session/restoration mismatches, explicit sequence-exhaustion behavior, bounded production timing, all five shutdown states, collision/restart, real Push operation, and exact rollback.
+**Claim:** capture real pixels from dedicated top-level Bitwig windows through the unchanged accepted external ingress and show them usefully on Push.
 
-No window capture enters this slice.
+Required source classes:
 
-## V2 — macOS dedicated-window visual lens
+1. one floating/undocked Bitwig native-device Expanded Device View;
+2. one already-installed ordinary plug-in editor.
 
-Use a normal macOS helper to discover and capture one floating Bitwig native-device view and one ordinary plug-in editor. Preserve window identity through move/resize/monitor changes, use source-relative crops, recover from close/reopen and permission denial, and keep Apple types inside the helper.
+Production helper source lives under:
+
+```text
+capture/macos/**
+```
+
+The helper uses ScreenCaptureKit, a stable macOS app identity, normal Screen Recording permission, logical window descriptors, normalized source-relative crops, bounded helper-local scaling, opaque BGRA output, and accepted V1D-2 protocol v1.
+
+Acceptance requires:
+
+- no DrivenByMoss change;
+- unique-window selection by owner bundle id + exact title + source role;
+- abstention on zero/multiple matches;
+- same-display movement;
+- resize smaller/larger with normalized crop recomputation;
+- close -> semantic fallback;
+- reopen/new windowID -> reacquire;
+- occlusion behavior retained;
+- cross-display move when two displays exist, otherwise explicit no-claim;
+- Screen Recording denial -> semantic fallback, then same-build success after normal permission grant/relaunch;
+- useful real native-device pixels on the actual Push;
+- useful real plug-in pixels on the actual Push;
+- no accidental whole-desktop/wrong-window capture;
+- bounded 15/30 fps capture/processing; 60 fps optional;
+- normal Push controls/audio and helper/Bitwig shutdown;
+- exact official DrivenByMoss rollback.
+
+V2 does not solve embedded Bitwig panels, pixel anchors, public adapter SDK, or Linux capture.
+
+See [`V2_MACOS_DEDICATED_WINDOW_LENS.md`](V2_MACOS_DEDICATED_WINDOW_LENS.md).
 
 ## V2A — semantic-seeded pixel-anchor benchmark
 
@@ -151,8 +151,6 @@ Track A consumes Track V; it does not define it.
 - **A1:** managed/headless Steam Deck profile with safe boot, save, restart, and shutdown.
 - **A2:** battery-powered maintainer appliance with measured runtime/thermals and wireless full desktop.
 - **A3:** reproducible Framework/compact-x86 appliance with public BOM and service procedure.
-
-A2 is already a complete project success.
 
 # Track H — Connector and native compute
 
