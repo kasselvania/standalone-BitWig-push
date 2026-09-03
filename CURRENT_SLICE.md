@@ -1,70 +1,129 @@
-# Current Work — attached visual-source architecture blocked
+# Current Work — V5 managed Bitwig workspace
 
 ## Status
 
-**BLOCKED — NO ACTIVE IMPLEMENTATION SLICE**
+**ACTIVE**
 
-V4 stopped at its required preflight before any production Sampler-page source was written.
+Owning issue: [#50 — V5: Managed Bitwig workspace and PipeWire frame source](https://github.com/kasselvania/standalone-BitWig-push/issues/50)
 
-- Owning issue: [#49 — V4 Sampler device-page foundation](https://github.com/kasselvania/standalone-BitWig-push/issues/49)
-- Blocker evidence branch: `capture/v4-sampler-device-page`
-- Blocker evidence commit: `52f6f41f4fc7285d652453a3530b9764e0295cc5`
-- Evidence: [`evidence/v4-sampler-device-page/README.md`](https://github.com/kasselvania/standalone-BitWig-push/blob/52f6f41f4fc7285d652453a3530b9764e0295cc5/evidence/v4-sampler-device-page/README.md)
+Durable design: [`docs/design/managed-visual-workspace.md`](docs/design/managed-visual-workspace.md)
 
-No V4 production helper, custom page, semantic bridge, or DrivenByMoss source change exists.
+Blocked prior goal: [#49 — V4 Sampler device-page foundation](https://github.com/kasselvania/standalone-BitWig-push/issues/49)
 
-## What the accepted work actually proved
+Implementation branches begin from the current accepted `origin/main` containing this V5 activation.
 
-V1 through V3 answered the original engineering question:
+## Why V5 comes before Sampler
+
+V2/V3 proved the downstream engineering path:
 
 ```text
-computer pixels
-        -> bounded capture and helper-local processing
+real pixels
+        -> bounded capture/processing
         -> authenticated latest-frame ingress
         -> current semantic composition
         -> physical Push 3
 ```
 
-On the accepted fixture, this path is fast, responsive, bounded, accurate, and does not disturb Push control or audio ownership.
+V4 preflight then proved that continuous ScreenCaptureKit capture of the user's primary Bitwig window is not acceptable as the current macOS attached-desktop product source: macOS sharing UI obstructs normal Bitwig window controls on the tested fixture.
 
-V3 also proved that a captured Bitwig window can be followed through ordinary movement, supported resize, loss, and recreation.
+The Mac was the first software-development fixture, not the product definition.
 
-Those are important infrastructure results. They do **not** establish that the current macOS capture source is acceptable for normal attached-desktop use.
+V5 returns to the original managed-runtime/appliance model and proves a visual source that can become portable without designing every future OS backend now.
 
-## Product blocker
+## Goal
 
-The exact accepted desktop-independent Bitwig-window capture causes macOS to place a sharing badge over Bitwig's normal window controls on the tested Mac. During capture, the maintainer could not access the normal minimize and full-screen controls. Stopping capture removed the badge.
+Run one authoritative Bitwig session inside one controlled Linux graphical workspace and expose that workspace simultaneously as:
 
-The accepted public ScreenCaptureKit configuration already excludes cursor pixels, click indicators, child windows, and the content-sharing picker. Inspection did not identify a supported public setting that removes this obstruction while preserving the same window-capture architecture.
+```text
+canonical managed workspace
+        +-> raw PipeWire frame stream -> Pushwig frame adapter -> V1D-2 -> Push
+        +-> full remote desktop/input -> another computer/device
+```
 
-Pointer, Bitwig-rendered hover state, and tooltip contamination are separate concerns and were not accepted as solved.
+Remote-client size, zoom, connection state, or codec must not define the canonical workspace geometry or the Pushwig visual source identity.
 
-Therefore:
+## Reference implementation
 
-> **Continuous ScreenCaptureKit capture of the user's primary Bitwig window is an engineering proof source, not a supported attached-desktop product source.**
+Use Weston as the first managed compositor/workspace reference and PipeWire as the first raw-video transport.
 
-The V4 requirement must not be waived merely to continue the Sampler page. A device-aware interface built on an unusable source mode would still be unusable.
+Preferred proof topology:
 
-## Current design decision
+```text
+Bitwig (+ Xwayland when required)
+        -> Weston managed output
+             |                 |
+             |                 +-> VNC or equivalent remote backend
+             |
+             +-> PipeWire secondary backend
+                    -> committed Pushwig Linux frame adapter
+                    -> unchanged V1D-2 raster ingress
+```
 
-The device-aware presentation model remains useful, but implementation is paused before its capture backend.
+Weston, VNC, PipeWire, Wayland, X11/Xwayland and Linux-specific handles are backend implementation details. They must not define the portable `VisualSurface` / `VisualSurfaceFrame` contract.
 
-The next technical-lead/maintainer decision must choose and prove a viable visual-source operating mode, such as:
+## Source ownership
 
-- a supported attached-desktop source that preserves ordinary Bitwig use;
-- a managed or dedicated visual surface that does not interfere with the user's primary Bitwig window;
-- direct/generated visuals from semantic or audio data where capture is unnecessary;
-- a hybrid in which capture is used only in contexts where its operating cost is acceptable.
+### Central repository
 
-These are candidate directions, not selected architecture.
+V5 production work belongs in one product PR, likely under:
 
-## Rules while blocked
+```text
+workspace/linux/**
+capture/linux/**
+docs/design/managed-visual-workspace.md
+docs/DEVELOPMENT.md
+evidence/v5-managed-workspace/README.md
+```
 
-- Do not continue V4 production implementation.
-- Do not relax the window-control requirement.
-- Do not claim V2/V3 as an end-user-ready attached-desktop capture mode.
-- Do not add device anchors, semantic-camera behavior, or more crop logic before the source mode is chosen.
-- Do not modify DrivenByMoss merely to hide the macOS source problem.
-- Preserve the accepted downstream raster, ingress, semantic-restoration, control, audio, and one-writer boundaries.
+The exact source split is implementation-driven.
 
-The native-device matrix and device-aware presentation vocabulary remain design references, not active implementation authority.
+### DrivenByMoss
+
+Do not add Linux/Weston/PipeWire logic to DrivenByMoss.
+
+The accepted external raster ingress remains the final local frame sink. Existing control/audio/display ownership is unchanged.
+
+## Acceptance
+
+V5 succeeds when:
+
+1. Bitwig runs and remains usable inside one controlled Weston workspace.
+2. The workspace has explicit canonical geometry independent of the remote client.
+3. A raw PipeWire video source exposes that canonical workspace.
+4. A committed Pushwig Linux adapter consumes complete frames without an application FIFO or unbounded growth.
+5. Real pixels from that source can be converted/published through unchanged V1D-2 to Push when the hardware fixture is available.
+6. Another computer/device can see and control the complete Bitwig workspace through an independent remote-desktop path.
+7. Remote client resize/zoom does not change workspace geometry or source identity.
+8. Remote client disconnect/reconnect does not stop Bitwig, frame production, Push control or audio.
+9. Restarting the frame adapter does not restart Bitwig.
+10. Remote pointer/input remains usable remotely while ordinary pointer pixels do not contaminate the Push source.
+11. Normal Bitwig window controls are usable in the managed workspace.
+12. CPU/RSS/frame cadence and frame-processing latency are retained.
+13. Platform-neutral source descriptors contain no Weston/PipeWire/Wayland/X11/DRM/VNC handles or transient IDs.
+14. Existing accepted V1D-2 and DrivenByMoss contracts remain unchanged.
+
+## Explicit non-goals
+
+V5 does not implement:
+
+- the blocked V4 Sampler page;
+- semantic camera or device anchors;
+- Browser redesign;
+- gamescope production integration;
+- Steam Deck battery/appliance packaging;
+- XDG portal attached-mode capture;
+- a replacement macOS attached capture backend;
+- Windows capture;
+- a public adapter SDK.
+
+These can consume the managed-workspace/source contract later.
+
+## Stable boundaries
+
+- Bitwig remains the DAW/audio-engine authority.
+- DrivenByMoss remains controller-semantic authority and sole Push USB display writer.
+- V1D-2 remains the final bounded local raster ingress.
+- The managed workspace is a source/runtime layer upstream of that sink.
+- Remote desktop is a separate consumer of the same Bitwig workspace, not the Push visual transport.
+- The Mac remains a useful development fixture but no longer defines the visual-source architecture.
+- V4 remains blocked until a viable source mode exists; V5 does not silently waive that blocker.

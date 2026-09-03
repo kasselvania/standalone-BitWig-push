@@ -1,93 +1,72 @@
 # Documentation
 
-This index separates public/contributor documentation from durable architecture, current product design, future research, historical slice dossiers, and retained evidence.
+This index separates public/contributor documentation from durable architecture, active product design, historical research, and retained evidence.
 
 ## New to Pushwig
 
 Read these first:
 
-1. [`../README.md`](../README.md) — what Pushwig is, what has been proven, and the current blocker.
-2. [`ARCHITECTURE.md`](ARCHITECTURE.md) — current component ownership, proven downstream substrate, and unresolved visual-source operating mode.
+1. [`../README.md`](../README.md) — what Pushwig is and what works today.
+2. [`ARCHITECTURE.md`](ARCHITECTURE.md) — component/source ownership and current system shape.
 3. [`../CONTRIBUTING.md`](../CONTRIBUTING.md) — how to contribute.
 4. [`DEVELOPMENT.md`](DEVELOPMENT.md) — build and local development setup.
-5. [`TESTING.md`](TESTING.md) — committed tests versus temporary harnesses and real-hardware evidence.
-6. [`ROADMAP.md`](ROADMAP.md) — accepted capabilities and longer-term product direction.
+5. [`TESTING.md`](TESTING.md) — committed tests versus fixture evidence.
+6. [`ROADMAP.md`](ROADMAP.md) — capability-oriented product direction.
 
-A competent developer should not need `AGENTS.md`, `CURRENT_SLICE.md`, or evidence hashes to understand the project.
+## Active work
 
-## Current status
-
-There is no active implementation slice.
-
-[V4 / issue #49](https://github.com/kasselvania/standalone-BitWig-push/issues/49) stopped before production implementation because the accepted macOS primary-window capture structure failed its required attached-desktop usability gate. The blocker evidence is retained at commit `52f6f41f4fc7285d652453a3530b9764e0295cc5`.
+[V5 — Managed Bitwig workspace and PipeWire frame source](https://github.com/kasselvania/standalone-BitWig-push/issues/50) is active.
 
 Read:
 
-- [`../CURRENT_SLICE.md`](../CURRENT_SLICE.md) — concise blocked-state summary.
-- [`ARCHITECTURE.md`](ARCHITECTURE.md) — distinction between the proven downstream visual substrate and unresolved product source.
-- [`design/device-aware-presentation-layer.md`](design/device-aware-presentation-layer.md) — device-aware product vocabulary with source viability as prerequisite zero.
+- [`design/managed-visual-workspace.md`](design/managed-visual-workspace.md) — canonical managed workspace, raw frame source, remote desktop, and portable source contract.
+- [`RUNTIME_STRATEGY.md`](RUNTIME_STRATEGY.md) — attached versus managed runtimes and backend families.
+- [`PROJECT_TRACKS.md`](PROJECT_TRACKS.md) — Track V software, Track A appliance, Track H internal hardware, and fixture roles.
+- [`../CURRENT_SLICE.md`](../CURRENT_SLICE.md) — concise executable status.
 
-## Device and workflow catalog
+The blocked Sampler page remains [issue #49](https://github.com/kasselvania/standalone-BitWig-push/issues/49). V5 does not silently waive its source-usability blocker.
 
-- [`design/native-device-behavior-matrix.md`](design/native-device-behavior-matrix.md) — native-device × DrivenByMoss baseline, behavior families, screen/context decisions, and priorities.
-- [`design/native-device-behavior-matrix.csv`](design/native-device-behavior-matrix.csv) — machine-sortable 151-device inventory.
-- [`reference/manuals/README.md`](reference/manuals/README.md) — exact Bitwig/DrivenByMoss manual sources and local download workflow.
-- [Issue #47](https://github.com/kasselvania/standalone-BitWig-push/issues/47) — ongoing device catalog and capability-audit work.
+## Device-aware product design
 
-The catalog remains useful design work. It is not authorization to continue device-page implementation on the blocked source architecture.
+- [`design/device-aware-presentation-layer.md`](design/device-aware-presentation-layer.md) — context, semantic state, experience profile, resolver, camera, composer, and source-backend vocabulary.
+- [`design/native-device-behavior-matrix.md`](design/native-device-behavior-matrix.md) — native-device × DrivenByMoss baseline and priorities.
+- [`design/native-device-behavior-matrix.csv`](design/native-device-behavior-matrix.csv) — machine-sortable native-device inventory.
+- [`reference/manuals/README.md`](reference/manuals/README.md) — pinned Bitwig/DrivenByMoss manual references.
+
+These remain product/design references while V5 establishes a viable managed source.
 
 ## Current durable references
 
-- [`ARCHITECTURE.md`](ARCHITECTURE.md) — system boundaries and source-mode blocker.
-- [`PROTOCOLS.md`](PROTOCOLS.md) — raster sink and external frame protocol summary.
-- [`DEVELOPMENT.md`](DEVELOPMENT.md) — build/run setup.
-- [`TESTING.md`](TESTING.md) — testing model.
-- [`ROADMAP.md`](ROADMAP.md) — longer-term product direction.
-- [`HARDWARE.md`](HARDWARE.md) — concise appliance/internal-compute scope.
-- [`BRANCH_AND_WORKTREE_POLICY.md`](BRANCH_AND_WORKTREE_POLICY.md) — repository hygiene/lifecycle.
-- [`integrations/drivenbymoss.md`](integrations/drivenbymoss.md) — current DrivenByMoss integration guide.
+- [`ARCHITECTURE.md`](ARCHITECTURE.md)
+- [`RUNTIME_STRATEGY.md`](RUNTIME_STRATEGY.md)
+- [`PROJECT_TRACKS.md`](PROJECT_TRACKS.md)
+- [`PROTOCOLS.md`](PROTOCOLS.md)
+- [`DEVELOPMENT.md`](DEVELOPMENT.md)
+- [`TESTING.md`](TESTING.md)
+- [`ROADMAP.md`](ROADMAP.md)
+- [`HARDWARE.md`](HARDWARE.md)
+- [`BRANCH_AND_WORKTREE_POLICY.md`](BRANCH_AND_WORKTREE_POLICY.md)
+- [`integrations/drivenbymoss.md`](integrations/drivenbymoss.md)
 
-## Accepted and current design references
+## Accepted and historical design documents
 
-- [`design/window-relative-visual-lens.md`](design/window-relative-visual-lens.md) — accepted V3 engineering design; not a supported attached-desktop product mode.
-- [`design/device-aware-presentation-layer.md`](design/device-aware-presentation-layer.md) — current product vocabulary, paused at source viability.
-- [`design/native-device-behavior-matrix.md`](design/native-device-behavior-matrix.md) — device/screen behavior catalog.
-
-## Maintainer / automation control files
-
-These are intentionally outside the normal contributor reading path:
-
-- [`../AGENTS.md`](../AGENTS.md) — coding-agent/maintainer execution rules.
-- [`../CURRENT_SLICE.md`](../CURRENT_SLICE.md) — compact current-work summary.
-
-## Research references
-
-- [`VISUAL_PORTABILITY.md`](VISUAL_PORTABILITY.md) — long-term adaptive visual-source problem.
-- [`SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`](SEMANTIC_PIXEL_ANCHOR_RESOLVER.md) — semantic-seeded anchor/localization hypothesis; not active while source mode is unresolved.
-- [`RUNTIME_STRATEGY.md`](RUNTIME_STRATEGY.md) — historical/platform strategy.
-- [`VISUAL_RESEARCH_BASIS.md`](VISUAL_RESEARCH_BASIS.md) — research references/provenance.
+- [`design/window-relative-visual-lens.md`](design/window-relative-visual-lens.md) — accepted V3 engineering/source proof and its limitations.
+- [`VISUAL_PORTABILITY.md`](VISUAL_PORTABILITY.md) — attached/managed visual portability and source strategy ladder.
+- [`SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`](SEMANTIC_PIXEL_ANCHOR_RESOLVER.md) — semantic-seeded visual localization hypothesis for later device work.
+- [`MAC_FIRST_DEVELOPMENT.md`](MAC_FIRST_DEVELOPMENT.md) — historical Mac-first fixture decision; useful for understanding why macOS was an implementation order choice rather than product scope.
 - [`HARDWARE_DOSSIER.md`](HARDWARE_DOSSIER.md) — detailed appliance/CM11EB hardware research.
-- [`DRIVENBYMOSS_DERIVATIVE_STRATEGY.md`](DRIVENBYMOSS_DERIVATIVE_STRATEGY.md) — detailed fork/history notes.
 
-A design or research document is not automatically an active implementation plan.
+Historical V1/V2 slice dossiers remain evidence/history, not onboarding or active authority.
 
-## Historical slice dossiers
+## Maintainer / automation files
 
-These files document how earlier architecture questions were researched and accepted. They remain useful history, but are not current onboarding or separate constitutional layers:
+- [`../AGENTS.md`](../AGENTS.md) — maintainer/coding-agent execution rules.
+- [`../CURRENT_SLICE.md`](../CURRENT_SLICE.md) — active work summary.
 
-- `V1B_SYNTHETIC_COMPOSITION.md`
-- `V1C0_DYNAMIC_RASTER_COMPOSITION.md`
-- `V1C_DYNAMIC_LOCAL_COMPOSITION.md`
-- `V1D0_BULK_RASTER_COMPOSITION.md`
-- `V1D1_LOCAL_RASTER_COMPOSITION.md`
-- `V1D20_EXTERNAL_FRAME_INGRESS.md`
-- `V1D2_EXTERNAL_FRAME_INGRESS.md`
-- `V2_MACOS_DISPLAY_CROP_LENS.md`
-
-If a historical dossier contains a rule that still matters, the durable version should live in `ARCHITECTURE.md`, `PROTOCOLS.md`, `TESTING.md`, or another current document.
+Human contributors should not need these files to understand Pushwig.
 
 ## Evidence
 
 See [`../evidence/README.md`](../evidence/README.md).
 
-`evidence/**` contains exact experiment/fixture custody. Consult it when reproducing a specific experiment or investigating a regression, not as the default project introduction.
+`evidence/**` contains exact fixture/experiment custody. Consult it to reproduce a specific result or investigate a regression, not as the default project introduction.

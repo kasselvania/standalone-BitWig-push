@@ -2,114 +2,131 @@
 
 Pushwig's roadmap is organized around product capabilities, not every internal experiment.
 
-Execution authority lives in `CURRENT_SLICE.md` and an owning issue. This file gives longer-term orientation only.
+Execution authority lives in `CURRENT_SLICE.md` and the owning issue. This file provides orientation only.
 
-## Done: downstream visual path on real Push hardware
+## Accepted foundation
 
 The project has established:
 
 - a narrow DrivenByMoss display-composition seam;
-- reliable restoration of the current semantic Push display;
+- exact restoration of the current semantic Push display;
 - a validated opaque-BGRA raster sink;
-- bounded authenticated latest-frame ingress from a separate local process;
-- real Bitwig pixels on a physical Push 3 Controller while controls, audio, and headphone output remain operational;
-- a maintained macOS ScreenCaptureKit helper;
-- a human-readable window-relative visual profile;
-- unique/missing/ambiguous Bitwig-window selection;
-- helper-local normalized cropping and aspect-preserving scaling;
-- window move, supported resize, source-loss, and recreation handling;
-- committed regression tests for crop, profile, selection, generation, protocol, and backpressure behavior.
+- bounded capability-authenticated latest-frame ingress;
+- real host pixels displayed on a physical Push 3 while controls/audio remain operational;
+- a maintained macOS capture helper;
+- explicit helper-local cropping and aspect-preserving scaling;
+- Bitwig-window movement/loss/recreation handling;
+- committed regression tests for stable frame/profile/protocol/backpressure behavior.
 
-These results prove the **visual substrate**: pixels can be acquired and delivered quickly, accurately, and with bounded impact.
+These results answer the initial engineering question: real computer-hosted visuals can reach Push quickly, accurately and with bounded resource cost.
 
-They do not prove that the current source is a usable end-user operating mode.
+## Blocked: V4 Sampler device page
 
-## Blocked: primary-window attached capture
+[V4 / issue #49](https://github.com/kasselvania/standalone-BitWig-push/issues/49) stopped before production implementation.
 
-On the tested macOS fixture, continuous desktop-independent capture of Bitwig's primary window places a macOS sharing badge over the normal window controls. The maintainer could not access normal minimize and full-screen controls while capture was active.
+The current macOS primary-window ScreenCaptureKit source is not accepted for attached-desktop use because macOS sharing UI obstructs normal Bitwig window controls on the tested fixture.
 
-V4 stopped at this required preflight before any Sampler-page production source was written. The blocker is retained under [issue #49](https://github.com/kasselvania/standalone-BitWig-push/issues/49) and evidence commit `52f6f41f4fc7285d652453a3530b9764e0295cc5`.
+The desired device-aware Sampler page remains a product goal. It does not resume until a viable source operating mode exists.
 
-The project will not waive this as a cosmetic limitation. A source mode that makes the host application materially worse to use is not the product foundation for a richer controller experience.
+## Active: V5 managed Bitwig workspace
 
-## Next decision: visual-source operating mode
-
-Before resuming device-aware implementation, select and prove at least one viable source mode.
-
-Candidate categories are:
-
-1. **Attached desktop** — a supported source that preserves ordinary use of the primary Bitwig session.
-2. **Managed/dedicated surface** — a controlled visual session, display, or window that does not obstruct the user's primary Bitwig UI.
-3. **Direct/generated visuals** — render from controller semantics, sample/audio data, or analysis output without desktop capture.
-4. **Hybrid** — direct/generated presentation by default, with captured native graphics only where the capture operating mode is acceptable.
-
-No category is selected merely by appearing here.
-
-## Device-aware presentation direction
-
-The intended product model remains:
+[V5 / issue #50](https://github.com/kasselvania/standalone-BitWig-push/issues/50) proves the source/runtime architecture originally intended for managed/appliance operation:
 
 ```text
-context router
-semantic context
-experience profile
-visual resolver
-semantic camera
-presentation composer
-source backend
+one authoritative Bitwig session
+        -> canonical managed graphical workspace
+             +-> raw PipeWire frames -> Pushwig frame adapter -> V1D-2 -> Push
+             +-> full remote desktop/input -> another device
 ```
 
-See [`design/device-aware-presentation-layer.md`](design/device-aware-presentation-layer.md) and the [`native-device-behavior-matrix.md`](design/native-device-behavior-matrix.md).
+V5 uses Weston and PipeWire as the first Linux reference implementation, not as permanent product dependencies.
 
-Once a viable source mode exists, the desired product order remains approximately:
+Acceptance centers on:
 
-- one complete Sampler Device-page experience;
-- Browser redesign;
-- Sampler playback/loop/slice task views;
-- Polymer as the first generalization test;
-- broader native-device behavior families.
+- canonical workspace geometry independent of the remote client;
+- raw compositor frames with bounded processing;
+- independent remote desktop/input;
+- restart/disconnect independence;
+- cursor separation;
+- actual frames through unchanged V1D-2;
+- platform-neutral source descriptors.
 
-That sequence is paused, not discarded.
+See [`design/managed-visual-workspace.md`](design/managed-visual-workspace.md).
+
+## After a viable managed source
+
+The near product sequence remains:
+
+1. reconsider the blocked Sampler device-page foundation against the viable source;
+2. redesign the Browser as a results-first semantic experience;
+3. add Sampler waveform/boundary and sliced task views after capability verification;
+4. use Polymer as the first device-overview generalization test;
+5. expand proven behavior families to other native devices;
+6. improve attached-mode source coverage separately rather than constraining the managed appliance to the current Mac backend.
+
+The device behavior catalog is [`design/native-device-behavior-matrix.md`](design/native-device-behavior-matrix.md).
+
+## Stronger localization and interaction
+
+As device-aware work resumes, improve:
+
+- selected-device and parameter-binding semantic coordination;
+- verified device boundaries and named visual regions;
+- touch/edit/multi-touch semantic-camera behavior;
+- layout variants and bounded calibration;
+- confidence-checked semantic-seeded anchors where geometry is insufficient;
+- direct generated waveform/analyzer sources where structured data is available;
+- abstention rather than wrong visual locks.
 
 ## Usability and packaging
 
 Before calling Pushwig an end-user release, improve:
 
 - installation and first-run setup;
-- source-mode and profile management;
-- helper and DrivenByMoss version compatibility;
-- diagnostics and recovery that do not require evidence logs;
-- release packaging and upgrade/rollback behavior;
+- profile/source management;
+- helper/runtime/DrivenByMoss compatibility;
+- diagnostics and recovery;
+- release packaging and upgrade/rollback;
 - contributor-facing build/test automation.
 
-## Linux and Steam Deck
+## Linux attached mode
 
-Port the proven downstream contracts rather than redesigning them:
+Managed V5 is not the Linux attached-mode solution.
 
-- prove Push control/audio/display on Linux;
-- evaluate X11/Xwayland and Wayland/portal source behavior;
-- characterize Flatpak boundaries;
-- measure CPU/power on the Steam Deck fixture;
-- preserve semantic fallback and one Push display writer.
+Later attached work may evaluate:
 
-A managed Linux appliance may offer a different visual-source operating environment from attached macOS, but that must be proven rather than assumed.
+- X11/XComposite;
+- XDG ScreenCast portal + PipeWire;
+- compositor-specific capture where appropriate;
+- dedicated/editor windows;
+- direct/generated sources.
 
-## Optional appliance work
+Attached backends must preserve ordinary desktop use.
 
-A self-contained Linux host, battery, boot/recovery services, and wireless desktop management can package Pushwig into a portable instrument. The Steam Deck is the first available appliance fixture; Framework/compact-x86 systems are possible later hosts.
+## Track A appliance
 
-## Optional internal-compute / connector research
+The managed workspace becomes the software runtime for the portable appliance:
 
-Push's internal compute bay and CM11EB carrier remain a separate hardware research track. Useful outcomes include safe connector characterization, diagnostic hardware, and eventual evaluation of a native-bay compute installation.
+```text
+Linux host + battery + Push
+        +-> curated Push interface
+        +-> full wireless Bitwig desktop
+        +-> boot/recovery/shutdown services
+```
 
-These hardware tracks do not block the downstream visual/controller foundation, but a managed appliance may become one valid place to host a dedicated visual source.
+The Steam Deck remains the first named appliance fixture. Framework/compact-x86 hosts remain alternatives.
+
+## Track H internal compute
+
+Push's internal compute bay and CM11EB carrier remain separate hardware research. They do not block the managed workspace, external USB appliance, or device-aware visual software.
 
 ## Release direction
 
-A credible public release must let another Push 3 + Bitwig user:
+A credible first public release should let a supported user:
 
-1. install the supported controller extension and source/rendering components;
-2. use Bitwig normally in the declared operating mode;
-3. see useful information on Push in the correct controller context;
+1. install the supported DrivenByMoss derivative and runtime/source backend;
+2. start a declared attached or managed operating mode;
+3. see useful device/browser/direct information on Push in the right context;
 4. retain normal controls/audio and semantic fallback when visuals disappear;
-5. understand the supported limitations from conventional docs and tests.
+5. in managed/appliance mode, access the full Bitwig desktop from another device;
+6. reproduce the supported configuration from conventional documentation and committed tests.

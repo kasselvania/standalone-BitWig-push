@@ -1,147 +1,162 @@
-# Project Tracks and Success Boundaries
+# Project tracks and success boundaries
 
 ## Purpose
 
-This project contains related but independent bodies of work. They share a Push/Bitwig contract, but they must not be collapsed into one linear definition of success.
+Pushwig contains related but independent bodies of work. They share a Push/Bitwig contract, but they must not be collapsed into one linear definition of success.
 
-The three primary tracks are:
+The three primary tracks remain:
 
-1. **universal visual/controller integration**;
-2. **all-in-one appliance packaging**;
-3. **Push internal-connector and native-compute research**.
+1. **Track V — universal visual/controller software**;
+2. **Track A — all-in-one managed Bitwig appliance**;
+3. **Track H — Push internal-connector/native-compute research**.
 
-A fourth category contains optional ecosystem integrations such as Windows plug-in bridging, plugdata, Pure Data, Monome devices, custom analyzers, and other visual sources. Those integrations may use the core interfaces, but they are not prerequisites for the core project.
+Optional ecosystem integrations may consume the software contracts without becoming prerequisites for the core project.
 
 ## Reference fixtures versus product requirements
 
-The project may use different computers for different proof jobs.
+Current fixture roles:
 
-Current maintainer fixtures:
+- **macOS development fixture** — first source/build/install/measurement environment; proved the downstream Push visual path and one concrete capture backend;
+- **Linux managed-runtime fixture** — current V5 proof host for the canonical workspace, raw compositor frames, and full remote desktop;
+- **Steam Deck appliance fixture** — later packaging/power/headless/portable acceptance host.
 
-- **macOS software fixture** — active V0/V1/V2 development host for tracing DrivenByMoss, inserting the frame pipeline, and implementing the first capture backend;
-- **Steam Deck appliance/Linux fixture** — later second-host portability proof and the first Track A all-in-one host.
+None is normative.
 
-Neither fixture is normative. The Mac does not make the product macOS-only, and the Deck does not make the product SteamOS-only.
+The Mac does not make Pushwig macOS-only. Weston/PipeWire do not make Weston or PipeWire permanent product requirements. The Steam Deck does not make SteamOS the only appliance host.
 
-## Track V — Universal visual/controller integration
+## Track V — universal visual/controller integration
 
 This is the primary open-source software product.
 
 Its claim is:
 
-> A Push user can combine DrivenByMoss semantic control with useful live Bitwig/native-device/plug-in visuals without depending on one computer model, one monitor resolution, or one appliance enclosure.
+> A Push user can combine DrivenByMoss semantic control with useful live Bitwig/native-device/plug-in/direct visuals through declared source backends and operating modes without depending on one computer model, monitor arrangement, or appliance enclosure.
 
-The target is ordinary Bitwig users first:
-
-- desktop and laptop computers;
-- arbitrary monitor positions and aspect ratios;
-- macOS as the first available implementation fixture;
-- Linux/Steam Deck as the named second-host and portability checkpoint;
-- later Windows support through another capture backend;
-- Push connected through its normal controller-mode USB contract.
-
-Platform order is an implementation schedule, not an architectural priority. Core frame, resolver, adapter, and compositor contracts remain platform-neutral.
-
-The visual system must support two operating modes:
+Track V has two operating classes.
 
 ### Attached mode
 
-Bitwig remains in the user's existing desktop layout. The project discovers windows and visual regions dynamically.
+Bitwig remains in the user's existing desktop session.
 
-Attached mode must not require:
+A supported backend must coexist with normal host use. It must not require a project-owned desktop or materially obstruct normal application controls.
 
-- a Mac or Steam Deck specifically;
-- a headless desktop;
-- a fixed monitor resolution;
-- a forced display profile;
-- a project-owned virtual desktop.
+The accepted macOS ScreenCaptureKit primary-window path is currently an engineering/reference source, not an accepted attached product source on the tested fixture.
+
+Attached mode remains a product goal and may use other capture backends, dedicated editor surfaces, direct/generated visuals, or future safer platform mechanisms.
 
 ### Managed mode
 
-The project controls Bitwig's logical desktop geometry, window placement, or remote-view environment.
+Pushwig controls the graphical workspace used by Bitwig.
 
-Managed mode is useful for:
+Managed mode owns stable logical geometry and may expose:
 
-- headless appliances;
-- deterministic automated testing;
-- remote-only operation;
-- systems where the project is allowed to normalize the whole UI.
+- a raw frame stream for Pushwig;
+- a full remote desktop/input path;
+- deterministic layout/profile state;
+- process supervision and recovery.
 
-A canonical virtual surface is a managed-mode technique. It is not the universal definition of visual portability.
+V5 is the first managed-source implementation proof.
 
-## Track A — All-in-one appliance
+## Track A — all-in-one appliance
 
-This track packages the proven visual/controller software into a portable instrument.
+Track A packages proven Track V software into a portable Bitwig instrument.
 
-The maintainer's Steam Deck is the first appliance host because it already exists and proves that the host can be standardized. It is not the current V0 software-development blocker, a project-wide hardware requirement, or the only intended appliance computer.
+The intended appliance experience has **two interfaces to the same authoritative Bitwig session**:
 
-Potential appliance hosts include:
+```text
+Push
+    -> immediate musical control + curated task-specific visuals
 
-- Steam Deck;
-- Framework mainboard;
-- compact x86 computer;
-- other supported Linux computers.
+another device
+    -> complete Bitwig desktop + pointer/keyboard for deep editing
+```
 
-The first maintainer appliance may use:
+The remote client may be a laptop, tablet, or another suitable local/Tailscale client. Its view size must not redefine the canonical managed workspace geometry used by Pushwig.
 
-- the existing angled wooden stand;
-- the existing protected battery;
-- Push's stock rear USB port;
-- the existing tested USB-C PD-to-barrel power path;
-- wireless access to the full Bitwig desktop.
+The first appliance may use:
 
-A successful appliance is a major project result, but failure or delay in appliance packaging does not invalidate Track V.
+- Steam Deck or another Linux host;
+- the existing angled base;
+- battery power;
+- Push's stock rear USB controller/audio path;
+- managed graphical session and remote desktop;
+- local service/recovery tooling.
 
-## Track H — Internal connector and native compute
+Possible later hosts include Framework mainboards and compact x86 computers.
 
-This track investigates Push's Intel NUC Compute Element carrier interface and native-bay final forms.
+Track A does not require the internal compute bay.
+
+## Track H — internal connector and native compute
+
+Track H investigates Push's Intel NUC Compute Element / CM11EB carrier and possible native-bay final forms.
 
 Independent results include:
 
-- a measured bay/carrier dossier;
-- an open CM11EB diagnostic edge card;
-- safe internal USB enumeration from an external development host;
-- characterization of mux, sideband, power and carrier behavior;
+- measured bay/carrier documentation;
+- safe CM11EB diagnostic hardware;
+- internal USB/mux/sideband characterization;
 - used Compute Element bring-up;
 - native-bay thermal, battery and power integration.
 
-The development edge card is a legitimate open-hardware project even if no final internal NUC conversion is completed.
-
-Track H must not become a prerequisite for Track V or the first Track A appliance.
+The direct external USB route remains first-class and may remain supported indefinitely.
 
 ## Optional ecosystem integrations
 
-The following are adjacent integrations, not core dependencies:
+Adjacent work may include:
 
-- yabridge/Wine compatibility experiments;
-- plugdata and Pure Data;
-- Monome grid/arc and serialosc;
-- custom analyzers;
-- device- or patch-specific visual sources;
-- alternative controller integrations.
+- Windows plug-in bridging;
+- plugdata/Pure Data;
+- Monome/serialosc;
+- direct analyzers;
+- device-specific visual sources;
+- other controller integrations.
 
-The maintainer may already have working or experimental versions of these systems. The core repo should expose stable interfaces that allow those projects to participate without taking ownership of their independent roadmaps.
+These projects may implement visual-source or semantic adapters but do not own Pushwig's roadmap.
+
+## Current relationship between V5 and the tracks
+
+V5 sits at the Track V / Track A boundary.
+
+It proves a Track V managed visual-source contract using the runtime shape Track A will eventually need:
+
+```text
+one Bitwig session
+        -> canonical managed workspace
+             +-> raw frames -> Pushwig
+             +-> full remote desktop/input
+```
+
+It intentionally does **not** solve:
+
+- Steam Deck battery/power/boot packaging;
+- gamescope or final compositor choice;
+- device-aware Sampler presentation;
+- Linux attached-mode portal capture;
+- internal compute.
+
+Those remain separate product capabilities.
 
 ## Valid stopping points
 
-Each of these is a successful deliverable:
+Each remains a legitimate project success:
 
-1. **visual extension:** adaptive Bitwig/native-device/plug-in visuals mixed with DrivenByMoss on Push for ordinary users;
-2. **maintainer appliance:** Steam Deck, battery and existing stand operating as a portable headless Bitwig Push;
-3. **reproducible appliance:** documented Framework/compact-x86 packaging that others can reproduce;
-4. **connector dev platform:** public CM11EB diagnostic hardware and carrier findings;
-5. **native-bay final form:** used Compute Element, battery and validated thermal/power design inside Push.
+1. **visual/controller extension:** useful supported device/browser/direct visuals on Push with safe fallback;
+2. **managed-source runtime:** one canonical Bitwig workspace with raw frames and independent remote access;
+3. **maintainer appliance:** Linux host + battery + Push + managed workspace + remote desktop;
+4. **reproducible appliance:** documented Framework/compact-x86 or equivalent package others can reproduce;
+5. **connector development platform:** public CM11EB diagnostic hardware and carrier findings;
+6. **native-bay final form:** compute, battery and thermal system inside Push.
 
 Later stopping points are larger integrations, not retroactive requirements for earlier ones.
 
 ## Repository boundary rule
 
-The current repository may coordinate these tracks while contracts are still forming. When one parallel track develops an independent contributor community, release cadence, safety domain, or build system, split it into a dedicated repository rather than forcing all work into one monolith.
+This repository may coordinate the tracks while shared contracts are still forming. Split a track into its own repository when it develops a genuinely independent contributor community, release cadence, safety domain, or build system.
 
-Likely future boundaries:
+Possible future boundaries remain:
 
 ```text
-pushwig-visual          # universal controller/visual software
-pushwig-appliance       # reference host, power, boot and packaging profiles
-push3-cm11eb-devkit     # connector PCB, carrier research and native-bay tooling
+pushwig-visual
+pushwig-appliance
+push3-cm11eb-devkit
 ```
