@@ -1,6 +1,6 @@
 # Documentation
 
-This index separates public/contributor documentation from design research, historical slice dossiers, and retained evidence.
+This index separates public/contributor documentation from durable architecture, accepted product designs, future research, historical slice dossiers, and retained evidence.
 
 ## New to Pushwig
 
@@ -11,14 +11,17 @@ Read these first:
 3. [`../CONTRIBUTING.md`](../CONTRIBUTING.md) — how to contribute.
 4. [`DEVELOPMENT.md`](DEVELOPMENT.md) — build and local development setup.
 5. [`TESTING.md`](TESTING.md) — committed tests versus temporary harnesses and real-hardware evidence.
-6. [`ROADMAP.md`](ROADMAP.md) — product-shaped current and next milestones.
+6. [`ROADMAP.md`](ROADMAP.md) — accepted capabilities and future product direction.
 
 A competent developer should not need `AGENTS.md`, `CURRENT_SLICE.md`, or evidence hashes to understand the project.
 
-## Active product design
+## Current status
 
-- [`design/window-relative-visual-lens.md`](design/window-relative-visual-lens.md) — active V3 design: move from a fixed display crop to a Bitwig-window-relative visual profile that survives move, supported resize, and recreation.
-- [Issue #45](https://github.com/kasselvania/standalone-BitWig-push/issues/45) — V3 product claim, acceptance, and implementation scope.
+V3 is accepted. There is no active implementation slice while the maintainer and technical lead discuss the next device-aware visual experience.
+
+- [`../CURRENT_SLICE.md`](../CURRENT_SLICE.md) — concise current status and design questions.
+- [`design/window-relative-visual-lens.md`](design/window-relative-visual-lens.md) — accepted V3 design and its explicit device-unaware limitation.
+- [Issue #45](https://github.com/kasselvania/standalone-BitWig-push/issues/45) — completed V3 product claim and acceptance.
 
 ## Current durable references
 
@@ -29,6 +32,7 @@ A competent developer should not need `AGENTS.md`, `CURRENT_SLICE.md`, or eviden
 - [`ROADMAP.md`](ROADMAP.md) — future product direction.
 - [`HARDWARE.md`](HARDWARE.md) — concise appliance/internal-compute scope.
 - [`BRANCH_AND_WORKTREE_POLICY.md`](BRANCH_AND_WORKTREE_POLICY.md) — repository hygiene/lifecycle.
+- [`integrations/drivenbymoss.md`](integrations/drivenbymoss.md) — current DrivenByMoss integration guide.
 
 ## Maintainer / automation control files
 
@@ -39,20 +43,19 @@ These are intentionally outside the normal contributor reading path:
 
 ## Design and research documents
 
-These documents contain useful future design thinking. They are not all implemented behavior.
-
+- [`design/window-relative-visual-lens.md`](design/window-relative-visual-lens.md) — accepted V3 window-relative capture design.
 - [`VISUAL_PORTABILITY.md`](VISUAL_PORTABILITY.md) — long-term adaptive visual-source problem.
 - [`SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`](SEMANTIC_PIXEL_ANCHOR_RESOLVER.md) — unproven semantic-seeded anchor/localization hypothesis.
-- [`RUNTIME_STRATEGY.md`](RUNTIME_STRATEGY.md) — historical/platform strategy; portions are superseded by V2 and current architecture.
+- [`RUNTIME_STRATEGY.md`](RUNTIME_STRATEGY.md) — historical/platform strategy; portions are superseded by V2/V3 and current architecture.
 - [`VISUAL_RESEARCH_BASIS.md`](VISUAL_RESEARCH_BASIS.md) — research references/provenance.
 - [`HARDWARE_DOSSIER.md`](HARDWARE_DOSSIER.md) — detailed appliance/CM11EB hardware research.
-- [`DRIVENBYMOSS_DERIVATIVE_STRATEGY.md`](DRIVENBYMOSS_DERIVATIVE_STRATEGY.md) — detailed fork/history notes; see the concise integration guide below for current contributor use.
+- [`DRIVENBYMOSS_DERIVATIVE_STRATEGY.md`](DRIVENBYMOSS_DERIVATIVE_STRATEGY.md) — detailed fork/history notes.
 
-The concise current DrivenByMoss integration guide is [`integrations/drivenbymoss.md`](integrations/drivenbymoss.md).
+A design or research document is not automatically an active implementation plan.
 
 ## Historical slice dossiers
 
-The following files document how earlier architecture questions were researched and accepted. They remain useful history, but are **not** current onboarding or separate constitutional layers:
+These files document how earlier architecture questions were researched and accepted. They remain useful history, but are **not** current onboarding or separate constitutional layers:
 
 - `V1B_SYNTHETIC_COMPOSITION.md`
 - `V1C0_DYNAMIC_RASTER_COMPOSITION.md`
@@ -63,10 +66,10 @@ The following files document how earlier architecture questions were researched 
 - `V1D2_EXTERNAL_FRAME_INGRESS.md`
 - `V2_MACOS_DISPLAY_CROP_LENS.md`
 
-If a historical dossier contains a rule that still matters, the durable version of that rule should live in `ARCHITECTURE.md`, `PROTOCOLS.md`, `TESTING.md`, or another current document rather than requiring future contributors to reconstruct it from slice history.
+If a historical dossier contains a rule that still matters, the durable version should live in `ARCHITECTURE.md`, `PROTOCOLS.md`, `TESTING.md`, or another current document rather than requiring contributors to reconstruct it from slice history.
 
 ## Evidence
 
 See [`../evidence/README.md`](../evidence/README.md).
 
-`evidence/**` contains exact experiment/fixture custody and is intentionally more detailed than the public documentation. It should be consulted when reproducing a specific accepted experiment or investigating a regression, not as the default project introduction.
+`evidence/**` contains exact experiment/fixture custody and is intentionally more detailed than the public documentation. Consult it when reproducing a specific accepted experiment or investigating a regression, not as the default project introduction.

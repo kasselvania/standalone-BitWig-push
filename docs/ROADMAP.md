@@ -4,41 +4,49 @@ Pushwig's roadmap is organized around product capabilities, not every internal e
 
 ## Done: working visual path on real Push hardware
 
-The project has already established:
+The project has established:
 
 - a narrow DrivenByMoss display-composition seam;
 - reliable restoration of the current semantic Push display;
 - a validated opaque-BGRA raster sink;
 - bounded authenticated latest-frame ingress from a separate local process;
 - a maintained macOS ScreenCaptureKit helper;
-- live Bitwig Sampler pixels on a physical Push 3 Controller while controls, audio, and headphone output remain operational.
+- live Bitwig pixels on a physical Push 3 Controller while controls, audio, and headphone output remain operational;
+- a human-readable window-relative visual profile;
+- unique/missing/ambiguous Bitwig-window selection;
+- helper-local normalized cropping and aspect-preserving scaling;
+- window move, supported resize, source-loss, and recreation handling;
+- committed regression tests for stable crop, profile, selection, generation, protocol, and backpressure behavior.
 
-Detailed historical experiments and measurements remain under `evidence/**` and the completed slice dossiers.
+Detailed historical experiments and measurements remain under `evidence/**` and the completed design dossiers.
 
-## Active: V3 adaptive Bitwig-window visual lens
+## Accepted: V3 window-relative visual lens
 
-[V3 / issue #45](https://github.com/kasselvania/standalone-BitWig-push/issues/45) turns the fixed-layout V2 fixture into something usable in an ordinary desktop session:
+[V3 / issue #45](https://github.com/kasselvania/standalone-BitWig-push/issues/45) removed the physical-display coordinate from normal profile use.
 
-- identify one intended Bitwig main window or abstain;
-- define the visual crop relative to that window instead of the physical display;
-- survive window move, supported resize, and recreation;
-- load a small human-readable visual profile;
-- provide a straightforward launch/configuration path;
-- keep the current semantic fallback and one-writer ownership model;
-- preserve the V2 explicit-display mode as a diagnostic/reference path where practical.
+A profile can now select one intended Bitwig main window, define a normalized region inside it, and keep the visual source attached through ordinary move, supported resize, loss, and recreation. Missing or ambiguous sources fall back to current DrivenByMoss semantics. The V2 explicit-display mode remains available as a diagnostic/reference path.
 
-This is one coherent product milestone, not a chain of tiny research slices. See [`design/window-relative-visual-lens.md`](design/window-relative-visual-lens.md).
+The crop is applied explicitly inside the helper because ScreenCaptureKit does not honor `sourceRect` for single-window capture. A generated native quadrant fixture proved that materially different normalized crops select materially different source pixels.
 
-## Then: stronger visual localization
+See [`design/window-relative-visual-lens.md`](design/window-relative-visual-lens.md).
 
-Once the window-relative lens works, improve how the desired device/panel region is found:
+## Current design discussion: make the visual useful
 
-- use selected-device/layout semantics where Bitwig exposes them;
-- add bounded calibration where necessary;
-- benchmark semantic-seeded pixel anchors only where geometry/semantics are insufficient;
-- prefer abstention to a wrong visual lock.
+The immediate question is no longer whether Pushwig can transport real pixels or follow the Bitwig window. It can.
 
-The detailed anchor-resolver document is a design hypothesis, not current product behavior.
+The remaining limitation is that a normalized window region is still **device-unaware**. Bitwig can reflow Sampler, the device chain, and adjacent panels inside the same window while the outer capture remains technically correct.
+
+Before selecting the next implementation milestone, decide the intended product experience:
+
+- which information should appear on Push and in which controller modes;
+- when a captured Bitwig view is valuable versus a purpose-built generated view;
+- how DrivenByMoss selected-device and mode state should influence visual selection;
+- how a visual should be switched, hidden, enlarged, or restored;
+- how internal Bitwig regions should be located without showing the wrong content;
+- what configuration should be automatic, profiled, or calibrated;
+- what makes the feature pleasant to use rather than merely demonstrable.
+
+Potential technical ingredients include Bitwig/DrivenByMoss semantics, bounded layout rules, user-authored profiles, calibration, confidence-checked pixel anchors, and direct project-owned visual renderers. None is selected as the next architecture merely by appearing in this list.
 
 ## Usability and packaging
 
@@ -46,7 +54,7 @@ Before calling Pushwig an end-user release, improve:
 
 - installation and first-run setup;
 - configuration/profile management;
-- helper/DrivenByMoss version compatibility;
+- helper and DrivenByMoss version compatibility;
 - diagnostics and recovery that do not require reading evidence logs;
 - release packaging and upgrade/rollback behavior;
 - contributor-facing build/test automation.

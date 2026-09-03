@@ -79,8 +79,7 @@ Before deleting a worktree, verify it is clean and contains no unpushed/unique w
 - Rebase merge is not used for governed work.
 - After merge, delete the remote feature branch when safe and report local cleanup eligibility.
 - Do not preserve completed work by inventing archive branches.
-
-For V3 specifically, use **one implementation PR** containing source, committed tests, the example profile, necessary contributor docs, and concise real-fixture evidence. Do not create a separate evidence branch/PR unless review finds a concrete reason to split it.
+- Keep fixture evidence proportional to the claim; do not recreate the V1 multi-file evidence pattern without a real need.
 
 ## Final report expectations
 
@@ -106,10 +105,10 @@ The project has accepted:
 - current-semantic visual restoration;
 - a validated opaque-BGRA raster sink in the DrivenByMoss fork;
 - authenticated bounded external latest-frame ingress;
-- a maintained macOS ScreenCaptureKit helper that displays real Bitwig Sampler pixels on a physical Push 3 Controller.
+- a maintained macOS ScreenCaptureKit helper that displays real Bitwig pixels on a physical Push 3 Controller;
+- a schema-v1 Bitwig-window-relative visual profile that survives ordinary move, supported resize, source loss, and window recreation;
+- explicit helper-local cropping and scaling for single-window capture, proven by committed tests and a generated native crop fixture.
 
-**V3 is active** under issue #45 and `docs/design/window-relative-visual-lens.md`.
+V3 is accepted under issue #45 and `docs/design/window-relative-visual-lens.md`.
 
-Its product claim is to replace V2's fixed physical-display crop with an explicit Bitwig-window-relative visual profile that survives window move, supported resize, and recreation while preserving semantic fallback, bounded capture, committed deterministic tests, normal controls/audio, and the existing one-writer architecture.
-
-Do not split V3 into prerequisite micro-slices for profile parsing, window discovery, resize math, or lifecycle unless a real blocker proves one of those uncertainties must be isolated first.
+There is currently **no active implementation slice**. Do not open the next issue or branch until the maintainer and technical lead have agreed on the next product design. The key unresolved question is utility: how Pushwig should select, present, and interact with device-aware visuals rather than merely following a correct but device-unaware window crop.

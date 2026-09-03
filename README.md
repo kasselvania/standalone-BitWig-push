@@ -22,16 +22,13 @@ Today the system can:
 - restore the current DrivenByMoss display when a visual source disappears, becomes stale, or fails;
 - receive the newest complete visual frame from a separate local process without blocking the Push display/control path;
 - load a small JSON profile and capture a normalized region of the unique Bitwig main window;
+- apply the profile crop explicitly inside the helper rather than depending on unsupported single-window `sourceRect` behavior;
 - keep that window-relative source active through ordinary movement, supported resize, loss, and recreation;
 - fail back to the semantic DrivenByMoss display when capture permission, source validity, the helper, or the external frame connection is lost.
 
-The V3 window lens does not identify Sampler automatically. A profile explicitly describes a supported region inside the Bitwig main window. Bitwig may reflow devices and panels inside that region while its window is resized; V3 recomputes the normalized window crop but does not anchor to an internal device object. The accepted V2 physical-display crop remains available as a diagnostic/reference mode.
+The accepted V3 window lens does not identify Sampler automatically. A profile describes a supported region inside the Bitwig main window. Bitwig may reflow devices and panels inside that region while its window is resized; Pushwig recomputes the normalized window crop but does not yet anchor to an internal device object. The accepted V2 physical-display crop remains available as a diagnostic/reference mode.
 
-In window-profile mode, ScreenCaptureKit supplies the complete selected window
-at a bounded resolution. The helper then applies the normalized crop and one
-uniform centered-cover scale locally before publishing the fixed Push region.
-This explicit step is required because ScreenCaptureKit does not apply
-`SCStreamConfiguration.sourceRect` to a single-window capture.
+In window-profile mode, ScreenCaptureKit supplies the complete selected window at a bounded resolution. The helper applies the normalized crop and one uniform centered-cover scale locally before publishing the fixed Push region. This explicit step is required because ScreenCaptureKit does not apply `SCStreamConfiguration.sourceRect` to a single-window capture.
 
 ## How it works
 
@@ -92,7 +89,7 @@ Pushwig is not currently:
 
 - a one-click installer;
 - an automatic detector for every Bitwig device or plug-in editor;
-- a universal window/layout tracker;
+- a device-aware visual system that follows internal Bitwig panel reflow;
 - a finished Linux release;
 - a battery-powered appliance product;
 - a modification of AbletonOS or Push firmware.
@@ -111,13 +108,15 @@ Start with:
 
 Pushwig keeps detailed hardware/experiment evidence under [`evidence/`](evidence/). That material is there for audit and reproduction; it is **not** required reading to understand the project.
 
-## Current development
+## Current design work
 
-[V3 — Adaptive Bitwig window-relative visual lens](https://github.com/kasselvania/standalone-BitWig-push/issues/45) is the current milestone.
+[V3 — Adaptive Bitwig window-relative visual lens](https://github.com/kasselvania/standalone-BitWig-push/issues/45) is accepted and merged.
 
-It makes the working visual lens follow the Bitwig application window instead of a fixed physical display coordinate: load a small visual profile, capture relative to the uniquely selected Bitwig window, and survive move, supported resize, and recreation while preserving semantic fallback and normal Push controls/audio.
+The project is deliberately pausing before selecting the next implementation milestone. The immediate design question is no longer whether real Bitwig pixels can reach Push or follow the Bitwig window—they can. It is how to make those visuals genuinely useful and device-aware when Bitwig changes its internal layout.
 
-See the [active design](docs/design/window-relative-visual-lens.md) and [roadmap](docs/ROADMAP.md).
+The maintainer and technical lead are evaluating the next user experience: which information belongs on Push, when captured versus purpose-built visuals should be used, how visual selection should relate to DrivenByMoss state, and how internal Bitwig regions can be located without showing the wrong content.
+
+See the [accepted V3 design](docs/design/window-relative-visual-lens.md), [current work](CURRENT_SLICE.md), and [roadmap](docs/ROADMAP.md).
 
 ## Contributing
 

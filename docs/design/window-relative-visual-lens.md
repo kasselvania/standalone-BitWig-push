@@ -1,27 +1,27 @@
 # Window-relative visual lens
 
-This is the active design for [V3 — Adaptive Bitwig window-relative visual lens](https://github.com/kasselvania/standalone-BitWig-push/issues/45).
+**Status:** accepted V3 product baseline. [Issue #45](https://github.com/kasselvania/standalone-BitWig-push/issues/45) is complete.
 
-## Product goal
+This document describes the maintained V3 design. The current design discussion is about what should follow it—not reopening the accepted window/crop, protocol, or Push ownership boundaries.
 
-V2 proved that live Bitwig pixels can be captured on macOS and composed onto Push without taking ownership away from DrivenByMoss. Its remaining usability problem is that the source is tied to a fixed physical display crop.
+## Product result
 
-V3 removes that limitation:
+V2 proved that live Bitwig pixels can be captured on macOS and composed onto Push without taking ownership away from DrivenByMoss. V3 removed its dependence on a fixed physical display crop:
 
 ```text
 Bitwig main window
         -> explicit visual profile
         -> crop relative to the current window
-        -> aspect-preserving capture
+        -> helper-local aspect-preserving crop and scale
         -> accepted external frame ingress
         -> live visual on Push
 ```
 
-The user should be able to move, resize, close, and reopen the Bitwig main window without manually recalculating desktop coordinates.
+A user can move, resize within supported bounds, lose, and recreate the Bitwig main window without manually recalculating desktop coordinates.
 
 ## Source identity
 
-Use public macOS capture/window APIs. The profile identifies an eligible Bitwig source with bounded facts such as:
+The helper uses public macOS capture/window APIs. A profile identifies an eligible Bitwig source with bounded facts:
 
 - owning bundle identifier, normally `com.bitwig.studio`;
 - on-screen state;
@@ -34,13 +34,11 @@ Selection is fail-closed:
 - no eligible window -> semantic-only output;
 - more than one eligible window -> semantic-only output.
 
-Do not silently choose the first or largest candidate. V3 is allowed to require an explicit title constraint on a fixture where Bitwig exposes multiple otherwise-indistinguishable windows.
-
-The current `SCWindow.windowID` is instance identity while that window exists. It is not durable profile identity.
+The helper does not silently choose the first or largest candidate. The current `SCWindow.windowID` is instance identity while that window exists; it is not durable profile identity.
 
 ## Visual profile
 
-V3 introduces a small human-readable JSON profile. The stable product fields are:
+V3 maintains a small human-readable JSON profile. The product fields are:
 
 ```json
 {
@@ -53,10 +51,10 @@ V3 introduces a small human-readable JSON profile. The stable product fields are
     "minimumHeightPoints": 500
   },
   "crop": {
-    "x": 0.0,
-    "y": 0.7,
-    "width": 1.0,
-    "height": 0.3
+    "x": 0.14,
+    "y": 0.68,
+    "width": 0.45,
+    "height": 0.305
   },
   "destination": {
     "x": 400,
@@ -69,66 +67,45 @@ V3 introduces a small human-readable JSON profile. The stable product fields are
 }
 ```
 
-The example values above are illustrative, not acceptance geometry.
+Port, token-file path, protocol session, window ID, and physical desktop position do not belong to profile identity.
 
-Port, token-file path, and protocol session state are runtime plumbing and do not belong to profile identity.
+Profile validation rejects unknown schema versions and keys, nonfinite or out-of-bounds crops, invalid destinations, unsupported aspect policies, invalid frame rates, and unusable window selectors before capture authority is established.
 
-Profile validation must reject unknown schema versions, nonfinite/out-of-bounds normalized crops, invalid destinations, unsupported aspect policies, invalid frame rates, and unusable window selectors before capture authority is established.
+The maintained example is [`../../capture/macos/Profiles/bitwig-device-chain.json`](../../capture/macos/Profiles/bitwig-device-chain.json).
 
-## Coordinate model
+## Coordinate and crop model
 
 A profile crop is normalized to the **current captured Bitwig window content**, not to a physical monitor.
 
-On each source acquisition or supported resize:
+On each acquisition or supported resize:
 
 ```text
 normalized profile crop
-        -> current window/filter content rect
+        -> current window/filter content bounds
         -> bounded full-window ScreenCaptureKit pixel buffer
         -> helper-local normalized pixel crop
         -> uniform centered-cover mapping
         -> Push destination pixels
 ```
 
-Global desktop x/y must not enter profile identity or crop math.
+Global desktop x/y does not enter profile identity or crop math. Moving the same window requires no profile change. Resizing recomputes the crop from the same normalized profile.
 
-Moving the same window should therefore require no crop change. Resizing recomputes the source rect from the same normalized profile.
+Apple documents that `SCStreamConfiguration.sourceRect` is not referenced for single-window capture. The maintained implementation therefore does not rely on it. ScreenCaptureKit supplies one bounded full-window buffer, and the helper performs the authoritative crop itself.
 
-The profile identifies a region of the Bitwig window, not a Bitwig device or panel object. If Bitwig reflows its internal layout during resize, the pictured device can move within the correctly recomputed region. Locating and anchoring to an internal device would require a separate visual-semantic design and is not part of V3.
-
-On the accepted macOS fixture, `SCContentFilter(desktopIndependentWindow:)`
-reports `contentRect` with the current global window origin. [Apple documents
-that `SCStreamConfiguration.sourceRect` is not referenced for single-window
-capture](https://developer.apple.com/documentation/screencapturekit/scstreamconfiguration/sourcerect),
-so assigning the profile crop there cannot establish crop authority. The
-maintained path deliberately leaves that property unset.
-
-The stream instead captures the complete independent window at native backing
-scale when it fits, with hard limits of 2560x1600 and 4,096,000 pixels. The
-integer stream dimensions define the observed point-to-pixel scales. The helper
-applies the profile normalization again against those actual full-window pixel
-bounds and computes a maximal fractional centered-cover rectangle with exactly
-the destination aspect.
-
-This explicit translation is what removes desktop position from capture identity:
+The stream requests native backing resolution when it fits, with hard limits of 2560×1600 and 4,096,000 pixels. Integer stream dimensions define the observed point-to-pixel scales. The helper then:
 
 ```text
-profile crop + current contentRect size and pointPixelScale
-        -> bounded full-window stream dimensions
-        -> profile crop in actual top-left pixel coordinates
+profile crop + current full-window buffer
+        -> top-left pixel crop
         -> maximal centered-cover source rectangle
-        -> Core Image lower-left crop translation
+        -> Core Image lower-left Y translation
         -> edge-clamped uniform Lanczos scale
-        -> fixed destination pixels
+        -> reusable opaque-BGRA destination
 ```
 
-Core Image renders directly into the existing reusable destination array and a
-final in-place alpha pass enforces `0xFF`. The ScreenCaptureKit queue still has
-depth 2, the existing serial sample/output queue remains the only
-project-owned frame path, and no full-window payload crosses protocol v1. The
-helper logs the point geometry, full-window pixel dimensions, point-to-pixel
-scales, and final pixel crop so this contract can be read back on another
-fixture.
+Core Image renders into the existing reusable destination array. A final in-place alpha pass enforces `0xFF`. The ScreenCaptureKit queue remains depth 2; the existing serial sample/output queue is the only project-owned frame path; no full-window payload crosses protocol v1.
+
+A generated native four-quadrant fixture proved that two non-overlapping normalized crops produce reproducible, distinct expected output pixels and do not produce a miniature of the full window.
 
 ## Lifecycle
 
@@ -136,31 +113,33 @@ The helper maintains one current window generation.
 
 ### Initial acquisition
 
-Discover candidates, require one eligible Bitwig main window, build the capture filter, compute the profile crop, and begin publishing current frames.
+Discover candidates, require one eligible Bitwig main window, compute the profile crop, establish bounded full-window capture, and begin publishing current frames.
 
 ### Move
 
-If the same window instance moves without changing its captured content dimensions, capture continues without changing profile geometry.
+A global-origin-only change does not alter the capture signature or profile geometry. Independent-window capture remains attached to the same Bitwig window.
 
 ### Resize
 
-When the same window's usable dimensions change, recompute the profile crop and aspect mapping against the new content size. Update or recreate the ScreenCaptureKit stream using the simplest public API path that remains bounded and race-safe.
+When the same window's usable dimensions change, the helper revokes the old generation, sends at most one `CLEAR`, stops the old stream, recomputes full-window sizing and crop geometry, and starts one bounded replacement generation.
 
-The V3 implementation uses bounded stream recreation. One main-actor discovery loop polls at 500 ms; the existing single serial sample/output queue remains the only project-owned frame path. A resize revokes the old generation before stopping its stream, sends at most one `CLEAR`, and activates a newly configured generation. Global-origin-only changes do not recreate the stream.
+The implementation uses a 500 ms main-actor discovery loop and bounded stream recreation. It does not add a frame FIFO, worker pool, or second output queue.
 
-### Close / missing / ambiguity
+### Missing or ambiguous source
 
-Revoke visual authority, send one CLEAR when a live protocol session exists, stop publishing FRAME messages, and leave the current semantic DrivenByMoss display visible.
+The helper revokes visual authority, sends one `CLEAR` when a live protocol session exists, stops publishing `FRAME`, and leaves the current semantic DrivenByMoss display visible.
 
-### Reopen / recreation
+### Reopen or recreation
 
-When the profile selector again resolves to exactly one eligible window, acquire the new window instance, increment the helper-local generation, recompute geometry, and resume current capture. Old-generation callbacks must not publish after authority moves to the new window.
+When the profile selector again resolves to exactly one eligible window, the helper assigns a new local generation, recomputes geometry, and resumes current capture. Old-generation callbacks are rejected before pixel work and cannot become current output.
 
-Generation acceptance is enforced on the serial output queue before pixel access and checked again before publication accounting. Discovery, selection, and stream replacement remain on the main actor; they add no frame FIFO, worker pool, or second output queue.
+### Occlusion and frontmost behavior
+
+Window-profile mode uses desktop-independent capture. Another application becoming frontmost or obscuring Bitwig does not by itself revoke capture or replace the selected pixels. The V2 explicit-display frontmost guard remains confined to V2 mode.
 
 ## Runtime interface
 
-The primary V3 invocation should be ordinary and short:
+The primary invocation is:
 
 ```text
 PushwigCaptureHelper \
@@ -169,59 +148,59 @@ PushwigCaptureHelper \
   --token-file /path/to/private-token
 ```
 
-A bounded `--list-windows` or equivalent discovery mode should help a user construct the selector without dumping unrelated personal window titles by default.
-
-The maintained form requires an owner filter:
+Bounded discovery is available through:
 
 ```text
 PushwigCaptureHelper --list-windows --owner-bundle-id com.bitwig.studio
 ```
 
-The example profile is [`../../capture/macos/Profiles/bitwig-device-chain.json`](../../capture/macos/Profiles/bitwig-device-chain.json).
-
-The existing V2 explicit-display mode remains a supported diagnostic/reference path during V3 unless a concrete conflict requires its removal.
+The V2 explicit-display mode remains available as a diagnostic/reference path and cannot be accidentally mixed with profile mode.
 
 ## Ownership and failure boundaries
 
-V3 does not change the established architecture:
+V3 preserves the established architecture:
 
-- DrivenByMoss remains the semantic/controller authority and sole Push display USB writer.
-- The macOS helper owns window discovery/capture only.
+- DrivenByMoss remains semantic/controller authority and sole Push display USB writer.
+- The macOS helper owns window discovery, capture, crop, and helper-local scaling only.
 - The accepted external frame protocol remains unchanged.
-- Capture or profile failure returns to current semantic output.
+- Capture, selection, profile, protocol, or helper failure returns to current semantic output.
 - No mouse or keyboard automation is introduced.
 - No Apple capture object crosses into DrivenByMoss.
 
-## Testing
+## Tests and evidence
 
-Stable deterministic behavior belongs in committed Swift tests:
+Stable deterministic behavior is committed Swift test coverage:
 
 - profile decoding and validation;
-- unique/missing/ambiguous selector results;
-- normalized window-relative crop math;
-- generated-pixel proof for two non-overlapping normalized crops;
-- nonzero source stride, crop bounds, opaque alpha, and stable destination storage;
+- unique/missing/ambiguous selection;
+- normalized crop geometry;
+- two non-overlapping generated crop outputs;
+- nonzero source stride and crop bounds;
+- centered-cover scaling and alpha normalization;
+- stable destination storage;
 - resize recomputation;
-- centered-cover aspect behavior;
-- generation/recreation authority transitions;
-- single-CLEAR behavior on loss;
-- V2 explicit-display mode regressions affected by shared code.
+- generation loss/recreation fencing;
+- V2 explicit-display and protocol regressions.
 
-Use retained evidence only for behavior that genuinely requires the real macOS/Bitwig/Push fixture: window move/resize/recreation, visible crop correctness, capture cadence, controls/audio, and recovery.
+Real macOS/Bitwig/Push behavior is retained concisely in [`../../evidence/v3-window-relative-lens/README.md`](../../evidence/v3-window-relative-lens/README.md).
 
-## Delivery shape
+## Accepted fixture result
 
-V3 should land as **one implementation PR**, not a source PR plus a separate evidence PR. The implementation PR may include:
+The accepted implementation:
 
-- `capture/macos/**` source and committed tests;
-- one example visual profile;
-- narrow contributor documentation required to run it;
-- concise evidence under `evidence/v3-window-relative-lens/` for the real fixture claims that cannot be automated.
+- followed the Bitwig main window through substantial movement;
+- recomputed a current, proportionally correct crop after supported resize;
+- continued through ordinary occlusion;
+- returned to semantic output on source loss;
+- reacquired a recreated Bitwig window without old-generation pixels;
+- remained within visual cadence at 30 fps;
+- preserved pads, pressure/MPE, encoders, transport, Push audio, and headphones;
+- restored the exact official DrivenByMoss artifact after testing.
 
-Prefer one evidence README unless the result genuinely needs a second document. Do not reproduce the V1 pattern of many per-stage evidence files.
+## Known limitation and next design question
 
-## Acceptance
+V3 follows a region of the Bitwig window. It does **not** identify or anchor to Sampler or another internal Bitwig device.
 
-V3 succeeds when one maintained profile follows the Bitwig main window through move, supported resize, and recreation on the accepted macOS fixture; useful real pixels remain correctly mapped on Push; missing or ambiguous sources fall back cleanly to semantics; deterministic profile/selection/geometry behavior is covered by committed tests; performance stays comfortably within the visual cadence; and normal Push controls/audio remain operational.
+Bitwig can reflow the device chain and adjacent panels inside the correctly tracked window. The outer capture can therefore remain technically correct while the useful device leaves the profile region.
 
-V3 does not need automatic Sampler recognition, pixel anchors, Linux capture, a public adapter SDK, or general plug-in-window identity.
+The next product design must decide how Pushwig should become useful and device-aware: through stronger semantic integration, layout rules, calibration, confidence-checked pixel anchors, purpose-built renderers, or some combination. That decision is intentionally not made by this accepted V3 document.
