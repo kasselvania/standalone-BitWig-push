@@ -36,16 +36,27 @@ Bitwig may reflow Sampler, the device chain, and neighboring panels while the ou
 
 That limitation is now the central product-design question—not another transport, bitmap, or ScreenCaptureKit ownership question.
 
-## Design discussion before the next slice
+## Current design work
 
-Do not create the next implementation issue or branch until the maintainer and technical lead have agreed on the intended user experience.
+No implementation issue or branch should be opened until the maintainer and technical lead have agreed on the intended device-aware experience.
+
+The first concrete design artifact is now:
+
+- [Issue #47 — native Bitwig devices × DrivenByMoss behavior matrix](https://github.com/kasselvania/standalone-BitWig-push/issues/47)
+- [`docs/design/native-device-behavior-matrix.md`](docs/design/native-device-behavior-matrix.md)
+- [`docs/design/native-device-behavior-matrix.csv`](docs/design/native-device-behavior-matrix.csv)
+- [`docs/reference/manuals/`](docs/reference/manuals/) — pinned official manual references and local fetcher
+
+This catalog separates four questions: what Bitwig exposes, what DrivenByMoss currently controls, what visual region Pushwig can verify, and what presentation Pushwig has actually designed.
 
 The discussion should decide at least:
 
 - what visual information is genuinely useful on Push;
-- whether the next system should capture Bitwig pixels, generate purpose-built views, or combine both;
-- how the current selected device/mode should influence visual selection;
-- how a visual should be positioned, switched, hidden, enlarged, or restored;
+- which existing DrivenByMoss screens should remain unchanged;
+- where a native-device overview should replace or augment the current eight-parameter display;
+- how current encoder bindings, touch, rotation, and multiple touches should influence framing;
+- how Sampler overview, playback/loop markers, and sliced workflows should differ;
+- how the Browser should be redesigned around results, filters, preview, commit, and cancel;
 - whether internal Bitwig panel localization should use layout constraints, calibration, semantic hints, pixel anchors, or another approach;
 - what configuration should be automatic versus user-authored;
 - what would make the result pleasant enough to use rather than merely technically functional.
@@ -54,7 +65,7 @@ The discussion should decide at least:
 
 - Bitwig remains the DAW and audio-engine authority.
 - DrivenByMoss remains semantic/controller authority and the sole Push display transport owner.
-- The helper owns macOS discovery, capture, and helper-local pixel processing only.
+- The helper owns platform discovery, capture, and helper-local pixel processing only.
 - Visual failure returns to current semantic output.
 - Wrong or ambiguous visual selection must abstain.
 - The accepted raster sink and external-frame protocol remain stable unless a concrete product blocker requires change.
