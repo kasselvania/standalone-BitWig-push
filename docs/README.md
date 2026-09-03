@@ -17,11 +17,18 @@ A competent developer should not need `AGENTS.md`, `CURRENT_SLICE.md`, or eviden
 
 ## Current status
 
-V3 is accepted. There is no active implementation slice while the maintainer and technical lead discuss the next device-aware visual experience.
+V3 is accepted. There is no active implementation slice while the maintainer and technical lead design the first device-aware Pushwig experiences.
 
 - [`../CURRENT_SLICE.md`](../CURRENT_SLICE.md) — concise current status and design questions.
 - [`design/window-relative-visual-lens.md`](design/window-relative-visual-lens.md) — accepted V3 design and its explicit device-unaware limitation.
 - [Issue #45](https://github.com/kasselvania/standalone-BitWig-push/issues/45) — completed V3 product claim and acceptance.
+
+## Current product-design catalog
+
+- [`design/native-device-behavior-matrix.md`](design/native-device-behavior-matrix.md) — human-readable native-device × DrivenByMoss baseline, behavior families, screen/context decisions, and priorities.
+- [`design/native-device-behavior-matrix.csv`](design/native-device-behavior-matrix.csv) — machine-sortable 151-device inventory.
+- [`reference/manuals/README.md`](reference/manuals/README.md) — exact Bitwig/DrivenByMoss manual sources and local download workflow.
+- [Issue #47](https://github.com/kasselvania/standalone-BitWig-push/issues/47) — ongoing catalog and capability-audit work.
 
 ## Current durable references
 
@@ -44,6 +51,7 @@ These are intentionally outside the normal contributor reading path:
 ## Design and research documents
 
 - [`design/window-relative-visual-lens.md`](design/window-relative-visual-lens.md) — accepted V3 window-relative capture design.
+- [`design/native-device-behavior-matrix.md`](design/native-device-behavior-matrix.md) — current device/screen behavior catalog.
 - [`VISUAL_PORTABILITY.md`](VISUAL_PORTABILITY.md) — long-term adaptive visual-source problem.
 - [`SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`](SEMANTIC_PIXEL_ANCHOR_RESOLVER.md) — unproven semantic-seeded anchor/localization hypothesis.
 - [`RUNTIME_STRATEGY.md`](RUNTIME_STRATEGY.md) — historical/platform strategy; portions are superseded by V2/V3 and current architecture.
