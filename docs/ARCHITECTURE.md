@@ -2,154 +2,60 @@
 
 ## Product thesis
 
-Pushwig combines:
+Pushwig combines semantic control/state from Bitwig/DrivenByMoss with visual information from an optional source when graphics improve a Push task.
 
-- **semantic control/state** from Bitwig's controller API and DrivenByMoss;
-- **visual information** from a source backend when graphics improve a specific Push task;
-- **a curated Push presentation** that remains useful when visual data is absent.
-
-The project is not a Mac screen-capture utility. The Mac was the first development fixture used to prove the downstream display path and one concrete capture backend.
+The controller path remains useful when the visual source is absent, unsupported, or broken.
 
 ## Proven downstream system
 
 ```text
 Push controls
-    |
-    v
-DrivenByMoss fork <---------------- Bitwig controller API
-    |
-    | current semantic Push frame
-    |
-    +<--------- newest valid final raster --------+
-    |                                             |
-    v                                             |
-Push display composition                          |
-    |                                             |
-    v                                             |
-sole Push USB display writer                      |
-                                                  |
-visual-source adapter ----------------------------+
+    -> DrivenByMoss semantic state/frame
+    -> optional newest valid opaque-BGRA visual
+    -> context-gated composition
+    -> sole Push USB display writer
 ```
 
-The accepted V1D-2 boundary provides a bounded capability-authenticated local raster ingress. It remains the final frame sink in the current architecture.
+A separate process can publish complete latest frames over the accepted bounded V1D-2 loopback protocol. The receiver never owns musical control/audio and the display thread never blocks on source I/O.
 
-If a frame is absent, stale, malformed, disconnected, or rejected, current DrivenByMoss semantics remain authoritative.
+This downstream system is proven on physical Push hardware.
 
-See [`PROTOCOLS.md`](PROTOCOLS.md).
+## The source problem
 
-## What the Mac proved
+The maintained Mac helper proved raw capture, crop/scale, window lifecycle, and V1D-2 delivery. Its tested ScreenCaptureKit desktop-independent primary-Bitwig-window source is not product-valid for ordinary attached use because macOS sharing UI obstructs Bitwig window controls.
 
-The maintained macOS helper proved that Pushwig can:
-
-- obtain real host-application pixels;
-- identify and follow a Bitwig window;
-- crop and scale frames explicitly inside a helper;
-- keep CPU, memory and processing bounded;
-- publish frames through V1D-2;
-- preserve Push controls and audio;
-- restore semantics on source loss.
-
-That work proved the **downstream visual substrate** and one source implementation.
-
-It did not make macOS or ScreenCaptureKit the product architecture.
-
-## Attached macOS source blocker
-
-On the tested fixture, continuous ScreenCaptureKit capture of Bitwig's primary window causes macOS sharing UI to occupy Bitwig's normal window-control area. The maintainer could not use the ordinary minimize and full-screen controls while capture was active.
-
-Therefore the accepted ScreenCaptureKit primary-window implementation is:
+Therefore:
 
 ```text
-engineering/reference source: yes
-current attached-desktop product source: no
+proven Push frame substrate
+        !=
+selected product frame source
 ```
 
-V4 Sampler device-page work remains blocked at this source prerequisite. See [issue #49](https://github.com/kasselvania/standalone-BitWig-push/issues/49).
+The source must be selected by product behavior, not API availability or benchmark speed.
 
-## Managed visual workspace
+## Portable frame-source layer
 
-V5 establishes the next source/runtime architecture.
+The current target architecture is:
 
 ```text
-                         BITWIG SESSION
-                    one authoritative DAW
-                              |
-              +---------------+----------------+
-              |                                |
-      semantic/control plane          managed visual workspace
-      Bitwig API + DrivenByMoss       canonical compositor output
-              |                                |
-              |                      +---------+---------+
-              |                      |                   |
-              |                 raw frame stream    remote desktop
-              |                      |                   |
-              +----------+-----------+                   |
-                         |                               |
-                 Push presentation                  laptop/tablet/
-                         |                          service client
-                         v
-                       Push 3
+platform source backend
+        -> backend-neutral RawFrame
+        -> shared bounded crop / scale / format path
+        -> V1D-2
+        -> DrivenByMoss composition
+        -> Push
 ```
 
-The Push path and remote desktop are independent consumers of the same Bitwig session.
+Conceptual common facts include source identity/generation, role, dimensions, stride, pixel format, completeness, monotonic time, and capabilities such as interaction safety, cursor separation, subregions, restart, and Linux path.
 
-### Canonical workspace
+ScreenCaptureKit, AVFoundation/CoreGraphics, GStreamer objects, FFmpeg/libav objects, X11, PipeWire, Wayland, and other backend handles remain private.
 
-Managed mode owns one logical graphical workspace with stable dimensions and scale.
+A cross-platform media framework is not itself a source. V5 evaluates the actual macOS acquisition backend plus its common Mac/Linux processing path.
 
-Remote-client resize, zoom and encoding happen after that workspace and must not redefine the geometry used by Pushwig.
+## Device-aware presentation
 
-### Raw frame source
-
-A compositor/backend exposes complete video frames through a platform-specific adapter. V5 uses Weston + PipeWire as the first Linux reference.
-
-### Full remote desktop
-
-A remote backend exposes the complete managed Bitwig UI and pointer/keyboard input for deep editing, configuration, recovery, and maintenance.
-
-Disconnecting the remote client must not stop Bitwig or the Push path.
-
-See [`design/managed-visual-workspace.md`](design/managed-visual-workspace.md).
-
-## Portable visual-source contract
-
-The source layer exposes portable meaning rather than operating-system handles.
-
-Conceptually:
-
-```text
-VisualSurface
-    surface_id
-    generation
-    role
-    logical_width / logical_height
-    pixel_scale
-    capabilities
-        interaction_safe
-        cursor_free_or_separable
-        stable_geometry
-        remote_accessible
-        supports_subregions
-        restartable
-
-VisualSurfaceFrame
-    surface_id
-    surface_generation
-    sequence
-    monotonic_time
-    width / height
-    pixel_format
-    complete / valid
-    frame_bytes
-```
-
-Backend values such as `SCWindow`, PipeWire node IDs, Wayland/X11 objects, DRM outputs, VNC/RDP state, or Windows capture handles do not define the portable contract.
-
-A source must advertise product-relevant capabilities. “Returns pixels” is not sufficient to qualify a backend for attached or managed operation.
-
-## Device-aware presentation layer
-
-Above the source layer, the current product vocabulary remains:
+The post-source product model remains:
 
 ```text
 context router
@@ -161,88 +67,25 @@ presentation composer
 source backend
 ```
 
-- DrivenByMoss supplies current musical/controller semantics.
-- Experience profiles describe supported object/task behavior.
-- A resolver establishes a verified visual subject and regions.
-- A semantic camera frames verified regions according to user attention/task.
-- The presentation composer combines native/direct visuals with Push-specific semantics.
-- The source backend supplies frames/data without defining controller authority.
+The blocked Sampler V4 page will resume only after V5 selects a viable source mode. Existing track/mixer/session/transport/performance screens remain ordinary DrivenByMoss by default.
 
-See [`design/device-aware-presentation-layer.md`](design/device-aware-presentation-layer.md).
-
-V5 does not implement the device-aware layer; it provides a viable managed source for later device work.
-
-## Direct/generated sources
-
-Managed compositor capture is one source family, not the only source family.
-
-Direct/generated sources remain first-class for tasks such as:
-
-- Browser results and filters;
-- waveforms when underlying audio/sample data is available;
-- analyzers;
-- parameter graphs;
-- project-owned companion applications.
-
-The Push presentation may combine direct and captured sources when semantic coherence is explicit.
-
-## Attached versus managed modes
+## Attached and managed modes
 
 ### Attached
 
-The user's existing desktop is authoritative. A backend must coexist with normal application use and cannot require project-owned desktop geometry.
-
-The current macOS primary-window ScreenCaptureKit backend is not accepted for attached use on the tested fixture.
-
-Attached mode remains a product goal and may later use a safer OS mechanism, dedicated source window, direct renderer, portal/backend, or another supported approach.
+Use the user's existing Bitwig desktop. A backend is eligible only when it preserves ordinary application operation and does not silently show wrong or contaminated visuals.
 
 ### Managed
 
-Pushwig controls the graphical workspace. This is appropriate for:
-
-- the future Steam Deck/Framework/compact-x86 appliance;
-- deterministic testing;
-- remote-only/headless workflows;
-- stable device-profile geometry.
-
-Managed mode is not imposed on ordinary attached-desktop users.
-
-## Track A relationship
-
-The eventual appliance is:
-
-```text
-Push 3 Controller
-        + managed Linux Bitwig host
-        + battery / boot / recovery
-        + curated Push presentation
-        + full wireless Bitwig desktop when needed
-```
-
-The first appliance may continue to use Push's stock rear USB controller/audio path. Internal CM11EB/native-bay work remains optional hardware refinement.
+A future appliance may own a canonical Bitwig workspace and expose it both to Pushwig and a remote full-desktop client. This remains a Track A/runtime option; no compositor or remote stack is selected in V5.
 
 ## Ownership invariants
 
-- Bitwig owns the DAW and audio engine.
-- DrivenByMoss owns semantic Push behavior and the sole Push display USB endpoint.
-- V1D-2 remains a bounded final-raster boundary, not the workspace/source protocol.
-- Visual capture/rendering never blocks musical control or audio.
-- The remote desktop is not the Push transport.
-- Historical composed pixels are never restoration authority.
-- Wrong, unsupported or ambiguous visuals prefer semantic fallback.
-- Platform-specific source objects do not define device or presentation behavior.
-- Current encoder binding—not encoder number alone—is semantic control identity.
-- A source that is technically capable but materially disrupts host use is not product-valid for that operating mode.
+- Bitwig owns DAW/audio.
+- DrivenByMoss owns semantic Push behavior and final USB display transport.
+- Frame-source/media backends own acquisition and backend-local lifecycle only.
+- Capture/media failures return to current semantics.
+- Platform-specific objects do not define portable source/device/presentation identity.
+- A technically valid source is not product-valid if it makes Bitwig materially unusable.
 
-## Current V5 placement
-
-[V5 / issue #50](https://github.com/kasselvania/standalone-BitWig-push/issues/50) proves one managed Linux Bitwig workspace with:
-
-- canonical geometry;
-- raw PipeWire frames;
-- a committed Linux frame adapter feeding unchanged V1D-2;
-- independent full remote desktop/input;
-- restart/disconnect independence;
-- platform-neutral source descriptors.
-
-It does not resume the custom Sampler page or solve attached capture on macOS.
+See [portable frame-source bakeoff](design/portable-frame-source-bakeoff.md), [protocols](PROTOCOLS.md), and [device-aware presentation](design/device-aware-presentation-layer.md).
