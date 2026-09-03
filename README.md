@@ -2,7 +2,7 @@
 
 **Live Bitwig visuals and DrivenByMoss control on Ableton Push 3.**
 
-Pushwig is an open-source integration that makes **Ableton Push 3 Controller** a richer controller for **Bitwig Studio**. DrivenByMoss remains responsible for musical control and the normal Push interface; Pushwig adds an optional visual path for information that Bitwig exposes only in its graphical interface.
+Pushwig is an open-source integration that makes **Ableton Push 3 Controller** a richer controller for **Bitwig Studio**. DrivenByMoss remains responsible for musical control and the normal Push interface; Pushwig adds an optional visual and presentation layer for information that Bitwig exposes only in its graphical interface.
 
 > **Project status:** experimental, working on real hardware, not yet an end-user release.
 >
@@ -16,19 +16,17 @@ The project has a maintained macOS capture helper and a small DrivenByMoss fork 
 
 Today the system can:
 
-- keep normal DrivenByMoss pads, encoders, transport, sequencing, browsing, and device control;
+- keep normal DrivenByMoss pads, encoders, transport, sequencing, browsing and device control;
 - preserve Push as Bitwig's audio interface, including headphone output;
-- compose live raster visuals onto part of Push's 960×160 display;
-- restore the current DrivenByMoss display when a visual source disappears, becomes stale, or fails;
+- compose live raster visuals onto Push's 960×160 display;
+- restore current DrivenByMoss semantics when a visual source disappears, becomes stale or fails;
 - receive the newest complete visual frame from a separate local process without blocking the Push display/control path;
-- load a small JSON profile and capture a normalized region of the unique Bitwig main window;
-- apply the profile crop explicitly inside the helper rather than depending on unsupported single-window `sourceRect` behavior;
-- keep that window-relative source active through ordinary movement, supported resize, loss, and recreation;
-- fail back to the semantic DrivenByMoss display when capture permission, source validity, the helper, or the external frame connection is lost.
+- load a small JSON profile and capture a normalized region of one unique Bitwig main window;
+- apply the profile crop explicitly inside the helper and scale it without aspect distortion;
+- keep that window-relative source active through ordinary movement, supported resize, loss and recreation;
+- reject missing or ambiguous source windows rather than showing unrelated pixels.
 
-The accepted V3 window lens does not identify Sampler automatically. A profile describes a supported region inside the Bitwig main window. Bitwig may reflow devices and panels inside that region while its window is resized; Pushwig recomputes the normalized window crop but does not yet anchor to an internal device object. The accepted V2 physical-display crop remains available as a diagnostic/reference mode.
-
-In window-profile mode, ScreenCaptureKit supplies the complete selected window at a bounded resolution. The helper applies the normalized crop and one uniform centered-cover scale locally before publishing the fixed Push region. This explicit step is required because ScreenCaptureKit does not apply `SCStreamConfiguration.sourceRect` to a single-window capture.
+The accepted V3 window lens follows a region of the Bitwig window. It does not yet identify a device inside Bitwig or follow internal panel reflow. V3 proved the capture, delivery and window-lifecycle foundation; the current phase is designing device-aware presentations on top of it.
 
 ## How it works
 
@@ -38,17 +36,27 @@ Bitwig controller state ──> DrivenByMoss ───────────�
 Bitwig visual source ──> Pushwig capture helper ──> frame ingress
                                                         │
                                                         v
-                                             Push display composition
+                                     context-gated Push presentation
                                                         │
                                                         v
                                                 Ableton Push 3
 ```
 
-There is one important ownership rule: **DrivenByMoss remains the sole writer to the Push display USB endpoint.** The capture helper never owns Push, MIDI, or audio. It publishes bounded visual frames; the controller extension decides whether the newest frame is valid and combines it with the current semantic display.
+There is one important ownership rule: **DrivenByMoss remains the sole writer to the Push display USB endpoint.** The capture helper never owns Push, MIDI or audio. It publishes bounded visual frames; the controller extension decides when a Pushwig experience is appropriate and combines valid pixels with current semantic state.
 
 If the visual path fails, musical control and audio do not wait for it.
 
 Read [Architecture](docs/ARCHITECTURE.md) for the component boundaries and [Protocols](docs/PROTOCOLS.md) for the raster/frame contracts.
+
+## Device-aware presentation
+
+Pushwig does not intend to replace every controller screen.
+
+- Track, mixer, session, transport and performance pages stay with DrivenByMoss unless a specific better experience is designed.
+- Supported native-device and Browser contexts may receive deliberate Pushwig presentations.
+- Unsupported, stale or ambiguous states fall back to ordinary DrivenByMoss.
+
+The shared design vocabulary is the [device-aware presentation operating model](docs/design/device-aware-presentation-layer.md). The [native-device behavior matrix](docs/design/native-device-behavior-matrix.md) inventories Bitwig's top-level devices, current generic DrivenByMoss coverage, provisional behavior families and priorities.
 
 ## Current requirements
 
@@ -62,7 +70,7 @@ The accepted development fixture uses:
 
 Linux and Steam Deck are planned portability targets. Push 2 has not received the same hardware acceptance testing.
 
-## Run the window-relative lens
+## Run the current window-relative lens
 
 Build the packaged helper as described in [Development](docs/DEVELOPMENT.md), then inspect only Bitwig-owned capture candidates:
 
@@ -81,7 +89,7 @@ PushwigCaptureHelper \
   --token-file /path/to/private-token
 ```
 
-The profile contains product geometry and selection only. The token path, capability, socket session, physical desktop position, and current macOS window ID are deliberately runtime state.
+The profile contains visual geometry and source selection only. The token path, capability, socket session, physical desktop position and current macOS window ID are runtime state.
 
 ## What Pushwig is not yet
 
@@ -89,53 +97,53 @@ Pushwig is not currently:
 
 - a one-click installer;
 - an automatic detector for every Bitwig device or plug-in editor;
-- a device-aware visual system that follows internal Bitwig panel reflow;
+- a device-aware resolver that follows internal Bitwig panel reflow;
 - a finished Linux release;
 - a battery-powered appliance product;
 - a modification of AbletonOS or Push firmware.
 
 The repository also contains research for a future self-contained Linux appliance and Push's internal compute bay. Those are optional deployment/hardware directions, not requirements for the core visual/controller software.
 
+## Current development
+
+[V4 — Sampler device-page foundation](https://github.com/kasselvania/standalone-BitWig-push/issues/49) is the active product milestone.
+
+V4 leaves existing good controller pages untouched and builds the first deliberate hybrid page for one supported Bitwig Sampler Device context: current encoder names and values, a tightly framed native visual, touched-control emphasis, context-safe activation and exact fallback to ordinary DrivenByMoss.
+
+It does not yet attempt universal device recognition, touch-driven camera zoom, sliced-Sampler task views or Browser redesign. Those are later capabilities using the same [operating model](docs/design/device-aware-presentation-layer.md).
+
 ## Development and testing
 
-The macOS helper is ordinary Swift source under [`capture/macos/`](capture/macos/), with committed regression tests.
+The macOS helper is ordinary Swift source under [`capture/macos/`](capture/macos/), with committed regression tests. The controller integration lives in the project DrivenByMoss fork.
 
 Start with:
 
 - [Development](docs/DEVELOPMENT.md) — build and local setup;
 - [Testing](docs/TESTING.md) — repeatable tests versus retained experimental evidence;
-- [Contributing](CONTRIBUTING.md) — PR, branch, and evidence expectations.
+- [Contributing](CONTRIBUTING.md) — PR, branch and evidence expectations;
+- [Documentation index](docs/README.md) — current designs and deeper references.
 
 Pushwig keeps detailed hardware/experiment evidence under [`evidence/`](evidence/). That material is there for audit and reproduction; it is **not** required reading to understand the project.
-
-## Current design work
-
-[V3 — Adaptive Bitwig window-relative visual lens](https://github.com/kasselvania/standalone-BitWig-push/issues/45) is accepted and merged.
-
-The project is deliberately pausing before selecting the next implementation milestone. The immediate design question is no longer whether real Bitwig pixels can reach Push or follow the Bitwig window—they can. It is how to make those visuals genuinely useful and device-aware when Bitwig changes its internal layout.
-
-The maintainer and technical lead are evaluating the next user experience: which information belongs on Push, when captured versus purpose-built visuals should be used, how visual selection should relate to DrivenByMoss state, and how internal Bitwig regions can be located without showing the wrong content.
-
-See the [accepted V3 design](docs/design/window-relative-visual-lens.md), [current work](CURRENT_SLICE.md), and [roadmap](docs/ROADMAP.md).
 
 ## Contributing
 
 Contributions are welcome in areas such as:
 
+- device-aware Push presentations;
 - macOS and Linux capture backends;
-- Bitwig window/layout tracking;
-- visual-source detection and profiles;
+- Bitwig window/layout and visual-source resolution;
 - generated waveform/analyzer views;
+- Browser and device interaction design;
 - Push/Bitwig compatibility testing;
 - packaging and developer experience;
 - documentation and visual design.
 
 A new contributor should be able to understand the project without reading maintainer control files. Start with [CONTRIBUTING.md](CONTRIBUTING.md) and the [documentation index](docs/README.md).
 
-`AGENTS.md`, `CURRENT_SLICE.md`, and the evidence directories exist for maintainers and coding agents; they are not the public onboarding path.
+`AGENTS.md`, `CURRENT_SLICE.md` and the evidence directories exist for maintainers and coding agents; they are not the public onboarding path.
 
 ## Independence and trademarks
 
-Pushwig is independent and is not affiliated with or endorsed by Ableton, Bitwig, Apple, Valve, Intel, Framework Computer, or the DrivenByMoss project.
+Pushwig is independent and is not affiliated with or endorsed by Ableton, Bitwig, Apple, Valve, Intel, Framework Computer or the DrivenByMoss project.
 
-Ableton, Push, Bitwig, macOS, Steam Deck, Intel, Framework, and DrivenByMoss are names used only to describe compatibility and integration targets.
+Ableton, Push, Bitwig, macOS, Steam Deck, Intel, Framework and DrivenByMoss are names used only to describe compatibility and integration targets.

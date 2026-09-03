@@ -1,76 +1,107 @@
-# Current Work — Design discussion after V3
+# Current Work — V4 Sampler device-page foundation
 
 ## Status
 
-**NO ACTIVE IMPLEMENTATION SLICE**
+**ACTIVE**
 
-V3 is accepted and merged.
+Owning issue: [#49 — V4: Sampler device-page foundation](https://github.com/kasselvania/standalone-BitWig-push/issues/49)
 
-- Merge commit: `8689d1b3cbc89e9c3923fd19cb741e594c0ba445`
-- Accepted tree: `e5cdbeadd178c4cc9c7a3d2e78ab13cb99f89846`
-- Closed issue: [#45 — V3: Adaptive Bitwig window-relative visual lens](https://github.com/kasselvania/standalone-BitWig-push/issues/45)
-- Accepted design: [`docs/design/window-relative-visual-lens.md`](docs/design/window-relative-visual-lens.md)
-- Fixture evidence: [`evidence/v3-window-relative-lens/README.md`](evidence/v3-window-relative-lens/README.md)
+Operating model: [`docs/design/device-aware-presentation-layer.md`](docs/design/device-aware-presentation-layer.md)
 
-## What V3 established
+Device catalog: [`docs/design/native-device-behavior-matrix.md`](docs/design/native-device-behavior-matrix.md)
 
-Pushwig can now:
+Implementation branches begin from the current accepted `origin/main` containing this V4 activation.
+
+## Goal
+
+Deliver the first useful device-aware Pushwig screen.
 
 ```text
-unique Bitwig main window
-        -> human-readable visual profile
-        -> normalized window-relative crop
-        -> explicit helper-local crop and centered-cover scale
-        -> accepted external frame ingress
-        -> current DrivenByMoss semantics + live Bitwig pixels
-        -> physical Push 3
+DrivenByMoss Device mode
+        + selected supported native Sampler
+        + current valid Sampler visual
+        -> intentional hybrid device page
+        -> current encoder semantics + tightly bounded native pixels
+        -> physical Push
 ```
 
-The maintained macOS helper follows ordinary window movement, recomputes the crop after supported resize, revokes stale generations, falls back on missing or ambiguous sources, and reacquires a recreated Bitwig window. The normalized crop was proven with a generated native quadrant fixture and a focused real-Push test. V2 explicit-display mode remains available as a diagnostic path.
+Track, mixer, session, transport, performance and unsupported-device screens remain ordinary DrivenByMoss.
 
-## Current product limitation
+## Product result
 
-V3 follows a region of the Bitwig window. It does **not** know which Bitwig device occupies that region.
+For one explicitly supported Bitwig Studio 6.1 Sampler fixture:
 
-Bitwig may reflow Sampler, the device chain, and neighboring panels while the outer window resizes. The capture remains correctly attached to the window and correctly cropped, but the useful device can move outside the profiled region.
+- the native Sampler visual is tightly framed, centered and bottom-aligned;
+- adjacent Bitwig panels and unexplained empty space are excluded;
+- eight names/values reflect the current DrivenByMoss parameter bindings;
+- touching one encoder visibly emphasizes its semantic slot;
+- turning, Shift fine adjustment and Delete+touch reset retain their current behavior;
+- leaving Device mode, selecting another device/page, losing the visual, or leaving the supported layout returns immediately to the ordinary DrivenByMoss screen.
 
-That limitation is now the central product-design question—not another transport, bitmap, or ScreenCaptureKit ownership question.
+V4 is a complete first screen, not a universal device resolver.
 
-## Current design work
+## Source ownership
 
-No implementation issue or branch should be opened until the maintainer and technical lead have agreed on the intended device-aware experience.
+V4 spans two existing owners and therefore uses two coordinated source PRs:
 
-The first concrete design artifact is now:
+### `kasselvania/DrivenByMoss`
 
-- [Issue #47 — native Bitwig devices × DrivenByMoss behavior matrix](https://github.com/kasselvania/standalone-BitWig-push/issues/47)
-- [`docs/design/native-device-behavior-matrix.md`](docs/design/native-device-behavior-matrix.md)
-- [`docs/design/native-device-behavior-matrix.csv`](docs/design/native-device-behavior-matrix.csv)
-- [`docs/reference/manuals/`](docs/reference/manuals/) — pinned official manual references and local fetcher
+- context eligibility and generation fencing;
+- current Sampler/device/page/encoder semantic state;
+- custom semantic page composition;
+- touched-encoder emphasis;
+- raster gating to the eligible context;
+- exact standard-page fallback;
+- final Push display ownership.
 
-This catalog separates four questions: what Bitwig exposes, what DrivenByMoss currently controls, what visual region Pushwig can verify, and what presentation Pushwig has actually designed.
+### `kasselvania/standalone-BitWig-push`
 
-The discussion should decide at least:
+- one fixture-verified tight Sampler visual profile;
+- bounded supported-layout validation;
+- macOS helper tests and concise product evidence;
+- contributor-facing run instructions affected by the new experience.
 
-- what visual information is genuinely useful on Push;
-- which existing DrivenByMoss screens should remain unchanged;
-- where a native-device overview should replace or augment the current eight-parameter display;
-- how current encoder bindings, touch, rotation, and multiple touches should influence framing;
-- how Sampler overview, playback/loop markers, and sliced workflows should differ;
-- how the Browser should be redesigned around results, filters, preview, commit, and cancel;
-- whether internal Bitwig panel localization should use layout constraints, calibration, semantic hints, pixel anchors, or another approach;
-- what configuration should be automatic versus user-authored;
-- what would make the result pleasant enough to use rather than merely technically functional.
+Do not create separate evidence or authority PRs.
+
+## Acceptance
+
+V4 succeeds when:
+
+1. ordinary non-device and unsupported-device screens remain unchanged;
+2. the supported Sampler Device page visibly activates and is more useful than the generic eight-bar page;
+3. current names/values and touch emphasis agree with the actual encoder bindings;
+4. the Sampler visual is tight and coherent with those semantics;
+5. no previous device/page visual appears after a context change;
+6. supported move works and unsupported resize/reflow fails closed rather than drifting;
+7. the Push visual contains no ordinary mouse pointer/hover contamination;
+8. the selected attached-mode capture does not make normal Bitwig window controls unusable;
+9. controls, MPE, transport, audio and headphones remain normal;
+10. deterministic routing, gating and renderer behavior are committed tests;
+11. exact official DrivenByMoss rollback passes.
+
+## Explicit non-goals
+
+V4 does not implement:
+
+- automatic Sampler landmark/anchor resolution;
+- touch-driven camera zoom;
+- multi-touch bounding-box framing;
+- start/end/loop marker task views;
+- sliced-Sampler task views;
+- Browser redesign;
+- Polymer or other device support;
+- macros, modulators or arbitrary plug-ins;
+- Linux capture;
+- a public adapter SDK;
+- an external raster protocol redesign.
+
+These are subsequent product capabilities using the same operating model.
 
 ## Stable boundaries
 
 - Bitwig remains the DAW and audio-engine authority.
-- DrivenByMoss remains semantic/controller authority and the sole Push display transport owner.
-- The helper owns platform discovery, capture, and helper-local pixel processing only.
-- Visual failure returns to current semantic output.
-- Wrong or ambiguous visual selection must abstain.
-- The accepted raster sink and external-frame protocol remain stable unless a concrete product blocker requires change.
-- Stable deterministic behavior belongs in committed tests; real fixture evidence stays concise.
-
-## Repository housekeeping
-
-Historical branch/worktree cleanup remains tracked by [#41](https://github.com/kasselvania/standalone-BitWig-push/issues/41). It must not be confused with product design or used to create another chain of feature-blocking governance slices.
+- DrivenByMoss remains controller-semantic authority and sole Push USB display writer.
+- The helper owns platform capture and helper-local pixel processing.
+- Existing good DrivenByMoss screens are preserved by default.
+- Wrong, stale, unsupported or ambiguous visual state falls back to current semantics.
+- The device-aware operating model is shared design vocabulary, not another instruction hierarchy.

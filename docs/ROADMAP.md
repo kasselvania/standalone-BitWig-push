@@ -2,6 +2,8 @@
 
 Pushwig's roadmap is organized around product capabilities, not every internal experiment.
 
+Execution authority lives in `CURRENT_SLICE.md` and the owning issue. This file gives longer-term orientation only; it does not duplicate slice requirements.
+
 ## Done: working visual path on real Push hardware
 
 The project has established:
@@ -11,42 +13,56 @@ The project has established:
 - a validated opaque-BGRA raster sink;
 - bounded authenticated latest-frame ingress from a separate local process;
 - a maintained macOS ScreenCaptureKit helper;
-- live Bitwig pixels on a physical Push 3 Controller while controls, audio, and headphone output remain operational;
+- live Bitwig pixels on a physical Push 3 Controller while controls, audio and headphone output remain operational;
 - a human-readable window-relative visual profile;
 - unique/missing/ambiguous Bitwig-window selection;
 - helper-local normalized cropping and aspect-preserving scaling;
-- window move, supported resize, source-loss, and recreation handling;
-- committed regression tests for stable crop, profile, selection, generation, protocol, and backpressure behavior.
+- window move, supported resize, source-loss and recreation handling;
+- committed regression tests for stable crop, profile, selection, generation, protocol and backpressure behavior.
 
-Detailed historical experiments and measurements remain under `evidence/**` and the completed design dossiers.
+V3 proved that Pushwig can follow the Bitwig window and deliver real pixels. It also made the next limitation clear: a correct window-relative crop is not yet a device-aware instrument interface.
 
-## Accepted: V3 window-relative visual lens
+## Current phase: device-aware presentation
 
-[V3 / issue #45](https://github.com/kasselvania/standalone-BitWig-push/issues/45) removed the physical-display coordinate from normal profile use.
+Pushwig now preserves existing controller screens that already work well and adds custom presentations only for supported objects and tasks.
 
-A profile can now select one intended Bitwig main window, define a normalized region inside it, and keep the visual source attached through ordinary move, supported resize, loss, and recreation. Missing or ambiguous sources fall back to current DrivenByMoss semantics. The V2 explicit-display mode remains available as a diagnostic/reference path.
+The current operating vocabulary is:
 
-The crop is applied explicitly inside the helper because ScreenCaptureKit does not honor `sourceRect` for single-window capture. A generated native quadrant fixture proved that materially different normalized crops select materially different source pixels.
+```text
+context router
+semantic context
+experience profile
+visual resolver
+semantic camera
+presentation composer
+platform capture backend
+```
 
-See [`design/window-relative-visual-lens.md`](design/window-relative-visual-lens.md).
+See [`design/device-aware-presentation-layer.md`](design/device-aware-presentation-layer.md). This model is not execution authority; the active issue controls the current implementation.
 
-## Current design discussion: make the visual useful
+The first product sequence is:
 
-The immediate question is no longer whether Pushwig can transport real pixels or follow the Bitwig window. It can.
+1. **V4 Sampler device-page foundation** — one intentional hybrid native-device page with current encoder semantics, a tightly bounded visual, touch emphasis and exact fallback;
+2. **Browser redesign** — results-first semantic browsing with clear filters, preview, commit and cancel;
+3. **Sampler task views** — playback/loop boundaries and sliced workflows after capability verification;
+4. **Polymer generalization** — prove that the device-overview model is not Sampler-specific;
+5. **Broader native-device families** — analyzers, graphs, structures and note-flow devices using proven behavior families.
 
-The remaining limitation is that a normalized window region is still **device-unaware**. Bitwig can reflow Sampler, the device chain, and adjacent panels inside the same window while the outer capture remains technically correct.
+The active implementation is [V4 / issue #49](https://github.com/kasselvania/standalone-BitWig-push/issues/49).
 
-Before selecting the next implementation milestone, decide the intended product experience:
+The native-device inventory and priorities are in [`design/native-device-behavior-matrix.md`](design/native-device-behavior-matrix.md).
 
-- which information should appear on Push and in which controller modes;
-- when a captured Bitwig view is valuable versus a purpose-built generated view;
-- how DrivenByMoss selected-device and mode state should influence visual selection;
-- how a visual should be switched, hidden, enlarged, or restored;
-- how internal Bitwig regions should be located without showing the wrong content;
-- what configuration should be automatic, profiled, or calibrated;
-- what makes the feature pleasant to use rather than merely demonstrable.
+## Stronger localization and interaction
 
-Potential technical ingredients include Bitwig/DrivenByMoss semantics, bounded layout rules, user-authored profiles, calibration, confidence-checked pixel anchors, and direct project-owned visual renderers. None is selected as the next architecture merely by appearing in this list.
+After the first complete device page proves what must be located and presented, improve:
+
+- selected-device and parameter-binding semantic coordination;
+- validated native-device boundaries and named control regions;
+- touch/edit/multi-touch semantic-camera behavior;
+- layout-variant handling and bounded calibration;
+- confidence-checked semantic-seeded anchors where geometry is insufficient;
+- direct generated waveform/analyzer sources where data is available;
+- abstention rather than wrong visual locks.
 
 ## Usability and packaging
 
@@ -69,13 +85,15 @@ Port the established contracts rather than redesigning them:
 - measure CPU/power on the Steam Deck fixture;
 - preserve semantic fallback and one Push display writer.
 
+The semantic context, device-experience and presentation models must remain platform-neutral even while macOS is the first capture implementation.
+
 ## Optional appliance work
 
-A self-contained Linux host, battery, boot/recovery services, and wireless desktop management can package the same Pushwig software into a portable instrument. The Steam Deck is the first available appliance fixture; Framework/compact-x86 systems are possible later hosts.
+A self-contained Linux host, battery, boot/recovery services and wireless desktop management can package the same Pushwig software into a portable instrument. The Steam Deck is the first available appliance fixture; Framework/compact-x86 systems are possible later hosts.
 
 ## Optional internal-compute / connector research
 
-Push's internal compute bay and CM11EB carrier remain a separate hardware research track. Useful outcomes include safe connector characterization, diagnostic hardware, and eventual evaluation of a native-bay compute installation.
+Push's internal compute bay and CM11EB carrier remain a separate hardware research track. Useful outcomes include safe connector characterization, diagnostic hardware and eventual evaluation of a native-bay compute installation.
 
 These hardware tracks do not block the desktop visual/controller product.
 
@@ -83,9 +101,9 @@ These hardware tracks do not block the desktop visual/controller product.
 
 A credible first public release should let another Push 3 + Bitwig user:
 
-1. install the supported DrivenByMoss derivative and capture helper;
+1. install the supported DrivenByMoss derivative and platform helper;
 2. grant the required platform permission;
-3. select or load a visual profile;
-4. see useful Bitwig visuals on Push;
-5. retain normal controls/audio when visuals disappear;
+3. load a supported device or workflow experience;
+4. see useful Bitwig-native and Push-specific information in the right controller context;
+5. retain normal controls/audio and semantic fallback when visuals disappear;
 6. understand and reproduce the supported configuration from conventional docs and tests.
