@@ -1,92 +1,85 @@
-# Current Work — V5 portable frame-source bakeoff
+# Current Work — V5A ordinary Bitwig external-ingress activation
 
 ## Status
 
-**ACTIVE — MAC-FIRST SOURCE SELECTION**
+**ACTIVE — GATE 0 FIXTURE RECOVERY, THEN GATE 1 READ-ONLY DECISION**
 
-Owning issue: [#50 — V5: Mac-first portable frame-source bakeoff](https://github.com/kasselvania/standalone-BitWig-push/issues/50)
+Owning issue and executable prompt: [#53 — V5A ordinary Bitwig external-ingress activation](https://github.com/kasselvania/standalone-BitWig-push/issues/53)
 
-Design: [`docs/design/portable-frame-source-bakeoff.md`](docs/design/portable-frame-source-bakeoff.md)
+Durable design: [`docs/design/ordinary-launch-ingress-activation.md`](docs/design/ordinary-launch-ingress-activation.md)
+
+Failed predecessor: [#50 — V5 portable frame-source bakeoff](https://github.com/kasselvania/standalone-BitWig-push/issues/50), preserved by draft PR #52 and the [failure review](evidence/v5-portable-frame-source-bakeoff/failure-review.md).
 
 Blocked product goal: [#49 — V4 Sampler device-page foundation](https://github.com/kasselvania/standalone-BitWig-push/issues/49)
 
-## What is already solved
+## Why this slice exists
 
-V1 through V3 proved the downstream visual path:
-
-```text
-complete raw visual frame
-        -> bounded crop / scale / format conversion
-        -> authenticated latest-frame ingress
-        -> current semantic composition
-        -> one Push USB display writer
-        -> physical Push 3
-```
-
-That path is fast, accurate, bounded, and preserves Push control and audio.
-
-## What failed
-
-The tested ScreenCaptureKit desktop-independent stream of the user's primary Bitwig window is not an acceptable product source on the current Mac fixture. macOS sharing UI obstructs ordinary Bitwig window controls while capture is active.
-
-That result disqualifies the tested source path. It does not disqualify macOS, select Linux, or select another framework by default.
-
-## V5 goal
-
-Stay on macOS and compare materially different frame-source/media stacks until one path either:
-
-1. passes the attached-use, raw-frame, performance, Push, and future-Linux gates; or
-2. produces a justified no-winner decision.
+The project proved the hard external-frame data path only after Bitwig had been started through a special JVM-property fixture:
 
 ```text
-candidate macOS frame source
-        -> backend-neutral raw-frame seam
-        -> shared crop / scale / opaque-BGRA path
-        -> unchanged V1D-2
-        -> physical Push
+complete authenticated frame
+    -> fixed latest-frame publication
+    -> nonblocking DrivenByMoss composition
+    -> one Push USB writer
 ```
 
-The selected framework/common media path must support Linux later. V5 does not implement Linux, Steam Deck, a managed compositor, or remote desktop.
+The project did not prove how an ordinary, fully usable Bitwig session enables that receiver or exposes its private endpoint to a producer.
 
-## Candidate floor
+V5 attempted source selection while forbidding changes to that unfinished activation boundary. It therefore reached a green component suite with no product-valid receiver to connect to. V5A repairs that prerequisite before any more capture work.
 
-The implementation agent must audit actual source backends—not merely project marketing—for:
+## Product result
 
-- `drc-sim` / `libdrc` and similar unusual second-screen projects;
-- Weylus;
-- Sunshine;
-- ScreenCaptureLite;
-- WebRTC desktop capture;
-- RustDesk capture components;
-- OBS/libobs;
-- GStreamer;
-- FFmpeg/libavdevice/libavfilter.
+The user launches Bitwig normally. The accepted Pushwig DrivenByMoss derivative loads, activates exactly one existing V1D-2 receiver through a supported setting/lifecycle path, publishes a private session-scoped rendezvous, accepts one deterministic generated frame, restores current semantics on CLEAR/disconnect/staleness, and quits/restarts/rolls back cleanly.
 
-A wrapper around the rejected ScreenCaptureKit primary-window path is not a new candidate.
+Success must not depend on JVM option environment variables, direct executable invocation, private APIs, code injection, UI automation, a new capture backend, or a second frame/USB path.
 
-## Selection gates
+## Current authorization
 
-A winner must preserve normal Bitwig controls, avoid an unacceptable persistent capture overlay, provide clean or separable pointer behavior, expose complete bounded raw frames, reach unchanged V1D-2 and the physical Push, remain comfortably inside a 30-fps budget, and have a real Linux implementation path without leaking backend-specific handles into the common frame contract.
+### Gate 0 — fixture recovery
 
-Private APIs, Bitwig injection, disabled security controls, and mouse automation are outside scope.
+Before code, restore the official DrivenByMoss artifact and remove the derivative/token state left by the stopped V5 session. Confirm ordinary display, controls, Push audio/headphones, no listener/generated pixels, and normal quit.
 
-## Delivery
+Do not manipulate the current Bitwig session until the maintainer confirms work is safe to save and quit.
 
-Preferred branch:
+### Gate 1 — read-only lifecycle decision
 
-```text
-capture/v5-portable-frame-source-bakeoff
-```
+Map, without editing:
 
-One ordinary non-draft PR against `main`, containing source audits, candidate probes, committed generated-frame tests, measurements, one selected implementation or explicit no-winner decision, and concise fixture evidence.
+- `PushConfiguration` setting registration and availability;
+- Push controller/display construction order;
+- V1D-2 receiver construction and shutdown;
+- the narrowest lawful activation/rendezvous owner;
+- runtime-file permissions, atomic publication, stale-session behavior, cleanup, changed paths, and targeted tests.
 
-No separate authority or evidence PR.
+Stop for technical-lead review. Passing this gate authorizes implementation; repository access alone does not.
 
-## Stable boundaries
+## Later gates
 
-- macOS remains the active development fixture for the foreseeable work;
-- Bitwig remains DAW/audio authority;
-- DrivenByMoss remains semantic/controller authority and sole Push USB writer;
-- V1D-2 remains the accepted final raster sink;
-- a cross-platform media framework is not the same thing as its macOS capture backend;
-- V4 remains blocked until V5 selects a viable visual-source mode.
+- **Gate 2:** ordinary-launch deterministic HELLO/FRAME/CLEAR/disconnect proof with one rendezvous, token, loopback listener, and receiver thread.
+- **Gate 3:** one bounded physical Push smoke test and one formal acceptance session covering display, controls, and audio.
+- **Gate 4:** shutdown while idle/active, immediate restart with a new generation, capability/rendezvous cleanup, derivative removal, and byte-exact official restoration.
+
+## Frozen boundaries
+
+Preserve the existing V1D-2 protocol, receiver data validation, fixed latest-frame ownership, nonblocking display adoption, semantic fallback, raster sink, and sole `PushUsbDisplay.send` ownership.
+
+Activation/configuration/rendezvous is intentionally open because it is the missing product boundary.
+
+## Strict non-goals
+
+No capture-source bakeoff, AVFoundation, ScreenCaptureKit, common C++ frame model, crop/scale work, Sampler UI, Linux, Steam Deck, managed compositor, remote desktop, encoding, public SDK, or broad DrivenByMoss cleanup.
+
+## Delivery controls
+
+- no implementation PR before Gate 2 passes;
+- one DrivenByMoss implementation PR;
+- one central closure/evidence PR only after physical acceptance and rollback, unless central production code is genuinely required;
+- one concise evidence record;
+- targeted changed-contract tests plus the affected V1D-2 regression suite;
+- no PR/test/status chain and no repeated whole-project rebuild loop.
+
+## Immediate stops
+
+Stop if ordinary launch still requires environment injection/direct execution, the setting lifecycle demands a broad refactor, secure cleanup cannot be guaranteed, the change creates another frame plane/writer/queue/receiver, the production-path budget in issue #53 is exceeded, physical behavior conflicts with logs, controls/audio regress, or exact fixture recovery fails.
+
+V5A does not select a visual source. It earns the ordinary product ingress contract that the next source slice must use.

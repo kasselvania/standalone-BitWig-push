@@ -1,81 +1,119 @@
 # Testing
 
-Pushwig uses three different kinds of verification. Keeping them separate makes the project easier to understand and reproduce.
+Pushwig uses deterministic tests, process-level integration, physical fixture acceptance, and retained evidence. These categories support one another but are not interchangeable.
 
-## 1. Committed regression tests
+## Verification ladder
 
-Stable deterministic product behavior should live in the repository whenever practical.
+Order verification from cheapest and most controlled to most expensive and physical.
 
-For the macOS helper:
+### 0. Fixture custody and recovery
+
+When a slice installs a DrivenByMoss derivative or creates private runtime state, begin and end with exact custody:
+
+- save/quit boundaries confirmed by the maintainer;
+- exact application/audio-engine/listener state;
+- sole scanned extension and artifact hashes;
+- capability/runtime-file cleanup;
+- ordinary official-artifact launch and physical confirmation.
+
+Do not mix recovery from a failed session with new implementation testing.
+
+### 1. Targeted deterministic contracts
+
+Commit repeatable tests for changed stable behavior. Examples include:
+
+- configuration parsing and observation;
+- capability/rendezvous permissions and atomic lifecycle;
+- stale-session refusal and failure cleanup;
+- protocol framing and complete-message refusal;
+- crop/profile validation and source-state transitions;
+- latest-frame behavior already owned by the existing data plane.
+
+Do not create a parallel frame model, fake queue, or metadata-only stand-in merely to increase test count. Reuse the production owner and existing regression suite.
+
+### 2. Real process-to-process vertical proof
+
+Exercise the actual construction sequence and boundary under test. For V5A this means:
+
+```text
+ordinary Bitwig launch
+    -> accepted derivative
+    -> one receiver + current rendezvous
+    -> generated producer HELLO / FRAME / CLEAR / disconnect
+```
+
+A process listing, property readback, listener, or log line is supporting evidence. None proves that Bitwig is ordinarily usable or that pixels reached Push.
+
+### 3. Physical Push acceptance
+
+Some claims require direct maintainer observation:
+
+- coherent pixels on the physical Push;
+- pads, pressure/MPE, encoders, transport, and representative modes;
+- Push audio/headphones;
+- ordinary Bitwig controls and window behavior;
+- semantic restoration and absence of residue;
+- normal quit without force or hidden error loops.
+
+Use one bounded smoke session after deterministic proof and one formal acceptance session. Do not use repeated physical sessions as the primary debugging loop.
+
+### 4. Shutdown, restart, and rollback
+
+Prove the relevant idle/active/partial states, immediate restart, authority generation change, runtime-file cleanup, derivative removal, official-artifact restoration, and final ordinary behavior.
+
+A feature is not accepted while the fixture remains dirty or rollback is merely planned.
+
+## Exploratory harnesses
+
+Temporary harnesses are appropriate for architecture research, destructive/error injection, native scheduling/memory observation, or candidate reconnaissance before product selection.
+
+They do not become production architecture by accumulating tests. Retain a source hash and commands only when that aids audit; graduate stable changed contracts into repository tests.
+
+## Efficient test policy
+
+- Run the smallest affected tests while iterating.
+- Run the broader affected-module suite once after the implementation is stable.
+- Run unrelated repository-wide suites only when the dependency graph or release claim requires them.
+- Reuse build outputs during one evidence session where lawful.
+- Do not rebuild Bitwig/DrivenByMoss repeatedly to collect narrative checkpoints.
+- A sandbox nonexecution is not a product PASS or FAIL; rerun only the affected command on the correct host.
+- Add no queue, thread, abstraction, or test-only API solely to satisfy a benchmark or coverage number.
+
+## Evidence budget
+
+Keep one concise evidence document for a formal physical slice or a material failed slice. It should include:
+
+- exact repository heads/trees and artifact hashes;
+- changed-path and ownership summary;
+- exact targeted tests and process proof;
+- physical acceptance rows when required;
+- shutdown/restart and rollback;
+- honest limitations and failed/nonexecuted claims.
+
+Do not duplicate source code, agent narration, proprietary UI captures, tokens, or large raw logs.
+
+## Pull-request gates
+
+An implementation PR should not open until the deterministic vertical gate passes. A PR must state separately:
+
+- changed-contract tests;
+- process-level proof;
+- physical observations;
+- performance data only when the claim is performance-sensitive;
+- rollback/final fixture state;
+- limitations and explicit nonclaims.
+
+Green unit tests cannot waive a missing vertical or physical gate. Evidence should be proportional to changed risk, not to the desire to make the PR look substantial.
+
+## Current commands
+
+For the maintained macOS helper baseline:
 
 ```bash
 cd capture/macos
 xcrun swift test
 ```
 
-Current committed tests cover strict visual-profile parsing, window/display selection, nonzero-origin window geometry, resize and capture-generation behavior, aspect mapping, BGRA normalization, protocol layout/sequence behavior, and bounded authority transitions.
+Use commands defined by the owning issue for the active slice. V5A primarily changes DrivenByMoss activation/rendezvous and must reuse the affected V1D-2 suites rather than expanding capture tests.
 
-As the product grows, stable deterministic contracts should continue to graduate into committed tests instead of remaining only as one-off harness evidence.
-
-Good candidates include:
-
-- protocol framing and refusal behavior;
-- crop/profile validation;
-- window-relative geometry;
-- source-state transitions;
-- stale/clear/reconnect behavior that can be exercised without proprietary pixels;
-- repeatable compatibility bugs.
-
-## 2. Exploratory harnesses
-
-Temporary harnesses remain useful for:
-
-- architecture research;
-- native-memory or scheduler observation;
-- destructive/error injection that would be awkward in the normal test suite;
-- one-off performance diagnosis;
-- testing a candidate before deciding whether it belongs in production.
-
-A temporary harness may be retained by source hash and commands in `evidence/**` when committing it would add more scaffolding than durable value.
-
-Once the behavior becomes a stable product contract, prefer a committed regression test for the deterministic part.
-
-## 3. Real-hardware / experiment evidence
-
-Some important claims cannot be reduced to unit tests:
-
-- live pixels on a physical Push;
-- actual controls, pressure/MPE, audio and headphones;
-- macOS Screen Recording permission lifecycle;
-- performance on a real Bitwig session;
-- exact rollback after installing a derivative controller extension.
-
-Those results live under [`../evidence/`](../evidence/) with enough environment/configuration detail to understand what was observed.
-
-Evidence is not a second implementation and should not duplicate every line of the source.
-
-## Testing principles
-
-- Test behavior and contracts, not incidental implementation trivia.
-- Prefer generated/synthetic pixel fixtures to committed proprietary UI images.
-- Separate source delivery cadence from project processing time.
-- Report failure/nonexecution honestly; do not turn resource limits into a fake PASS.
-- Keep real-time/control paths free of test instrumentation after measurement.
-- Do not add queues/threads merely to improve a benchmark number without a product reason.
-- Preserve failure/rollback behavior when the change touches live hardware or controller-extension installation.
-
-## Pull-request expectations
-
-A normal PR should state:
-
-- committed tests run;
-- any temporary harness used and why it remains temporary;
-- any real Push/Bitwig checks required by the claim;
-- meaningful performance data if the change is latency-sensitive;
-- known limitations that remain outside the PR.
-
-A small source change does not need a scientific paper. The amount of evidence should be proportional to the risk and novelty of the change.
-
-## Evidence index
-
-See [`../evidence/README.md`](../evidence/README.md) for the retained historical experiment sets.
+See [`../evidence/README.md`](../evidence/README.md).
