@@ -12,31 +12,32 @@ These share contracts but do not form one linear requirement chain.
 
 ## Reference fixtures
 
-- **Mac:** current fast software-development fixture and V5 frame-source bakeoff host.
-- **General Linux:** later second implementation family for the selected source/media substrate.
+- **Mac:** current fast software-development fixture for V5A activation and later bounded source work.
+- **General Linux:** later second implementation family after one source/common path is accepted.
 - **Steam Deck:** later Track A appliance and power/headless/runtime fixture.
 
-None is normative. A failed ScreenCaptureKit source does not disqualify macOS, and an eventual Steam Deck does not make SteamOS the core architecture.
+None is normative. A failed macOS source does not disqualify macOS, and an eventual Steam Deck does not make SteamOS the core architecture.
 
 ## Track V — visual/controller product
 
 The core product combines DrivenByMoss semantic control with useful native/direct visuals on Push.
 
-Current priorities:
+Current priority order:
 
-- preserve the proven one-writer, semantic-restoration, raster, and latest-frame foundation;
-- select a product-usable Mac frame source with a reusable Linux path;
-- resume the first Sampler device page;
-- redesign Browser and expand device behavior families;
-- prove Linux portability after the common substrate is selected.
+1. preserve the proven one-writer, semantic-restoration, raster, and V1D-2 data plane;
+2. productize ordinary Bitwig activation and private V1D-2 rendezvous (V5A);
+3. select one product-valid Mac source mode in a later bounded slice;
+4. resume the first Sampler device page;
+5. redesign Browser and expand device behavior families;
+6. prove Linux portability after the real common path is selected.
 
-Track V supports attached desktop operation and may also run inside managed appliance environments.
+Track V supports ordinary attached desktop operation and may also run inside managed appliance environments.
 
 ## Track A — appliance
 
 A future Steam Deck, Framework, or compact-x86 appliance packages the same software with battery, boot/recovery, safe shutdown, and full Bitwig desktop access from another device.
 
-A managed compositor/remote-desktop stack belongs here or in a later runtime milestone. V5 does not select it.
+A managed compositor/remote-desktop stack belongs here or in a later runtime milestone. V5A does not select it.
 
 ## Track H — internal compute
 
@@ -48,10 +49,10 @@ Plug-in bridging, plugdata/Pure Data, Monome, analyzers, and other sources may c
 
 ## Valid successes
 
-- useful device-aware Push visuals for ordinary desktop users;
+- ordinary-launch useful device-aware Push visuals for desktop users;
 - a portable managed Bitwig appliance with remote full-desktop access;
 - a reproducible compact-x86 appliance;
 - an open connector diagnostic platform;
 - a native-bay compute final form.
 
-Later outcomes do not retroactively define earlier ones.
+Later outcomes do not retroactively define earlier ones, and fixture mechanisms do not become product contracts merely because they proved a downstream component.

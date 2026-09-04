@@ -2,9 +2,9 @@
 
 ## Status
 
-This is a **future Track A/runtime design**, not the active V5 implementation and not a selected Weston/PipeWire architecture.
+This is a **future Track A/runtime design**, not current implementation authority and not a selected Weston/PipeWire architecture.
 
-The active source work is the Mac-first [portable frame-source bakeoff](portable-frame-source-bakeoff.md). V5 must first determine which capture/media substrate is product-usable on macOS and can continue to Linux.
+The active work is [ordinary-launch external-ingress activation](ordinary-launch-ingress-activation.md). Source selection is paused until that activation contract is proven. A future managed workspace remains one possible source/runtime mode; it is not a shortcut around V5A.
 
 ## Product purpose
 
@@ -30,16 +30,17 @@ The eventual managed implementation should prove:
 - pointer usable remotely but separable from Push visuals;
 - restart/failure domains that do not unnecessarily stop music/control;
 - remote-client size independent of source identity;
-- safe process supervision, project retention, and shutdown.
+- safe process supervision, project retention, and shutdown;
+- the same explicit activation/rendezvous ownership proven before appliance packaging.
 
 ## Relationship to attached mode
 
 Managed mode is valuable for Steam Deck, Framework, compact-x86, headless operation, remote-only workflows, and deterministic tests. It must not be imposed on ordinary desktop users.
 
-Attached mode remains a first-class Track V goal and currently depends on selecting a product-usable frame source.
+Attached mode remains a first-class Track V goal and requires both ordinary activation and a product-valid frame/direct source.
 
 ## Portable boundary
 
 Managed backends may use Linux-specific compositor, PipeWire, X11, Wayland, DRM, VNC, or RDP objects internally. Those objects must not define portable semantic, device, presentation, or raw-frame identity.
 
-This document remains a destination for later appliance design. It is not authority to jump from one failed macOS source directly to a Linux implementation.
+This document remains a destination for later appliance design. It is not authority to jump from a failed macOS source or activation path directly to Linux implementation.

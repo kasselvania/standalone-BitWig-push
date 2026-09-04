@@ -12,58 +12,57 @@ The repository is still named `standalone-BitWig-push` for historical reasons. *
 
 ## What is proven
 
-On a physical Push 3 Controller, the project has proven that it can:
+On a physical Push 3 Controller, Pushwig has proven:
 
-- retain normal DrivenByMoss pads, encoders, transport, sequencing, device control, and Push audio/headphones;
-- inject current visual frames into the Push display with low latency and bounded CPU/RSS;
-- restore current DrivenByMoss semantics when a visual disappears, becomes stale, or fails;
-- receive complete latest frames from a separate local process without blocking the controller/display path;
-- crop, scale, and normalize real Bitwig pixels before composition;
-- keep one unchanged DrivenByMoss-owned Push USB display writer.
+- normal DrivenByMoss pads, encoders, transport, sequencing, device control, and Push audio/headphones remain available;
+- current visual frames can be composed into the Push display with low latency and bounded CPU/RSS;
+- current DrivenByMoss semantics return when visual authority clears, becomes stale, disconnects, or fails;
+- one separate local producer can publish complete authenticated latest frames without blocking the controller/display path;
+- real Bitwig pixels can be cropped, scaled, normalized, and delivered to the physical Push;
+- DrivenByMoss retains one final Push USB display writer.
 
-That is the major downstream engineering result.
+These results establish the downstream frame data plane once it has been activated.
 
 ## What is not yet solved
 
-The tested ScreenCaptureKit continuous capture of the user's primary Bitwig window is not an acceptable product source on the current Mac fixture because macOS sharing UI obstructs ordinary Bitwig window controls.
+Two product boundaries remain distinct:
 
-This disqualifies that source configuration—not macOS and not the downstream Push visual architecture.
+1. **ordinary-launch activation:** the accepted V1D-2 fixture used startup JVM properties supplied through a special Bitwig executable launch; an ordinary user launch has not yet been proven to activate and expose that receiver;
+2. **product-valid visual source:** the tested ScreenCaptureKit primary-window stream obstructed normal Bitwig window controls, and the later V5 bakeoff did not select a replacement.
 
-Pushwig therefore needs a different frame-source substrate before the blocked Sampler device page can resume.
+The failed V5 work showed that source selection cannot proceed honestly until ordinary-launch ingress activation exists.
 
-## How it works
+## System shape
 
 ```text
-Bitwig controller state -> DrivenByMoss -------------------+
-                                                          |
-product-usable frame source -> shared frame processing -> V1D-2
-                                                          |
-                                                          v
-                                      context-gated Push composition
-                                                          |
-                                                          v
-                                                   Ableton Push 3
+Bitwig / DrivenByMoss semantics -----------------------------+
+                                                              |
+optional product-valid source -> bounded producer -> V1D-2 data plane
+                                                              |
+                                                              v
+                                         context-gated composition
+                                                              |
+                                                              v
+                                             sole Push USB display writer
 ```
 
-DrivenByMoss remains the sole writer to the Push display USB endpoint. Capture/media backends never own Push MIDI or audio.
+The activation/rendezvous plane determines how an ordinary Bitwig session brings V1D-2 online and how a producer securely discovers it. Capture/media backends never own Push MIDI, audio, or USB transport.
 
 Read [Architecture](docs/ARCHITECTURE.md) and [Protocols](docs/PROTOCOLS.md).
 
 ## Current development
 
-[V5 — Mac-first portable frame-source bakeoff](https://github.com/kasselvania/standalone-BitWig-push/issues/50) is active.
+[V5A — ordinary Bitwig external-ingress activation](https://github.com/kasselvania/standalone-BitWig-push/issues/53) is active.
 
-V5 stays on the Mac and compares materially different capture/media stacks. Candidate research includes unusual second-screen and remote-streaming projects as well as GStreamer, FFmpeg/libav, direct raw-capture libraries, WebRTC desktop capture, OBS/libobs, RustDesk, Sunshine, Weylus, and Wii U GamePad simulation projects.
+V5A is deliberately narrow. It recovers the stopped fixture, audits DrivenByMoss construction/configuration ownership, replaces JVM-environment activation with a supported extension-owned lifecycle and private session rendezvous, proves one generated frame through an ordinary Bitwig launch, and verifies shutdown/restart/rollback.
 
-A framework name is not enough: the actual macOS source backend must be identified. A wrapper around the rejected ScreenCaptureKit primary-window path is not a new solution.
+It does **not** implement a capture backend or resume the Sampler page. See the [V5A design](docs/design/ordinary-launch-ingress-activation.md) and [`CURRENT_SLICE.md`](CURRENT_SLICE.md).
 
-The selected framework/common media path must also support Linux later. V5 does not move implementation to Linux or Steam Deck, and Windows is not a current requirement.
-
-See the [portable frame-source bakeoff design](docs/design/portable-frame-source-bakeoff.md).
+The prior [V5 frame-source bakeoff](docs/design/portable-frame-source-bakeoff.md) is closed as a failed/superseded slice. Its code in draft PR #52 is not an accepted substrate.
 
 ## Device-aware presentation
 
-The desired product still preserves good DrivenByMoss screens and adds deliberate experiences only for supported objects and tasks. The Sampler device-page goal remains blocked until a viable frame source exists.
+The desired product preserves good DrivenByMoss screens and adds deliberate experiences only for supported objects and tasks. The Sampler device-page goal remains blocked until ordinary activation and a viable source mode are both proven.
 
 See:
 
@@ -73,9 +72,9 @@ See:
 
 ## Platform direction
 
-macOS remains the active development fixture for the foreseeable work. A selected media/frame substrate must have a concrete Linux path so the same raw-frame and transform contracts can later support Linux and the Steam Deck appliance.
+macOS remains the active development fixture. After V5A, source work may resume in a new bounded slice. A selected media/frame path must later prove a concrete Linux implementation without allowing Apple/Linux backend handles to define portable product identity.
 
-A future managed appliance may expose the complete Bitwig desktop to another device while Push receives a curated presentation. That is a later runtime/deployment layer, not V5's implementation target.
+A future managed appliance may expose the complete Bitwig desktop to another device while Push receives a curated presentation. That is a later runtime/deployment layer.
 
 ## Development
 
