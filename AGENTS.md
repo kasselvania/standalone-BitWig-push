@@ -1,18 +1,18 @@
 # AGENTS.md — Maintainer and coding-agent rules
 
-This file is for maintainers and coding agents. Human contributors should start with `README.md` and `CONTRIBUTING.md`.
+This file contains durable working rules. Human contributors should start with `README.md` and `CONTRIBUTING.md`.
 
 ## Authority
 
 When instructions conflict:
 
 1. current explicit maintainer instruction;
-2. owning issue and reviewed gate decision;
+2. the owning issue and any reviewed material design decision recorded there;
 3. this file;
 4. `CURRENT_SLICE.md`;
-5. relevant durable architecture/protocol document.
+5. durable architecture, protocol, testing, and branch-policy documents.
 
-Stop on a real conflict. Do not invent a governance layer, interpretation, or extra PR to avoid an engineering decision.
+Stop on a real conflict. Do not invent another document, gate, branch, or PR to avoid making an engineering decision.
 
 ## Core product invariants
 
@@ -25,55 +25,77 @@ Stop on a real conflict. Do not invent a governance layer, interpretation, or ex
 - Existing good DrivenByMoss experiences remain intact unless a specific replacement is accepted.
 - Do not redistribute proprietary Bitwig/Ableton binaries, activation material, firmware, or captured UI fixtures.
 
-## Proven and unproven boundaries
+## Current work
 
-V1D-2 proves the external-frame **data plane when activated**:
+`CURRENT_SLICE.md` owns the short current-work pointer. The owning issue owns executable scope and acceptance. A durable design owns the technical model; it must not duplicate the whole issue.
 
-```text
-authenticated complete message
-    -> fixed latest-frame publication
-    -> nonblocking display-thread adoption
-    -> accepted raster writer
-    -> one Push USB send
-```
+V5A is active under issue #53. It repairs ordinary-launch activation and rendezvous for the existing V1D-2 receiver. Until V5A is accepted:
 
-It does not prove a product-valid **activation and rendezvous plane**. The accepted fixture used startup JVM properties supplied by a special executable launch. Treating that fixture mechanism as an ordinary product startup path caused the failed V5 slice.
+- do not resume failed V5 PR #52 or issue #50;
+- do not cherry-pick its AVFoundation or `capture/common` work;
+- do not select or implement another capture source;
+- preserve the accepted V1D-2 protocol, receiver validation, fixed latest-frame store, nonblocking display adoption, semantic fallback, raster sink, and sole Push USB writer;
+- treat activation, configuration, rendezvous, and their lifecycle as the open boundary.
 
-Freeze the proven invariants above. Do not freeze an unfinished activation mechanism merely because it lives beside proven code.
+See issue #53 and `docs/design/ordinary-launch-ingress-activation.md`.
 
-## Current V5A rule
+## Cross-component decision rule
 
-V5A is **ordinary Bitwig external-ingress activation** under issue #53.
+Before implementing work that crosses processes, repositories, devices, or operating-system services, write the actual construction/runtime sequence and identify the first unproved dependency.
 
-The first authorized work is fixture recovery and a read-only DrivenByMoss lifecycle decision. No capture-source implementation is authorized.
+A formal stop-and-review belongs only at:
 
-Do not:
+- a safety, custody, or irreversible-state boundary;
+- a material product-ownership or architecture decision;
+- the final expensive fixture result that supports acceptance.
 
-- resume PR #52 or issue #50;
-- cherry-pick its AVFoundation or `capture/common` work;
-- add ScreenCaptureKit, AVFoundation, CoreGraphics, GStreamer, FFmpeg, OBS, WebRTC, Linux, Steam Deck, remote desktop, Sampler, or device-localization scope;
-- activate through `JAVA_TOOL_OPTIONS`, `JDK_JAVA_OPTIONS`, `_JAVA_OPTIONS`, or direct `BitwigStudio` invocation;
-- alter Push USB, audio, MIDI, raster-format, protocol-layout, or latest-frame-store ownership;
-- begin implementation before the Gate 1 lifecycle decision is reviewed.
+Everything else is an engineering checkpoint. Deterministic tests, local vertical proofs, ordinary corrections, and bounded reruns do not become separate authority cycles merely because they are named.
 
-Do:
+A passing component suite does not establish a passing product path. Process presence, property readback, and logs are supporting evidence, not substitutes for the user-visible claim.
 
-- recover and verify the official Mac fixture before code;
-- map settings registration/observation, Push display construction, receiver startup, and shutdown in source;
-- put product activation with the owner that can lawfully control receiver lifetime;
-- use a private session-scoped capability and atomically published nonsecret rendezvous;
-- prove ordinary Bitwig launch before any source work resumes;
-- stop on ambiguity rather than accumulating speculative code.
+Any emergency or recovery-only control must name the condition that removes it. Temporary recovery law must not silently become the default development model.
 
-See `docs/design/ordinary-launch-ingress-activation.md` and issue #53.
+## Local iteration versus published claims
 
-## Cross-component dependency rule
+Disciplined local work is expected and allowed:
 
-Before implementing a slice that crosses processes, repositories, devices, or operating-system services, write the real construction/runtime sequence and identify the first unproven dependency.
+- one local implementation branch/worktree for the product vertical;
+- experimental local commits;
+- amend, squash, reorder, or discard before publication;
+- targeted deterministic tests;
+- bounded local probes and temporary harnesses;
+- non-acceptance fixture diagnostics when the owning issue permits them.
 
-That dependency becomes the first acceptance gate. It may not be deferred until the end behind unit tests, benchmarks, abstractions, or physical-fixture churn.
+Local WIP is not an accepted repository claim. It may be ugly, incomplete, or discarded while the engineer learns, provided frozen ownership and fixture-safety boundaries are respected.
 
-A passing component suite does not establish a passing product path. Process presence, property readback, or logs do not substitute for the user-visible claim.
+Publication is the claim boundary:
+
+- do not open a mergeable implementation PR until the owning issue's deterministic product prerequisite passes;
+- a remote WIP/archive PR exists only when the maintainer explicitly requests preservation or remote review;
+- never describe partial work as accepted, merge speculative production source, or use a PR chain as a substitute for one coherent product result.
+
+See `docs/BRANCH_AND_WORKTREE_POLICY.md`.
+
+## Physical verification
+
+Use three explicit classes of physical work:
+
+1. **Diagnostic** — answers one narrow question; explicitly non-acceptance.
+2. **Development verification** — checks a specific correction after deterministic readiness; still non-final.
+3. **Final acceptance** — runs the complete product vertical on exact reviewed heads and is the only class that can support acceptance.
+
+Every physical session must preserve artifact custody and rollback, record what was actually exercised, and avoid silent scope expansion. Count sessions for visibility, not as tokens in a permission system. A bounded rerun for the same question does not require a new governance cycle; an ownership or scope change does.
+
+## Tests and evidence
+
+- Add deterministic tests only for changed stable contracts.
+- Reuse existing production owners and regression suites instead of cloning architecture into test-only models.
+- Run the smallest affected tests while iterating and the broader affected-module suite once the implementation is stable.
+- Keep one concise formal evidence record for a completed or materially failed physical slice.
+- Separate deterministic results, process proof, physical observation, and rollback in reports.
+- Never commit capabilities, proprietary frames, activation data, or huge raw logs.
+
+See `docs/TESTING.md`.
 
 ## Slice shape
 
@@ -81,28 +103,26 @@ A product slice must have:
 
 - one user-visible or operational result;
 - named owners and frozen invariants;
-- a bounded production-path budget;
-- explicit non-goals and stop conditions;
-- a verification ladder ordered from cheap/deterministic to expensive/physical;
-- one completion definition that cannot be satisfied by proxy evidence.
+- explicit non-goals and ownership-based stop conditions;
+- the smallest causal checkpoints needed to avoid building beyond an unproved prerequisite;
+- one completion sentence that cannot be satisfied by proxy evidence;
+- a sunset rule for temporary recovery controls.
 
-Do not combine broad ecosystem research, abstraction design, implementation, physical acceptance, and rollback into one unconstrained prompt.
+Changed-path counts, test counts, and physical-session counts are planning signals, not substitutes for ownership analysis. Escalate when the work crosses a frozen boundary or materially expands the product, not merely because one more lawful file or rerun is necessary.
 
-## Tests and evidence
+## Documentation ownership
 
-Add tests only for changed stable contracts. Reuse existing suites instead of cloning architecture into test-only models.
+- `CURRENT_SLICE.md` — current active-work pointer and lean checkpoint summary.
+- Owning issue — executable scope, acceptance, stops, and current basis.
+- `docs/ARCHITECTURE.md` — durable ownership and system boundaries.
+- `docs/design/**` — durable technical design for a selected problem.
+- `docs/ROADMAP.md` — product sequence and direction.
+- `docs/TESTING.md` — durable verification taxonomy.
+- `docs/BRANCH_AND_WORKTREE_POLICY.md` — local/remote branch and publication lifecycle.
+- `evidence/**` — historical fixture facts and formal results.
+- `README.md` and `docs/README.md` — onboarding and links, not duplicated execution authority.
 
-Verification order is:
-
-1. fixture custody/recovery where live installation is involved;
-2. targeted deterministic contract tests;
-3. the real process-to-process vertical path;
-4. one bounded physical smoke test and one formal acceptance session when required;
-5. shutdown, restart, and exact rollback.
-
-Run affected tests while iterating. Run the broader affected-module suite once the implementation is stable. Do not repeatedly rebuild the whole project for narrative evidence.
-
-Keep one concise formal evidence document per completed or failed physical slice. Never commit tokens, proprietary frames, or huge raw logs.
+Prefer links to copied current-state prose. A normal slice should update only the owning files whose facts actually changed.
 
 ## Branch/worktree lifecycle
 
@@ -110,15 +130,14 @@ Follow `docs/BRANCH_AND_WORKTREE_POLICY.md`.
 
 - branches are temporary review transport;
 - research stays local by default;
-- worktrees are not archives;
+- worktrees are execution surfaces, not archives;
 - verify clean/unpushed state before deletion;
-- no blind reset, clean, force quit, or bulk deletion.
+- never use blind reset, clean, force quit, or bulk deletion.
 
 ## PR discipline
 
-- Do not open an implementation PR before its deterministic vertical gate passes.
-- Prefer one reviewed substantive commit; amend before review instead of building a repair-commit ladder.
-- Do not create authority, evidence-only, status-closure, and cleanup PR chains for one slice.
-- Cross-repository implementation may require one PR per repository, but each must carry real repository-owned work.
-- A failed gate gets a concise issue report and stop. Open a WIP preservation PR only when the maintainer explicitly requests it.
+- Prefer one coherent implementation PR per repository that owns real changed production work.
+- Prefer one reviewed substantive commit; amend before review rather than building a repair-commit ladder.
+- Do not create authority, evidence-only, status-closure, and cleanup PR chains for one product vertical.
+- A failed material boundary gets one concise report and a stop; it does not automatically get a preservation PR.
 - Final reports must distinguish tests, process proof, physical observation, and rollback. Never promote one category into another.
