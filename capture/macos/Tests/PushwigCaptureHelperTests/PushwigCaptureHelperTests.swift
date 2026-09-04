@@ -27,6 +27,7 @@ final class PushwigCaptureHelperTests: XCTestCase {
       return XCTFail("expected explicit display mode")
     }
     XCTAssertEqual(display.displayID, 5)
+    XCTAssertEqual(display.backend, .screenCaptureKit)
     XCTAssertEqual(display.expectedDisplayWidth, 3430)
     XCTAssertEqual(display.expectedDisplayHeight, 1447)
     XCTAssertEqual(
@@ -54,6 +55,29 @@ final class PushwigCaptureHelperTests: XCTestCase {
     let configuration = try CaptureConfiguration.parse(arguments: ["--list-displays"])
     XCTAssertEqual(configuration.mode, .listDisplays)
     assertInvalid(["--list-displays", "--display-id", "5"])
+  }
+
+  func testAVFoundationBackendIsExplicitAndDoesNotMixWithProfileMode() throws {
+    let configuration = try CaptureConfiguration.parse(
+      arguments: validArguments + ["--display-backend", "avfoundation"])
+    guard case .display(let display) = configuration.mode else {
+      return XCTFail("expected explicit display mode")
+    }
+    XCTAssertEqual(display.backend, .avFoundation)
+    assertInvalid(validArguments + ["--display-backend", "unknown"])
+    assertInvalid([
+      "--profile", "/private/tmp/example.json", "--port", "45291",
+      "--token-file", "/private/tmp/token", "--display-backend", "avfoundation",
+    ])
+  }
+
+  func testAVFoundationCaptureBoundUsesBackingPixelsNotDisplayPoints() throws {
+    let scale = try AVFoundationCaptureSizing.scale(nativeWidth: 6860, nativeHeight: 2894)
+    XCTAssertEqual(scale * 6860, 2560, accuracy: 0.001)
+    XCTAssertLessThanOrEqual(scale * 2894, 1600)
+    XCTAssertEqual(try AVFoundationCaptureSizing.scale(nativeWidth: 800, nativeHeight: 600), 1)
+    XCTAssertThrowsError(try AVFoundationCaptureSizing.scale(nativeWidth: 0, nativeHeight: 600))
+    XCTAssertThrowsError(try AVFoundationCaptureSizing.scale(nativeWidth: 65536, nativeHeight: 600))
   }
 
   func testConfigurationNegativeMatrix() {

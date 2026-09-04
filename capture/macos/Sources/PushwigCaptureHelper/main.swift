@@ -50,8 +50,8 @@ enum CaptureApplicationError: LocalizedError {
 @MainActor
 private final class DisplayCaptureApplication {
   private let configuration: DisplayModeConfiguration
-  private let capture: DisplayCropCapture
-  private let outputCoordinator: CaptureOutputCoordinator
+  private let capture: any ManagedDisplayCapturing
+  private let outputCoordinator: any DisplayOutputManaging
   private var currentState: SourceState?
   private var currentGuardDecision: SourceValidityDecision
   private var stopRequested = false
@@ -62,8 +62,8 @@ private final class DisplayCaptureApplication {
 
   init(
     configuration: DisplayModeConfiguration,
-    capture: DisplayCropCapture,
-    outputCoordinator: CaptureOutputCoordinator,
+    capture: any ManagedDisplayCapturing,
+    outputCoordinator: any DisplayOutputManaging,
     initialGuardDecision: SourceValidityDecision
   ) {
     self.configuration = configuration
@@ -139,7 +139,7 @@ private final class DisplayCaptureApplication {
     do {
       try DisplayDiscovery.validateCurrent(
         facts: facts,
-        expected: capture.metadata.displayFact
+        expected: capture.selectedDisplayFact
       )
       displayRevalidationCount += 1
     } catch {
@@ -335,7 +335,8 @@ private func runDisplayMode(_ configuration: DisplayModeConfiguration) async -> 
   let aspectEnd = DispatchTime.now().uptimeNanoseconds
 
   print(
-    "MODE value=explicit-display SELECTION display_id=\(selected.fact.displayID) "
+    "MODE value=explicit-display backend=\(configuration.backend.rawValue) "
+      + "SELECTION display_id=\(selected.fact.displayID) "
       + "width=\(selected.fact.width) height=\(selected.fact.height) "
       + "unit=screen-points main=\(selected.fact.isMain)"
   )
@@ -361,29 +362,53 @@ private func runDisplayMode(_ configuration: DisplayModeConfiguration) async -> 
       port: configuration.port,
       tokenFile: configuration.tokenFile
     )
-    let coordinator = CaptureOutputCoordinator(
-      client: client,
-      destination: configuration.destination
-    )
-    let capture = try DisplayCropCapture(
-      candidate: selected,
-      configuration: configuration,
-      mapping: mapping,
-      generation: 1,
-      initialGuardValid: initialGuard.isValid,
-      cropCalculationNanoseconds: cropEnd - cropStart,
-      aspectCalculationNanoseconds: aspectEnd - cropEnd,
-      outputCoordinator: coordinator
-    )
-    let metadata = capture.metadata
-    print(
-      "SCK content_rect_points=\(DisplayDiscovery.format(metadata.filterContentRect)) "
-        + String(format: "point_pixel_scale=%.6f ", metadata.pointPixelScale)
-        + "source_rect_points=\(metadata.mapping.effectiveSourceRect) "
-        + "output_pixels=\(configuration.destination.width)x\(configuration.destination.height) "
-        + "preserves_aspect=true scales_to_fit=true cursor=false queue_depth=2 fps="
-        + String(metadata.fps)
-    )
+    let coordinator: any DisplayOutputManaging
+    let capture: any ManagedDisplayCapturing
+    switch configuration.backend {
+    case .screenCaptureKit:
+      let sckCoordinator = CaptureOutputCoordinator(
+        client: client,
+        destination: configuration.destination
+      )
+      let sckCapture = try DisplayCropCapture(
+        candidate: selected,
+        configuration: configuration,
+        mapping: mapping,
+        generation: 1,
+        initialGuardValid: initialGuard.isValid,
+        cropCalculationNanoseconds: cropEnd - cropStart,
+        aspectCalculationNanoseconds: aspectEnd - cropEnd,
+        outputCoordinator: sckCoordinator
+      )
+      let metadata = sckCapture.metadata
+      print(
+        "SCK content_rect_points=\(DisplayDiscovery.format(metadata.filterContentRect)) "
+          + String(format: "point_pixel_scale=%.6f ", metadata.pointPixelScale)
+          + "source_rect_points=\(metadata.mapping.effectiveSourceRect) "
+          + "output_pixels=\(configuration.destination.width)x\(configuration.destination.height) "
+          + "preserves_aspect=true scales_to_fit=true cursor=false queue_depth=2 fps="
+          + String(metadata.fps)
+      )
+      coordinator = sckCoordinator
+      capture = sckCapture
+    case .avFoundation:
+      let avfCoordinator = AVFoundationOutputCoordinator(
+        client: client,
+        destination: configuration.destination,
+        crop: configuration.normalizedCrop,
+        sourceID: UInt64(configuration.displayID),
+        generation: 1
+      )
+      let avfCapture = try AVFoundationDisplayCapture(
+        candidate: selected,
+        configuration: configuration,
+        initialGuardValid: initialGuard.isValid,
+        outputCoordinator: avfCoordinator
+      )
+      print(avfCapture.metadataDescription)
+      coordinator = avfCoordinator
+      capture = avfCapture
+    }
 
     let application = DisplayCaptureApplication(
       configuration: configuration,

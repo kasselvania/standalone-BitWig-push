@@ -12,12 +12,19 @@ let package = Package(
   products: [
     .executable(name: "PushwigCaptureHelper", targets: ["PushwigCaptureHelper"])
   ],
+  dependencies: [
+    .package(path: "../common")
+  ],
   targets: [
     .executableTarget(
       name: "PushwigCaptureHelper",
+      dependencies: [
+        .product(name: "PushwigFrameCore", package: "common")
+      ],
       path: "Sources/PushwigCaptureHelper",
       linkerSettings: [
         .linkedFramework("AppKit"),
+        .linkedFramework("AVFoundation"),
         .linkedFramework("CoreGraphics"),
         .linkedFramework("CoreImage"),
         .linkedFramework("CoreMedia"),

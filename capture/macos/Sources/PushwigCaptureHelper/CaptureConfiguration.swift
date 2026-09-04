@@ -71,7 +71,13 @@ struct PushDestination: Equatable {
   var payloadBytes: Int { stride * height }
 }
 
+enum DisplayCaptureBackend: String, Equatable {
+  case screenCaptureKit = "screen-capture-kit"
+  case avFoundation = "avfoundation"
+}
+
 struct DisplayModeConfiguration: Equatable {
+  let backend: DisplayCaptureBackend
   let displayID: UInt32
   let expectedDisplayWidth: Int
   let expectedDisplayHeight: Int
@@ -81,6 +87,30 @@ struct DisplayModeConfiguration: Equatable {
   let port: Int
   let tokenFile: URL
   let requiredFrontmostBundleIdentifier: String
+
+  init(
+    backend: DisplayCaptureBackend = .screenCaptureKit,
+    displayID: UInt32,
+    expectedDisplayWidth: Int,
+    expectedDisplayHeight: Int,
+    normalizedCrop: NormalizedCrop,
+    destination: PushDestination,
+    fps: Int,
+    port: Int,
+    tokenFile: URL,
+    requiredFrontmostBundleIdentifier: String
+  ) {
+    self.backend = backend
+    self.displayID = displayID
+    self.expectedDisplayWidth = expectedDisplayWidth
+    self.expectedDisplayHeight = expectedDisplayHeight
+    self.normalizedCrop = normalizedCrop
+    self.destination = destination
+    self.fps = fps
+    self.port = port
+    self.tokenFile = tokenFile
+    self.requiredFrontmostBundleIdentifier = requiredFrontmostBundleIdentifier
+  }
 }
 
 struct ProfileModeConfiguration: Equatable {
@@ -122,7 +152,7 @@ struct CaptureConfiguration: Equatable {
         index += 1
       case "--profile", "--owner-bundle-id", "--display-id", "--expected-display-width",
         "--expected-display-height", "--crop-normalized", "--destination", "--fps", "--port",
-        "--token-file", "--required-frontmost-bundle-id":
+        "--token-file", "--required-frontmost-bundle-id", "--display-backend":
         guard values[argument] == nil else {
           throw CaptureConfigurationError.invalid("duplicate option: \(argument)")
         }
@@ -198,6 +228,17 @@ struct CaptureConfiguration: Equatable {
       )
     }
     let displayID = try requiredUInt32(values["--display-id"], label: "display ID")
+    let backend: DisplayCaptureBackend
+    if let backendText = values["--display-backend"] {
+      guard let parsed = DisplayCaptureBackend(rawValue: backendText) else {
+        throw CaptureConfigurationError.invalid(
+          "display backend must be screen-capture-kit or avfoundation"
+        )
+      }
+      backend = parsed
+    } else {
+      backend = .screenCaptureKit
+    }
     let expectedWidth = try requiredInteger(
       values["--expected-display-width"], range: 1...65_535,
       label: "expected display width"
@@ -231,6 +272,7 @@ struct CaptureConfiguration: Equatable {
     return CaptureConfiguration(
       mode: .display(
         DisplayModeConfiguration(
+          backend: backend,
           displayID: displayID,
           expectedDisplayWidth: expectedWidth,
           expectedDisplayHeight: expectedHeight,
@@ -252,6 +294,7 @@ struct CaptureConfiguration: Equatable {
       PushwigCaptureHelper --profile PATH --port 1024...65535 --token-file PATH
       PushwigCaptureHelper --list-displays
       PushwigCaptureHelper --display-id ID \
+        [--display-backend screen-capture-kit|avfoundation] \
         --expected-display-width POINTS --expected-display-height POINTS \
         --crop-normalized x,y,width,height --destination x,y,width,height \
         --fps 1...60 --port 1024...65535 --token-file PATH \
