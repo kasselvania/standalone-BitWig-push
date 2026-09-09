@@ -1,142 +1,29 @@
 # Development
 
-This document is the practical entry point for building and testing Pushwig source.
-
-## Repository layout
+## Current repository layout
 
 ```text
-capture/macos/   maintained macOS capture helper + Swift tests
-docs/            architecture, development, testing, roadmap, design notes
-evidence/        retained experiment / real-hardware acceptance records
-AGENTS.md        maintainer/coding-agent execution policy
-CURRENT_SLICE.md maintainer current-work summary
+docs/            accepted contracts, contributor guides and research references
+evidence/        historical experiment and real-hardware records
+scripts/         repository maintenance
 ```
 
-The controller-extension implementation lives in a separate fork:
+The retired `capture/macos` package is no longer built or tested as current tooling. There is no capture helper to install and no screen-recording permission prerequisite for working on the accepted frame/activation foundation.
 
-```text
-https://github.com/kasselvania/DrivenByMoss
-```
+Historical source is linked from [capture retirement](research/capture-experiments-retired.md). Do not copy it back into the product merely to make old build commands work.
 
-See [`integrations/drivenbymoss.md`](integrations/drivenbymoss.md).
+## DrivenByMoss runtime
 
-## macOS helper requirements
-
-The accepted V2 fixture used a current macOS/Xcode/Swift toolchain. The package declares macOS 14 or later.
-
-Check your active toolchain:
-
-```bash
-sw_vers
-xcode-select -p
-xcrun swift --version
-xcrun --sdk macosx --show-sdk-version
-```
-
-## Run committed Swift tests
-
-```bash
-cd capture/macos
-xcrun swift test
-```
-
-These tests cover maintained deterministic contracts such as profile/configuration validation, window and display selection, window-relative geometry, capture generations, aspect mapping, BGRA normalization, protocol header layout, sequence behavior, and bounded authority transitions.
-
-See [`TESTING.md`](TESTING.md).
-
-## Build the helper app
-
-The repository includes a deterministic bundle wrapper:
-
-```bash
-cd capture/macos
-./scripts/build-app.sh \
-  --output-dir /tmp/pushwig-app \
-  --scratch-dir /tmp/pushwig-build
-```
-
-The script:
-
-- performs a release Swift build;
-- creates `PushwigCaptureHelper.app`;
-- installs the retained `Info.plist`;
-- ad-hoc signs the development app;
-- verifies the signature and bundle identifier;
-- emits a content manifest.
-
-Build products should remain outside the repository.
-
-The helper bundle identifier is:
-
-```text
-com.kasselvania.pushwig.capture-helper
-```
-
-A stable installed app identity matters because macOS Screen Recording permission is attached to that application identity.
-
-## Window-profile mode
-
-List only windows owned by the intended application bundle:
-
-```bash
-/path/to/PushwigCaptureHelper.app/Contents/MacOS/PushwigCaptureHelper \
-  --list-windows \
-  --owner-bundle-id com.bitwig.studio
-```
-
-The inventory reports public ScreenCaptureKit facts. Configure the selector so exactly one on-screen candidate satisfies its bundle, optional title substring, and minimum point dimensions. Zero or multiple eligible windows produce semantic-only fallback; the helper never selects the first or largest candidate.
-
-Run the maintained profile:
-
-```bash
-/path/to/PushwigCaptureHelper.app/Contents/MacOS/PushwigCaptureHelper \
-  --profile Profiles/bitwig-device-chain.json \
-  --port 45291 \
-  --token-file /path/to/private-token
-```
-
-The window profile is independent of the receiver capability and the current `SCWindow.windowID`. The helper polls bounded public window inventory, keeps the same capture while only global position changes, and uses a new capture generation after supported resize or window recreation. The existing explicit `--display-id ...` form remains the V2 diagnostic/reference mode; profile and display arguments cannot be mixed.
-
-ScreenCaptureKit ignores `SCStreamConfiguration.sourceRect` for a
-desktop-independent single-window stream. Profile mode therefore requests the
-complete selected window at native backing scale when it fits, bounded to
-2560x1600 and 4,096,000 pixels. On the existing serial sample/output queue, one
-reused Core Image context maps the normalized region into pixel space, clamps
-its edges, applies a uniform Lanczos centered-cover scale, writes directly into
-the one reusable opaque-BGRA protocol buffer, and sends it through protocol v1.
-There is no helper frame FIFO or per-frame destination array.
-
-## Screen Recording permission
-
-Pushwig uses public macOS ScreenCaptureKit/CoreGraphics permission APIs. Do not manipulate the TCC database directly.
-
-For local real-capture work, launch the same built/installed app identity before and after permission changes. The helper will report when a relaunch is required.
-
-## External frame receiver
-
-The helper publishes to the Pushwig DrivenByMoss derivative over the internal loopback frame protocol described in [`PROTOCOLS.md`](PROTOCOLS.md).
-
-Real Push testing therefore requires:
-
-- a compatible DrivenByMoss derivative installed in Bitwig;
-- external frame ingress enabled in that derivative;
-- an owner-private capability token file;
-- matching loopback port/token configuration in the helper.
-
-The normal official DrivenByMoss artifact should be backed up and restored after derivative fixture work. The evidence directories retain the exact historical fixture/rollback procedures; ordinary contributors do not need those details just to build the helper or run its tests.
-
-## DrivenByMoss development
-
-The fork uses:
+The accepted implementation and its regression tests live in the [DrivenByMoss fork](https://github.com/kasselvania/DrivenByMoss).
 
 ```text
 origin:   git@github.com:kasselvania/DrivenByMoss.git
 upstream: https://github.com/git-moss/DrivenByMoss.git
+branch:   pushwig/main
+anchor:   pushwig/upstream-26.4.1
 ```
 
-Project integration lives on `pushwig/main`; the accepted upstream anchor is `pushwig/upstream-26.4.1`.
-
-The accepted Java/Maven build shape is:
+The accepted Mac build environment is Java 21 and Maven:
 
 ```bash
 env \
@@ -145,31 +32,28 @@ env \
   mvn clean install package -Dbitwig.extension.directory=target
 ```
 
-Do not silently develop Pushwig changes on fork `master` or upstream `master`.
+Use that repository's affected test runner when changing runtime code; do not add redundant package builds around a runner that already builds. No runtime rebuild or physical acceptance rerun is needed merely to remove unrelated central capture source.
 
-## Branches and worktrees
+## Producer contract
 
-Read [`BRANCH_AND_WORKTREE_POLICY.md`](BRANCH_AND_WORKTREE_POLICY.md) before opening a project branch.
+Read [Protocols](PROTOCOLS.md) and the [ordinary-launch activation guide](design/ordinary-launch-ingress-activation.md). A producer discovers the current private session, reads its capability separately and publishes bounded complete frames. The official upstream extension has no Pushwig ingress; that is expected.
 
-For ordinary work:
+A generated producer can exercise the accepted path without a screen-capture backend. New production video work requires an explicit implementation request; this cleanup supplies no replacement source.
 
-- branch from the current durable integration branch;
-- one PR role per branch;
-- research stays local by default;
-- use detached/local worktrees for base-build or observation tasks;
-- delete merged branches instead of preserving them as history.
+## Safe physical work
 
-Use `scripts/branch-audit.sh` for a read-only local inventory.
+Save and quit Bitwig normally before replacing an extension. Preserve the official artifact intact outside scan paths, install only one derivative, and restore the official artifact exactly after testing. Do not force-quit, discard projects, or manipulate TCC.
 
-## Before opening a PR
+## Repository checks
 
-At minimum:
+For central documentation/retirement changes:
 
 ```bash
-git status --short
 git diff --check
+git status --short
+bash -n scripts/branch-audit.sh
 ```
 
-Run the committed tests relevant to your component and record any real-hardware checks the PR actually depends on.
+Check changed Markdown links and ensure removed tooling is not still advertised as a current dependency. Run component tests only when that component changes.
 
-Do not commit credentials, capability tokens, activation data, proprietary binaries, private projects, serial numbers, or raw proprietary UI capture fixtures.
+See [Testing](TESTING.md), [Branch/worktree policy](BRANCH_AND_WORKTREE_POLICY.md), and [DrivenByMoss integration](integrations/drivenbymoss.md).

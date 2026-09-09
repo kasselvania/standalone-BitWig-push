@@ -1,5 +1,7 @@
 # Semantic-Seeded Pixel Anchor Resolver
 
+Historical, unselected research. These hypotheses and proposed structures are not current architectural dependencies or implementation instructions. See [capture retirement](research/capture-experiments-retired.md).
+
 ## Purpose
 
 This document captures a specific visual-resolution hypothesis:

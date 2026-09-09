@@ -2,68 +2,35 @@
 
 ## Start here
 
-1. [`../README.md`](../README.md)
-2. [`ARCHITECTURE.md`](ARCHITECTURE.md)
-3. [`../CONTRIBUTING.md`](../CONTRIBUTING.md)
-4. [`DEVELOPMENT.md`](DEVELOPMENT.md)
-5. [`TESTING.md`](TESTING.md)
-6. [`ROADMAP.md`](ROADMAP.md)
+1. [Project overview](../README.md)
+2. [Architecture](ARCHITECTURE.md)
+3. [Contributing](../CONTRIBUTING.md)
+4. [Development](DEVELOPMENT.md)
+5. [Testing](TESTING.md)
+6. [Roadmap](ROADMAP.md)
 
-A new contributor should not need maintainer control files or evidence hashes to understand Pushwig.
+## Accepted runtime
 
-## Current work and accepted activation
+- [DrivenByMoss integration](integrations/drivenbymoss.md)
+- [Frame protocol and raster contract](PROTOCOLS.md)
+- [Ordinary-launch activation and rendezvous](design/ordinary-launch-ingress-activation.md)
+- [V5A physical acceptance and rollback](../evidence/v5a-ordinary-ingress-activation/README.md)
 
-[`../CURRENT_SLICE.md`](../CURRENT_SLICE.md) owns the current-work pointer. V5A is accepted. [V5B / issue #57](https://github.com/kasselvania/standalone-BitWig-push/issues/57) tests one actual Mac window-acquisition candidate; the [lead source decision](research/v5b-window-source-decision.md) records the inspected backend and limitations.
+## Current maintenance
 
-- [Completed issue #53 — V5A ordinary Bitwig external-ingress activation](https://github.com/kasselvania/standalone-BitWig-push/issues/53)
-- [Accepted activation guide](design/ordinary-launch-ingress-activation.md)
-- [Final physical acceptance and rollback](../evidence/v5a-ordinary-ingress-activation/README.md)
+[CURRENT_SLICE.md](../CURRENT_SLICE.md) records capture-experiment retirement. [The retirement record](research/capture-experiments-retired.md) identifies the removal boundary and published history. V5B is stopped; no capture implementation is active.
 
-The recovery ladder is retired. The guide describes the implemented setting, startup, private rendezvous and lifecycle rather than prescribing another recovery exercise.
+## Other references
 
-## Failed/superseded source slice
+- [Project tracks](PROJECT_TRACKS.md)
+- [Runtime strategy](RUNTIME_STRATEGY.md)
+- [Hardware](HARDWARE.md)
+- [Branch/worktree policy](BRANCH_AND_WORKTREE_POLICY.md)
+- [DrivenByMoss derivative strategy](DRIVENBYMOSS_DERIVATIVE_STRATEGY.md)
+- [Native-device behavior observations](design/native-device-behavior-matrix.md)
 
-- [Issue #50 — failed V5 frame-source bakeoff](https://github.com/kasselvania/standalone-BitWig-push/issues/50)
-- [Closed PR #52 — unmerged WIP archive](https://github.com/kasselvania/standalone-BitWig-push/pull/52)
-- [`design/portable-frame-source-bakeoff.md`](design/portable-frame-source-bakeoff.md)
-- [`../evidence/v5-portable-frame-source-bakeoff/failure-review.md`](../evidence/v5-portable-frame-source-bakeoff/failure-review.md)
+## Historical research and evidence
 
-No code from PR #52 is selected. Source work needs its own explicit selection; completing V5A does not reactivate the failed slice.
+[Evidence](../evidence/README.md) records what was tested, including failed or retired experiments. Historical status and commands are not current instructions.
 
-## Blocked device goal
-
-- [Issue #49 — blocked Sampler device-page foundation](https://github.com/kasselvania/standalone-BitWig-push/issues/49)
-- [`design/device-aware-presentation-layer.md`](design/device-aware-presentation-layer.md)
-- [`design/native-device-behavior-matrix.md`](design/native-device-behavior-matrix.md)
-
-Ordinary ingress activation is accepted. A product-valid visual source is still missing for the Sampler page.
-
-## Durable references
-
-- [`ARCHITECTURE.md`](ARCHITECTURE.md)
-- [`PROTOCOLS.md`](PROTOCOLS.md)
-- [`RUNTIME_STRATEGY.md`](RUNTIME_STRATEGY.md)
-- [`PROJECT_TRACKS.md`](PROJECT_TRACKS.md)
-- [`DEVELOPMENT.md`](DEVELOPMENT.md)
-- [`TESTING.md`](TESTING.md)
-- [`HARDWARE.md`](HARDWARE.md)
-- [`BRANCH_AND_WORKTREE_POLICY.md`](BRANCH_AND_WORKTREE_POLICY.md)
-- [`integrations/drivenbymoss.md`](integrations/drivenbymoss.md)
-
-## Future runtime/appliance design
-
-[`design/managed-visual-workspace.md`](design/managed-visual-workspace.md) describes a future canonical Bitwig workspace with independent Push and remote-desktop consumers. It is not current implementation authority.
-
-## Research references
-
-- [`VISUAL_PORTABILITY.md`](VISUAL_PORTABILITY.md)
-- [`SEMANTIC_PIXEL_ANCHOR_RESOLVER.md`](SEMANTIC_PIXEL_ANCHOR_RESOLVER.md)
-- [`VISUAL_RESEARCH_BASIS.md`](VISUAL_RESEARCH_BASIS.md)
-- [`HARDWARE_DOSSIER.md`](HARDWARE_DOSSIER.md)
-- [`DRIVENBYMOSS_DERIVATIVE_STRATEGY.md`](DRIVENBYMOSS_DERIVATIVE_STRATEGY.md)
-
-Research documents are not automatically active implementation plans.
-
-## Evidence
-
-See [`../evidence/README.md`](../evidence/README.md). Evidence is for audit and reproduction, not normal onboarding.
+Earlier [visual portability](VISUAL_PORTABILITY.md), [pixel-anchor research](SEMANTIC_PIXEL_ANCHOR_RESOLVER.md), and [visual research](VISUAL_RESEARCH_BASIS.md) are unselected research, not mandatory product structure. The retired capture and presentation design documents are available through Git history rather than the active design tree.

@@ -1,6 +1,6 @@
 # Native Bitwig device × DrivenByMoss behavior matrix
 
-This is the first maintained product-design catalog for [issue #47](https://github.com/kasselvania/standalone-BitWig-push/issues/47).
+This is a historical device-behavior research catalog for [issue #47](https://github.com/kasselvania/standalone-BitWig-push/issues/47). Its sourced observations are retained; its proposed behaviors are not implemented or required product architecture. Capture/presentation experiment retirement does not erase the observations.
 
 It joins three different facts that must not be confused:
 

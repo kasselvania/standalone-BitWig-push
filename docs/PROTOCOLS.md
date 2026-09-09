@@ -125,15 +125,17 @@ Fallback is always the newest current semantic DrivenByMoss display.
 
 ## Producer behavior
 
-The maintained macOS helper:
+A compatible producer must:
 
-- creates one nonzero session per connection;
-- sends `HELLO` once;
-- sends positive strictly increasing FRAME/CLEAR sequences;
-- publishes only complete opaque-BGRA frames;
-- uses bounded socket writes;
-- does not maintain a replay backlog.
+- create one nonzero session per connection;
+- send `HELLO` once;
+- send positive strictly increasing FRAME/CLEAR sequences;
+- publish only complete opaque-BGRA frames;
+- bound complete-message socket writes (the retired helper used a 250 ms deadline);
+- maintain no replay backlog.
+
+Ordinary session discovery follows the [accepted V5A activation contract](design/ordinary-launch-ingress-activation.md). There is currently no maintained capture producer. The retired Swift protocol-client implementation remains in Git history; removing that helper does not change the wire format or receiver.
 
 ## Stability
 
-These contracts are stable internal project interfaces, but protocol v1 is not yet promised as a long-term third-party public SDK. Breaking it requires an explicit compatibility/migration decision because the maintained helper and DrivenByMoss derivative already depend on it.
+These contracts are stable internal project interfaces, but protocol v1 is not yet promised as a long-term third-party public SDK. Breaking it requires an explicit compatibility/migration decision because the accepted DrivenByMoss implementation and generated-producer acceptance depend on it.

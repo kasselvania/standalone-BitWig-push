@@ -18,9 +18,10 @@ Read:
 
 ## Where the code lives
 
-- `capture/macos/**` — Pushwig's maintained macOS capture helper and Swift tests.
 - [`kasselvania/DrivenByMoss`](https://github.com/kasselvania/DrivenByMoss) — the narrow controller-extension fork that owns semantic redraw, raster composition, frame ingress, and the sole Push display transport.
 - `evidence/**` — retained experiment and real-hardware acceptance records, not production code.
+
+The experimental macOS capture package has been retired. There is no maintained capture helper or capture test suite in this repository. See [the removal boundary](docs/research/capture-experiments-retired.md).
 
 ## Issues and scope
 
@@ -49,12 +50,7 @@ Do not create new `codex/*`, `status/*`, `docs/*`, or `bootstrap/*` branch famil
 
 Stable deterministic behavior belongs in committed tests whenever practical.
 
-For the macOS helper:
-
-```bash
-cd capture/macos
-xcrun swift test
-```
+Use the affected runtime tests in the DrivenByMoss fork for changes there. For central documentation/maintenance changes, check the diff, links and any changed scripts; do not rebuild retired capture experiments.
 
 See [`docs/TESTING.md`](docs/TESTING.md) for the distinction between:
 

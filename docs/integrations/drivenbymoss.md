@@ -33,7 +33,7 @@ The Pushwig delta owns:
 - semantic fallback after visual loss/failure;
 - the sole accepted Push display USB transport path.
 
-The fork does **not** own macOS ScreenCaptureKit, window/display discovery, crop profiles, or other platform capture APIs. Those live in platform helpers such as `capture/macos/**` in the central repository.
+The fork does **not** own capture APIs, window/display discovery or crop profiles. No capture helper is currently maintained: the central experimental package was retired without changing the accepted fork. Any future producer must remain outside controller, audio and USB ownership.
 
 ## Build
 

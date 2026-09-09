@@ -1,5 +1,7 @@
 # Visual Portability and Layout Adaptation
 
+Historical, unselected research. These hypotheses and proposed structures are not current architectural dependencies or implementation instructions. See [capture retirement](research/capture-experiments-retired.md).
+
 ## Primary question
 
 Can the hybrid DrivenByMoss + Bitwig visual experience work for ordinary users whose Bitwig windows, monitors, display profiles, UI scaling, and operating systems differ?
