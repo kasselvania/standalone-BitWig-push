@@ -48,7 +48,7 @@ Read [Architecture](docs/ARCHITECTURE.md) and [Protocols](docs/PROTOCOLS.md).
 
 ## Current development
 
-V5A ordinary-launch ingress activation is accepted. There is no active implementation slice; [`CURRENT_SLICE.md`](CURRENT_SLICE.md) is the current-work pointer.
+V5A ordinary-launch ingress activation is accepted. [`CURRENT_SLICE.md`](CURRENT_SLICE.md) points to the active work: **V5B, a bounded Mac window-source proof using ScreenCaptureLite**. The [source decision](docs/research/v5b-window-source-decision.md) explains the distinct acquisition path and its significant deprecated-API risk; it is a candidate under test, not an accepted replacement.
 
 The [accepted activation guide](docs/design/ordinary-launch-ingress-activation.md) explains the default-Off **Pushwig → External visual ingress (requires restart)** setting, ordinary relaunch, private producer discovery and limitations. [Final acceptance](evidence/v5a-ordinary-ingress-activation/README.md) records the exact tested source and official rollback.
 
@@ -66,7 +66,7 @@ See:
 
 ## Platform direction
 
-macOS remains the active development fixture. A future selected media/frame path must have a concrete Linux continuation without allowing Apple/Linux backend handles to define portable product identity. No successor or capture backend is selected by V5A's completion.
+macOS remains the active development fixture. A future selected media/frame path must have a concrete Linux continuation without allowing Apple/Linux backend handles to define portable product identity. A source selected for investigation is not automatically an accepted product backend.
 
 A future managed appliance may expose the complete Bitwig desktop to another device while Push receives a curated presentation. That is a later runtime/deployment layer.
 

@@ -1,25 +1,32 @@
 # Current work
 
-**NO ACTIVE IMPLEMENTATION SLICE**
+**ACTIVE — V5B: Mac window-source proof with ScreenCaptureLite**
 
-## Last completed: V5A ordinary Bitwig external-ingress activation
+Executable scope and acceptance: [issue #57](https://github.com/kasselvania/standalone-BitWig-push/issues/57).
 
-V5A is accepted. An ordinary Bitwig launch can enable the existing V1D-2 receiver through the persisted Push controller setting, publish a private session rendezvous, display generated frames on physical Push, restore current semantics on authority loss, and complete shutdown/restart and exact official rollback.
+Source-grounded lead decision: [candidate, actual backends and known risks](docs/research/v5b-window-source-decision.md).
 
-- Completed issue: [#53](https://github.com/kasselvania/standalone-BitWig-push/issues/53)
-- Source PR: [DrivenByMoss #6](https://github.com/kasselvania/DrivenByMoss/pull/6)
-- Accepted source head: `9cab625a736e31e2ec5d5b7bcec77cc778839048`
-- Source merge: `997158b0a4ddd932a0a985c8b74ffff1e631120f`
+## Intended result
+
+Current pixels from an explicitly selected Bitwig window reach Push through the accepted ordinary-launch ingress while Bitwig remains normally usable. This is window acquisition, not a physical-monitor crop and not device localization.
+
+ScreenCaptureLite at `0c5beb0e3c5e4f9e0fcc9203025a80ad5164e6a4` is selected **for this proof**, not adopted as a permanent product dependency. Its Mac window path uses deprecated CoreGraphics acquisition; build/runtime viability and desktop usability must be established before integration. The known deprecation and Linux/X11 limitations remain explicit even if the proof passes.
+
+First exercise the minimal source locally with the official extension untouched. On success continue into the existing helper and one final Push acceptance; on failure record the concrete result in #57 and stop. These are steps inside one effort, not new authority cycles.
+
+## Stable baseline
+
+V5A is accepted: ordinary launch, persisted enablement, private rendezvous, generated frames, semantic fallback, shutdown/restart and exact official rollback.
+
+- DrivenByMoss `pushwig/main`: `997158b0a4ddd932a0a985c8b74ffff1e631120f`
 - Accepted source tree: `dbf3dc8d4e6d6b95a654088f85b8a183584063b7`
-- [Accepted activation design](docs/design/ordinary-launch-ingress-activation.md)
-- [Final acceptance and rollback](evidence/v5a-ordinary-ingress-activation/README.md)
+- [Activation guide](docs/design/ordinary-launch-ingress-activation.md)
+- [V5A evidence](evidence/v5a-ordinary-ingress-activation/README.md)
 
-The V5A recovery/checkpoint ladder is retired. Historical failure and recovery facts remain in issues and evidence; they are not standing instructions for the next task.
+No DrivenByMoss source change is part of V5B. The official installed extension is not the derivative and must not be assumed to expose ingress.
 
-## Next decision, not implementation authority
+## Boundaries
 
-A product-valid visual source remains unresolved. macOS remains the working fixture, with a concrete Linux continuation required for a future selected media/frame path. No capture backend, Linux/Steam Deck move, or successor slice is selected by this closeout.
+macOS remains the live fixture. Linux is a source-audited continuation, not an implementation target. No ScreenCaptureKit substitution, AVFoundation monitor crop, failed-PR #52 reuse, new frame core, receiver, store, protocol, remote desktop, Sampler page or Steam Deck work.
 
-The [Sampler device-page goal (#49)](https://github.com/kasselvania/standalone-BitWig-push/issues/49) remains blocked on source usability. Ordinary ingress activation is no longer its missing prerequisite. The failed V5 source work remains unselected historical work, not a starting implementation.
-
-See the [roadmap](docs/ROADMAP.md) for product direction and the owning issue of a future selected slice for execution scope.
+V4/#49 remains blocked until a source is accepted. No source is accepted merely by activating this issue. The V5A recovery ladder stays retired; normal local iteration, proportionate tests and fixture custody apply.
