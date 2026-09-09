@@ -27,17 +27,7 @@ Stop on a real conflict. Do not invent another document, gate, branch, or PR to 
 
 ## Current work
 
-`CURRENT_SLICE.md` owns the short current-work pointer. The owning issue owns executable scope and acceptance. A durable design owns the technical model; it must not duplicate the whole issue.
-
-V5A is active under issue #53. It repairs ordinary-launch activation and rendezvous for the existing V1D-2 receiver. Until V5A is accepted:
-
-- do not resume failed V5 PR #52 or issue #50;
-- do not cherry-pick its AVFoundation or `capture/common` work;
-- do not select or implement another capture source;
-- preserve the accepted V1D-2 protocol, receiver validation, fixed latest-frame store, nonblocking display adoption, semantic fallback, raster sink, and sole Push USB writer;
-- treat activation, configuration, rendezvous, and their lifecycle as the open boundary.
-
-See issue #53 and `docs/design/ordinary-launch-ingress-activation.md`.
+`CURRENT_SLICE.md` owns the short current-work pointer. The owning issue owns executable scope and acceptance. A durable design owns the technical model; it must not duplicate the whole issue. Do not infer active implementation authority from a historical recovery recipe or completed issue.
 
 ## Cross-component decision rule
 

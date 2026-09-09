@@ -42,9 +42,10 @@ A large test count does not convert exploratory scaffolding into accepted archit
 - `v1d20-external-frame-ingress/` — external ingress architecture selection.
 - `v1d2-external-frame-ingress/` — production authenticated latest-frame data plane under controlled activation.
 - `v2-macos-display-crop/` — maintained macOS helper and real Bitwig pixels on Push.
-- `v5-portable-frame-source-bakeoff/failure-review.md` — failed source-bakeoff/activation-premise review; no implementation selected and rollback was pending at the stop snapshot.
+- `v5-portable-frame-source-bakeoff/failure-review.md` — historical failed source-bakeoff/activation-premise review; no implementation selected and rollback was pending at that stop snapshot.
+- [`v5a-ordinary-ingress-activation/README.md`](v5a-ordinary-ingress-activation/README.md) — accepted ordinary-launch activation, post-startup receiver ownership, generated physical-Push proof, authority-loss fallback, restart and exact official rollback. Source accepted in [DrivenByMoss PR #6](https://github.com/kasselvania/DrivenByMoss/pull/6); acceptance/closeout in [central PR #56](https://github.com/kasselvania/standalone-BitWig-push/pull/56).
 
-Each directory or document explains its own scope, acceptance status, and limitations.
+Each directory or document explains its own scope and limitations. Review-ready status in an immutable evidence snapshot records when it was written; the associated merged PR and completed issue record its later acceptance.
 
 ## Evidence hygiene
 

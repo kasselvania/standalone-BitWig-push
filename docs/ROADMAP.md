@@ -9,32 +9,29 @@ Pushwig has established on physical Push hardware:
 - a narrow DrivenByMoss composition seam;
 - current-semantic restoration;
 - a validated opaque-BGRA raster sink;
-- bounded authenticated latest-frame ingress once activated;
+- bounded authenticated latest-frame ingress;
 - real Bitwig pixel delivery at useful cadence and low CPU/RSS;
-- preserved pads, encoders, transport, Push audio, and headphones.
+- preserved pads, encoders, transport, Push audio, and headphones;
+- ordinary-launch activation, private current-session producer discovery, clean shutdown/fresh restart, and exact official rollback.
 
-## Corrected gap
+## Completed: V5A ordinary ingress activation
 
-The accepted fixture activated V1D-2 through JVM properties supplied before startup by a special executable launch. Ordinary user launch, receiver enablement, private producer discovery, and lifecycle cleanup were not productized.
-
-The broad V5 frame-source bakeoff tried to select a source before proving this prerequisite and is closed as failed/superseded. Draft PR #52 is not a selected implementation.
-
-## Current: V5A ordinary ingress activation
-
-V5A delivers one operational result:
+V5A delivered one operational result:
 
 ```text
 ordinary Bitwig launch
-    -> supported Pushwig enablement
-    -> one private session rendezvous
-    -> existing V1D-2 receiver
+    -> supported persisted Pushwig enablement
+    -> successful Push startup
+    -> existing V1D-2 receiver + private session rendezvous
     -> generated frame on physical Push
     -> semantic fallback + clean shutdown/restart/rollback
 ```
 
-It changes activation/rendezvous ownership only. It does not implement a capture backend.
+See the [accepted design](design/ordinary-launch-ingress-activation.md) and [final evidence](../evidence/v5a-ordinary-ingress-activation/README.md). V5A changed activation/rendezvous ownership only and selected no capture backend. Its temporary recovery ladder has ended.
 
-## After V5A
+The earlier V5 frame-source bakeoff is closed as failed/superseded. Closed, unmerged PR #52 is not a selected implementation.
+
+## Remaining direction — no successor selected
 
 1. Define one new bounded source slice, beginning with actual source identity and ordinary attached-use behavior rather than a generic portability layer.
 2. Select a product-valid Mac source mode or deliberately choose direct/generated/managed alternatives.
@@ -42,6 +39,8 @@ It changes activation/rendezvous ownership only. It does not implement a capture
 4. Redesign Browser as a results-first semantic experience.
 5. Add Sampler waveform/boundary/sliced views after capability verification.
 6. Generalize proven behavior families to Polymer, analyzers, graph devices, structures, and note-flow devices.
+
+This is direction, not authorization to start any of those tasks.
 
 ## Portability
 
@@ -52,7 +51,7 @@ After one real source and common processing path are accepted:
 - later adapt to Steam Deck/appliance constraints;
 - retain attached and managed operating modes as separate product forms.
 
-Do not extract portability solely from a Mac pixel transform while the acquisition and activation owners remain unresolved.
+Do not extract portability solely from a Mac pixel transform while acquisition remains unresolved. macOS remains the working fixture; completing V5A does not move development to Linux or Steam Deck.
 
 ## Appliance
 
