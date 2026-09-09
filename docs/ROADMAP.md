@@ -31,16 +31,15 @@ See the [accepted design](design/ordinary-launch-ingress-activation.md) and [fin
 
 The earlier V5 frame-source bakeoff is closed as failed/superseded. Closed, unmerged PR #52 is not a selected implementation.
 
-## Remaining direction — no successor selected
+## Remaining product direction
 
-1. Define one new bounded source slice, beginning with actual source identity and ordinary attached-use behavior rather than a generic portability layer.
-2. Select a product-valid Mac source mode or deliberately choose direct/generated/managed alternatives.
-3. Resume the first Sampler hybrid device page only after source viability.
-4. Redesign Browser as a results-first semantic experience.
-5. Add Sampler waveform/boundary/sliced views after capability verification.
-6. Generalize proven behavior families to Polymer, analyzers, graph devices, structures, and note-flow devices.
+1. Prove a product-valid Mac source mode, beginning with actual source identity and ordinary attached-use behavior rather than a generic portability layer.
+2. Resume the first Sampler hybrid device page only after source viability.
+3. Redesign Browser as a results-first semantic experience.
+4. Add Sampler waveform/boundary/sliced views after capability verification.
+5. Generalize proven behavior families to Polymer, analyzers, graph devices, structures, and note-flow devices.
 
-This is direction, not authorization to start any of those tasks.
+This is direction, not execution authority. The current bounded experiment and its candidate status are linked from [`../CURRENT_SLICE.md`](../CURRENT_SLICE.md). A candidate under test is not an accepted capture backend.
 
 ## Portability
 

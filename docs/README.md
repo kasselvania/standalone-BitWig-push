@@ -13,7 +13,7 @@ A new contributor should not need maintainer control files or evidence hashes to
 
 ## Current work and accepted activation
 
-[`../CURRENT_SLICE.md`](../CURRENT_SLICE.md) owns the current-work pointer. V5A is accepted; no successor implementation is active.
+[`../CURRENT_SLICE.md`](../CURRENT_SLICE.md) owns the current-work pointer. V5A is accepted. [V5B / issue #57](https://github.com/kasselvania/standalone-BitWig-push/issues/57) tests one actual Mac window-acquisition candidate; the [lead source decision](research/v5b-window-source-decision.md) records the inspected backend and limitations.
 
 - [Completed issue #53 — V5A ordinary Bitwig external-ingress activation](https://github.com/kasselvania/standalone-BitWig-push/issues/53)
 - [Accepted activation guide](design/ordinary-launch-ingress-activation.md)
