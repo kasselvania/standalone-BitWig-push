@@ -1,5 +1,7 @@
 # V3 Bitwig window-relative visual lens evidence
 
+**Retired experiment:** this record preserves historical observations, not supported product tooling. Its source/build paths belong to the recorded commits. [Retirement boundary and source history](../../docs/research/capture-experiments-retired.md).
+
 Date: 2026-09-02
 
 ## Result and repair gate

@@ -1,5 +1,7 @@
 # V2 production macOS display-crop visual lens
 
+**Retired experiment:** this record preserves historical observations, not supported product tooling. Its source/build paths belong to the recorded commits. [Retirement boundary and source history](../../docs/research/capture-experiments-retired.md).
+
 ## Result
 
 V2 is proven on the accepted Mac, Bitwig Studio, DrivenByMoss, and Push 3

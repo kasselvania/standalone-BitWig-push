@@ -22,14 +22,14 @@ None is normative. A failed macOS source does not disqualify macOS, and an event
 
 The core product combines DrivenByMoss semantic control with useful native/direct visuals on Push.
 
-Current priority order:
+Current boundary:
 
 1. preserve the proven one-writer, semantic-restoration, raster, and V1D-2 data plane;
-2. productize ordinary Bitwig activation and private V1D-2 rendezvous (V5A);
-3. select one product-valid Mac source mode in a later bounded slice;
-4. resume the first Sampler device page;
-5. redesign Browser and expand device behavior families;
-6. prove Linux portability after the real common path is selected.
+2. preserve accepted ordinary Bitwig activation and private V1D-2 rendezvous (V5A);
+3. retire the accumulated capture experiments and their assumed product structure;
+4. leave replacement video work, device-aware presentation and portability unimplemented until explicitly commissioned.
+
+The maintainer's intended next direction is a simple FFmpeg-based video/composition layer. It is not implemented or qualified by the cleanup; earlier source/resolver/workspace designs do not constrain it.
 
 Track V supports ordinary attached desktop operation and may also run inside managed appliance environments.
 

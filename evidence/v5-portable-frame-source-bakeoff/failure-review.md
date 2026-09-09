@@ -1,5 +1,7 @@
 # V5 portable frame-source bakeoff — failure review
 
+**Retired experiment:** this record preserves historical observations, not supported product tooling. Its source/build paths belong to the recorded commits. [Retirement boundary and source history](../../docs/research/capture-experiments-retired.md).
+
 ## Verdict
 
 **V5 failed. No source substrate or portable frame architecture was selected. Draft PR #52 must not merge.**

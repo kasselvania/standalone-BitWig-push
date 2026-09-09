@@ -1,80 +1,25 @@
-# Runtime and source strategy
+# Runtime and source boundary
 
-## Current direction
+macOS remains the working fixture. The accepted runtime is the DrivenByMoss frame/activation path, not any of the retired capture applications.
 
-macOS remains Pushwig's working fixture. V5A established ordinary Bitwig activation and private producer rendezvous for the preserved V1D-2 data plane. A product-valid visual source remains unresolved; no successor implementation is selected.
+## Ordinary launch and ownership
 
-## Runtime sequence
+Bitwig launches normally through the operating system. No JVM-option injection or direct executable invocation is needed to construct ingress.
 
-```text
-accepted V5A on the Mac
-    -> ordinary Bitwig activation + private producer rendezvous
+The default-Off persisted setting is restart-scoped. After successful complete Push startup, the display-owned activation creates one private capability, binds the existing receiver and atomically publishes current-session rendezvous. Shutdown removes live authority; a dormant owner.lock is not an active session.
 
-later bounded Mac source slice
-    -> select one product-valid source mode against that real ingress contract
+The [accepted activation guide](design/ordinary-launch-ingress-activation.md) specifies the exact implemented setting, permissions, manifest, lifecycle and limitations. One ingress per user/runtime root is supported.
 
-Linux fixture later
-    -> prove the selected common processing path and a concrete Linux source backend
+## Source boundary
 
-Steam Deck / compact x86 later
-    -> package proven software into a managed appliance
-```
+An external producer owns acquisition or generation and its own bounded pixel processing. It authenticates to the current receiver and follows [protocol v1](PROTOCOLS.md). It does not own controller initialization, MIDI, audio, semantic restoration or Push USB.
 
-Windows is not a current product requirement. This sequence describes direction, not active execution authority.
+No source backend or source framework is selected by this document. The capture/resolver/camera/workspace experiments are [retired](research/capture-experiments-retired.md), not prerequisites for future video work.
 
-## Ordinary-launch requirement
+The requested direction is a straightforward FFmpeg-based video/composition layer. No FFmpeg acquisition method, graph, implementation or compatibility envelope is established by this cleanup.
 
-A product path starts when the user launches Bitwig normally through the operating system. It must not rely on a terminal-only executable invocation or JVM option environment injection to construct the Pushwig receiver.
+## Other tracks
 
-The session must be fully visible and normally usable before process/listener evidence can count toward acceptance. V5A proved that result with generated frames on the accepted Mac/Push 3 fixture.
+Linux portability, managed appliances, remote desktops and device-aware presentation remain separate future questions. No runtime supervisor, compositor or portable frame core is prescribed. Failure of a past Mac capture approach does not authorize substituting another source or changing the accepted receiver.
 
-## Receiver and rendezvous ownership
-
-The V1D-2 receiver is part of the DrivenByMoss Push display/controller lifetime. Its activation belongs with that owner, not with a capture helper.
-
-The [accepted activation design](design/ordinary-launch-ingress-activation.md) owns the exact setting, runtime paths, manifest schema, file permissions and lifecycle. Its implemented order is:
-
-```text
-persistent enablement read during configuration
-    -> complete setup initialization and existing Push startup succeed
-    -> one display-owned activation
-    -> create private session capability
-    -> bind existing loopback receiver
-    -> atomically publish nonsecret rendezvous
-    -> producer connects/authenticates
-    -> revoke rendezvous and receiver authority during shutdown
-```
-
-The accepted limit is one ingress per user/runtime root. The endpoint remains IPv4 loopback port 45291. Fresh sessions rotate capability and generation; the dormant owner.lock file does not grant authority. External visual failure leaves controls, audio and current semantics useful.
-
-## Future source work
-
-The rejected baseline remains continuous ScreenCaptureKit desktop-independent capture of the user's primary Bitwig window. The failed V5 AVFoundation whole-display crop is not a selected attached-mode source.
-
-A later source slice must evaluate one materially distinct acquisition class at a time, identify its actual platform API, and prove source identity/usability before extracting portable abstractions. Cross-platform project branding is not proof of a shared source mechanism.
-
-## Linux compatibility
-
-A future selected frame-processing/media path must build and operate on Linux, with at least one concrete Linux source backend. Backend handles must not enter portable semantic, source, or presentation identity.
-
-V5A did not implement or select Linux technology.
-
-## Future managed appliance
-
-A later appliance may run Bitwig in a controlled graphical workspace and expose:
-
-```text
-curated Push presentation
-        +
-full Bitwig desktop on another device
-```
-
-This may use Weston, gamescope, another compositor, PipeWire, X11, VNC/RDP/WebRTC, or another stack. None is selected by acceptance of ordinary activation.
-
-## Direct/generated sources
-
-Not every Push experience must screen-capture Bitwig. Browser, analyzers, waveforms, and parameter graphs may use semantic, audio, or direct-rendered sources when they are more robust and useful. All still require a product-valid activation/delivery path or an explicitly different accepted owner.
-
-## Decision rule
-
-Trace real construction and ownership before selecting technology. Prove the first unproven cross-component dependency first. Performance, abstraction elegance, or green component tests never outrank ordinary product operation and exact recovery.
+Visual-source failure must restore current semantics without degrading ordinary Bitwig control/audio use.

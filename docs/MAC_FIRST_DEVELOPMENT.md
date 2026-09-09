@@ -1,5 +1,7 @@
 # Mac-First Software Development Fixture
 
+Historical development/fixture record. The milestone ordering below is not current execution authority. The [capture retirement](research/capture-experiments-retired.md) supersedes its future-capture posture; the accepted DrivenByMoss and V5A foundation remains intact.
+
 ## Decision
 
 The active Track V development fixture is the maintainer's macOS computer running Bitwig Studio, the `kasselvania/DrivenByMoss` derivative, and Push 3 Controller over ordinary USB.
@@ -154,9 +156,7 @@ V2P       Linux/Steam Deck checkpoint
 
 ## Future capture posture
 
-After V1D-2, a normal macOS helper may own ScreenCaptureKit permission, discover a dedicated top-level Bitwig native-device or plug-in window, crop/scale/convert into opaque BGRA, and publish through the accepted loopback boundary.
-
-Apple capture objects remain entirely inside the helper. The controller extension consumes only the bounded protocol and returns to exact semantics when the helper is absent, denied, stale, malformed, or closed.
+No capture backend is currently selected. Earlier dedicated-window/display helper proposals are retired. A future producer consumes the accepted ingress contract without adding platform capture objects to DrivenByMoss.
 
 ## Result
 
