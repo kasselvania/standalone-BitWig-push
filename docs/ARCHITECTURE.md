@@ -30,22 +30,25 @@ authenticated complete producer message
     -> one PushUsbDisplay.send
 ```
 
-This plane is proven on physical Push hardware **once activated**. It has one loopback receiver, no application frame FIFO, bounded storage, no source I/O on the display thread, and current-semantic fallback.
+This plane is proven on physical Push hardware. It has one loopback receiver, no application frame FIFO, bounded storage, no source I/O on the display thread, and current-semantic fallback.
 
 ### 3. Activation/rendezvous plane
 
 ```text
 ordinary Bitwig launch
-    -> accepted DrivenByMoss derivative
-    -> product enablement and receiver lifetime
-    -> private session capability
+    -> persisted Pushwig enablement read during configuration
+    -> successful complete Push setup/startup
+    -> display-owned activation
+    -> private session capability and existing receiver bind
     -> atomically published nonsecret rendezvous
     -> producer discovery
 ```
 
-This plane is not yet proven. Historical V1D-2 evidence activated the receiver with startup JVM properties supplied through a special executable launch. That is valid fixture evidence, not an accepted end-user startup architecture.
+Accepted in V5A on the Mac/Push 3 fixture. Display construction creates no ingress authority. The final setup-startup hook performs one activation, and shutdown prevents late activation. The default-Off preference is restart-scoped; no JVM option injection is used.
 
-The owner that creates/destroys the receiver must own the capability and rendezvous lifetime. A producer cannot be expected to connect before the ordinary Bitwig session has lawfully brought the receiver online.
+`Push2Display` owns receiver activation and shutdown. Its activation/rendezvous owner holds one lifetime lock, a fresh capability and current manifest. Only one ingress per user is supported. Producers discover that receiver; they do not create it.
+
+See the [accepted activation design](design/ordinary-launch-ingress-activation.md) for exact runtime custody, publication ordering, cleanup and limitations.
 
 ### 4. Visual-source plane
 
@@ -61,32 +64,15 @@ The tested ScreenCaptureKit desktop-independent stream of the user's primary Bit
 Therefore:
 
 ```text
-proven frame data plane
-    != proven ordinary activation
-    != selected product frame source
+accepted frame data plane + accepted ordinary activation
+    != selected product capture source
 ```
 
-## Current target: V5A
-
-V5A repairs the activation/rendezvous plane without reopening the proven frame data plane or selecting a source.
-
-Preferred ownership, subject to the required construction-lifecycle audit:
-
-```text
-persistent Pushwig enablement in the Push controller configuration
-    -> extension/controller startup
-    -> owner-only runtime directory
-    -> random session capability file
-    -> existing receiver bind
-    -> atomic rendezvous publication
-    -> generated producer proof
-```
-
-The rendezvous may contain protocol version, loopback port, capability-file path, session generation, and nonsecret ownership facts. It must not contain the capability value. Publication happens only after a successful bind; invalidation/removal begins before receiver authority ends.
+V5A qualifies generated input, not a new capture backend. No subsequent implementation is authorized by this architecture document.
 
 ## Device-aware presentation
 
-After activation and source viability are proven, the product model remains:
+With activation accepted, source viability remains the prerequisite for the blocked Sampler page. The intended product model remains:
 
 ```text
 context router
@@ -98,7 +84,7 @@ presentation composer
 source backend
 ```
 
-The blocked Sampler page resumes only after both prerequisites exist. Existing track, mixer, session, transport, and performance screens remain ordinary DrivenByMoss by default.
+Existing track, mixer, session, transport, and performance screens remain ordinary DrivenByMoss by default.
 
 ## Attached and managed modes
 
@@ -121,4 +107,4 @@ A future appliance may own a canonical Bitwig workspace and expose it independen
 - Platform-specific objects do not define portable semantic/device/presentation identity.
 - A technically correct component does not establish a product path until ordinary launch, real interaction, shutdown, and rollback pass.
 
-See [V5A activation design](design/ordinary-launch-ingress-activation.md), [protocols](PROTOCOLS.md), and [device-aware presentation](design/device-aware-presentation-layer.md).
+See [activation design](design/ordinary-launch-ingress-activation.md), [protocols](PROTOCOLS.md), and [device-aware presentation](design/device-aware-presentation-layer.md).
