@@ -11,6 +11,13 @@ func samplerClock() -> Double { CMTimeGetSeconds(CMClockGetTime(CMClockGetHostTi
 /// One synchronous reader, one reusable frame, bounded timestamp metadata. No frame FIFO.
 /// FFmpeg -copyts/showinfo exposes source PTS, not pipe-read time disguised as acquisition time.
 final class FFmpegSamplerStream {
+    static func byteCount(width: Int, height: Int) throws -> Int {
+        // The search is a subset of the already bounded physical-display acquisition. Do not
+        // impose a smaller arbitrary width that rejects an ordinary large Bitwig window.
+        try samplerRequire(width > 0 && height > 0 && width <= 8192 && height <= 4320,
+                           "FFmpeg window search exceeds the 8192×4320 display bound")
+        return width * height * 4
+    }
     struct Frame {
         let index: Int, width: Int, height: Int
         let captured: Double
@@ -80,9 +87,10 @@ final class FFmpegSamplerStream {
             }
             if let parts = groups(Self.stampPattern, line), let index = Int(parts[0]), let pts = Int64(parts[1]),
                let w = Int(parts[2]), let h = Int(parts[3]) {
-                try samplerRequire(line.contains("fmt:bgr0") && w > 0 && h > 0 && w <= 4096 && h <= 2560, "Unsupported FFmpeg window-search format/size")
+                try samplerRequire(line.contains("fmt:bgr0"), "Unsupported FFmpeg window-search format")
+                let byteCount = try Self.byteCount(width: w, height: h)
                 if storage == nil {
-                    width = w; height = h; length = w * h * 4
+                    width = w; height = h; length = byteCount
                     storage = UnsafeMutableRawPointer.allocate(byteCount: length, alignment: 64)
                 }
                 try samplerRequire(w == width && h == height && stamps.count < 4,

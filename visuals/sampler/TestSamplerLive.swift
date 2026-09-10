@@ -15,7 +15,7 @@ import Foundation
         if CommandLine.arguments.count == 3 && CommandLine.arguments[1] == "--interop" {
             try interop(); return
         }
-        try fit(); try authority(); try stream(); try socketDeadline()
+        try fit(); try authority(); try displays(); try stream(); try largeWindow(); try socketDeadline()
         print("SamplerLive generated checks: PASS (\(checks)); no capture, Bitwig, Push or permission changes")
     }
     static func interop() throws {
@@ -111,6 +111,33 @@ import Foundation
             if count == 3 { usleep(250_000) } // Deliberate consumer stall; bounded metadata must survive.
         }
         try check(count == 40 && differences > 10, "Current generated frames change through actual FFmpeg pipe")
+    }
+    static func displays() throws {
+        let a = SamplerDisplay(id:5,index:0,bounds:CGRect(x:0,y:0,width:3430,height:1447),pixelWidth:6860,pixelHeight:2894)
+        let b = SamplerDisplay(id:6,index:1,bounds:CGRect(x:0,y:1447,width:1288,height:946),pixelWidth:2576,pixelHeight:1892)
+        try check(try SamplerDisplay.select(CGRect(x:343,y:145,width:2744,height:1158),from:[a,b]) == a,"Other displays must not prevent selected Bitwig display")
+        try check(try SamplerDisplay.select(CGRect(x:30,y:1500,width:1000,height:800),from:[a,b]) == b,"Nonzero display origin and FFmpeg index")
+        try refuses { _ = try SamplerDisplay.select(CGRect(x:30,y:1400,width:1000,height:200),from:[a,b]) }
+        try refuses { _ = try SamplerDisplay.select(CGRect(x:30,y:30,width:1000,height:800),from:[a,a]) }
+        try refuses { _ = try SamplerDisplay.select(.zero,from:[a,b]) }
+    }
+    static func largeWindow() throws {
+        try check(try FFmpegSamplerStream.byteCount(width:8192,height:4320) == 141557760,"Finite maximum search allocation")
+        for (w,h) in [(0,1),(-1,1),(8193,1),(1,4321),(Int.max,Int.max)] {
+            try refuses { _ = try FFmpegSamplerStream.byteCount(width:w,height:h) }
+        }
+        let reader = try FFmpegSamplerStream(input:["-re","-f","lavfi","-i","color=c=red:size=5488x2316:rate=2"],filter:"null")
+        defer { reader.close() }
+        var count = 0, pointer: UnsafeRawPointer?
+        let deadline = samplerClock()+8
+        while count < 2 && samplerClock() < deadline {
+            guard let frame = try reader.nextFrame() else { continue }
+            try check(frame.width == 5488 && frame.height == 2316 && frame.bytes.count == 50840832,"Actual large-window raw frame geometry")
+            try check(frame.bytes[0] < 5 && frame.bytes[1] < 5 && frame.bytes[2] > 245,"Large generated frame BGR0 channels")
+            if let pointer { try check(pointer == frame.bytes.baseAddress,"Large search buffer reused") }
+            pointer = frame.bytes.baseAddress; count += 1
+        }
+        try check(count == 2,"Current window size passes actual FFmpeg transport")
     }
     static func socketDeadline() throws {
         let listener = socket(AF_INET,SOCK_STREAM,0); try check(listener >= 0,"Listener")

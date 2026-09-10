@@ -17,7 +17,7 @@ sampler_live_output=$(mktemp -d /tmp/pushwig-sampler-live.XXXXXX)
 sh visuals/sampler/build-live.sh "$sampler_live_output"
 ```
 
-The runner uses installed Swift and FFmpeg 9 libraries, builds outside the checkout, and runs generated locator, stream, crop/fit, private-schema and blocked-socket tests. It does not acquire the desktop or touch Bitwig/Push. Current generated results: 85 existing locator checks; 112 live-path checks including 40 changing FFmpeg `testsrc` frames, padded stride, different crop pixels, output-buffer reuse, an intentional consumer stall and a stalled-reader write failure at approximately 250 ms (one timing sample, not a performance campaign).
+The runner uses installed Swift and FFmpeg 9 libraries, builds outside the checkout, and runs generated locator, stream, crop/fit, private-schema and blocked-socket tests. It does not acquire the desktop or touch Bitwig/Push. Current generated results: 85 existing locator checks; 129 live-path checks including 40 changing FFmpeg `testsrc` frames, padded stride, different crop pixels, output-buffer reuse, large-window storage, multiple-display selection, an intentional consumer stall and a stalled-reader write failure at 250.391 ms (one timing sample, not a performance campaign).
 
 The separate DrivenByMoss branch `pushwig/sampler-context-render` is based on the physically passed, still-unmerged LED head `cf0e70ea9f2144a45c1dc6039a25c9b90a06b92b`. Its six affected suites cover settings/rendezvous/lifecycle, actual raster pipeline, actual DeviceParams mode data/touch and the native coordinator against fake API endpoints. Native endpoint tests are not real Bitwig API acceptance.
 
@@ -25,11 +25,13 @@ Development fixture identities, September 10:
 
 - DrivenByMoss head `93fb2a48d1e35dfeb69f902a44d8035a0b7db557`, tree `622983fad14bab0a16df950eac4976112583b59d`.
 - Tested Java-21 extension: 14,420,465 bytes; SHA-256 `abe439c9813f879db51a7a6f69b9270ffeec33e9346a8e534f96d7fee2fe9dbd`.
-- Built `SamplerLive` executable SHA-256 `fb80db4fa4bca66b000ed9677e947e892b48b69d9b73eac1787e60bc4658d881`.
+- Initial `SamplerLive` executable SHA-256 `fb80db4fa4bca66b000ed9677e947e892b48b69d9b73eac1787e60bc4658d881`; corrected window-size/display-selection build `3a1da455ee52c9d110076f0d53f713c90ea900b0cc111dbfb4b846c2c69e2618`. The Java artifact was not rebuilt or replaced during those producer corrections.
 - All six Java suites pass. Composition tests pass 470 checks standalone, then 582 with the actual Swift generated sender connected to the production Java receiver/pipeline. The latter verifies exact center bytes and full semantic restoration after CLEAR, not physical Push output.
 - The final package was built once with explicit Homebrew Java/Javac 21.0.11 and Maven 3.9.16. `PushUsbDisplay.class`, `BitmapImpl.class` and `IRasterWritableBitmap.class` remain byte-identical to the LED-tested artifact; no generated archive is committed.
 
 Reproduce the cross-language generated check after the Java test runner and Swift build: run `SamplerLensCompositionTest` with the built `TestSamplerLive` executable as its sole argument, using the same Java classpath as `scripts/test-pushwig-sampler-context.sh`. No real capability, Bitwig frame or hardware connection is used.
+
+Initial development fixture startup, September 10: the saved ingress setting was Off. The maintainer enabled it and quit normally; an ordinary relaunch created the current V5A session and a native-Sampler context after the maintainer selected its parameter page. The earlier 4096-wide search cap was inadequate for the current 5488×2316-pixel window; the corrected finite limit matches the existing 8192×4320 display envelope. The Mac also reported two active displays, so selection now uses the display wholly containing Bitwig rather than requiring all other displays to be absent. The first run refused before acquisition (zero frames). A second run acquired current frames but published zero because other applications covered Bitwig. Its 3,956 source intervals were p50 33.333 ms, p95 33.334 ms, maximum 100 ms; this is acquisition cadence only, not successful output performance. A private one-frame diagnostic established the occlusion; it was removed after inspection and was never published or committed. After raising the existing Bitwig window, the unchanged corrected producer reported an actual 1659×438 Sampler body inside the 5488×2316 search and began publishing the center. Physical layout/readability, context transitions and final rollback remain pending; this startup is not acceptance.
 
 Only after safe derivative custody and an ordinary Bitwig launch, run:
 
@@ -39,7 +41,7 @@ Only after safe derivative custody and an ordinary Bitwig launch, run:
 
 Read the ID from the current Bitwig window, not a historical record. The producer waits for the controller's native-Sampler Device Parameters context, reads the private V5A manifest and generation-specific context notice, and supplies only the center image. Leaving the page restores actual semantics locally in the controller. It never supplies aliases, values or button meanings. Stop with Ctrl-C or let the bounded duration expire. Restore the exact official extension after testing.
 
-Current limitations and actual ownership are in the [design](../../docs/design/sampler-context-lens.md#initial-ffmpeg-development-path). Most importantly: visible-screen acquisition, conservative occlusion refusal, one display, explicit window instance, English Sampler features, no proven modulator exclusion, no image markers, no live performance or physical acceptance yet. The older individual observations below are historical evidence, not qualification of the new producer.
+Current limitations and actual ownership are in the [design](../../docs/design/sampler-context-lens.md#initial-ffmpeg-development-path). Most importantly: visible-screen acquisition, conservative occlusion refusal, window wholly within one unambiguous display (additional displays allowed), explicit window instance, English Sampler features, no proven modulator exclusion, no image markers, no live performance or physical acceptance yet. The older individual observations below are historical evidence, not qualification of the new producer.
 
 ### Original single-frame local observation
 

@@ -2,10 +2,39 @@ import AppKit
 import Darwin
 import Foundation
 
+struct SamplerDisplay: Equatable {
+    let id: CGDirectDisplayID, index: Int, bounds: CGRect, pixelWidth: Int, pixelHeight: Int
+    static func select(_ window: CGRect, from displays: [SamplerDisplay]) throws -> SamplerDisplay {
+        try samplerRequire(window.width > 0 && window.height > 0, "Empty Bitwig window")
+        let matches = displays.filter { $0.bounds.contains(window) }
+        try samplerRequire(matches.count == 1, "Bitwig must be wholly within one unambiguous display")
+        let chosen = matches[0]
+        _ = try FFmpegSamplerStream.byteCount(width:chosen.pixelWidth,height:chosen.pixelHeight)
+        return chosen
+    }
+    static func read(containing window: CGRect) throws -> SamplerDisplay {
+        var count: UInt32 = 0
+        try samplerRequire(CGGetActiveDisplayList(0,nil,&count) == .success && count > 0 && count <= 16,
+                           "Active display enumeration unavailable or exceeds 16 displays")
+        var ids = [CGDirectDisplayID](repeating:0,count:Int(count))
+        let capacity = count
+        try samplerRequire(CGGetActiveDisplayList(capacity,&ids,&count) == .success && count == capacity,
+                           "Display topology changed during enumeration")
+        var displays: [SamplerDisplay] = []
+        // FFmpeg 9 avfoundation.m maps "Capture screen N" to this same ordered public list.
+        for (index,id) in ids.enumerated() {
+            guard let mode = CGDisplayCopyDisplayMode(id) else { throw SamplerFailure(description:"Display mode unavailable") }
+            displays.append(SamplerDisplay(id:id,index:index,bounds:CGDisplayBounds(id),pixelWidth:mode.pixelWidth,pixelHeight:mode.pixelHeight))
+        }
+        return try select(window,from:displays)
+    }
+}
+
 struct SamplerWindow: Equatable {
     let id: CGWindowID, pid: pid_t
     let bounds: CGRect
     let occluders: [CGRect]
+    let display: SamplerDisplay
     static func read(_ id: CGWindowID) throws -> SamplerWindow {
         let pids = Set(NSRunningApplication.runningApplications(withBundleIdentifier: "com.bitwig.studio").map(\.processIdentifier))
         let list = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] ?? []
@@ -17,7 +46,7 @@ struct SamplerWindow: Equatable {
             if number == id {
                 guard let pid = w[kCGWindowOwnerPID as String] as? pid_t, pids.contains(pid),
                       w[kCGWindowLayer as String] as? Int == 0 else { throw SamplerFailure(description: "Selected source is not a current ordinary Bitwig window") }
-                return SamplerWindow(id: id, pid: pid, bounds: bounds, occluders: occluders)
+                return SamplerWindow(id: id, pid: pid, bounds: bounds, occluders: occluders, display:try SamplerDisplay.read(containing:bounds))
             }
             if (w[kCGWindowAlpha as String] as? Double ?? 1) > 0,
                w[kCGWindowLayer as String] as? Int != Int(CGWindowLevelForKey(.cursorWindow)) { occluders.append(bounds) }
@@ -31,18 +60,13 @@ struct SamplerWindow: Equatable {
         return occluders.contains { $0.intersects(rectangle) }
     }
     func stream() throws -> FFmpegSamplerStream {
-        var count: UInt32 = 0
-        try samplerRequire(CGGetActiveDisplayList(0, nil, &count) == .success && count == 1, "This FFmpeg proof requires one active display")
-        let screen = CGDisplayBounds(CGMainDisplayID())
-        guard let mode = CGDisplayCopyDisplayMode(CGMainDisplayID()) else { throw SamplerFailure(description: "Display mode unavailable") }
-        try samplerRequire(mode.pixelWidth <= 8192 && mode.pixelHeight <= 4320, "Display acquisition exceeds the 8192×4320 bound")
-        try samplerRequire(screen.contains(bounds) && bounds.width > 0 && bounds.height > 0, "Bitwig must be wholly on the display")
+        let screen = display.bounds
         // Only the recognition search follows the current window. Device bounds come from the
         // Sampler constellation/border, never these desktop fractions. FFmpeg uses actual iw/ih.
         let graph = "crop=w=floor(iw*\(bounds.width/screen.width)):h=floor(ih*\(bounds.height/screen.height)):"
             + "x=floor(iw*\((bounds.minX-screen.minX)/screen.width)):y=floor(ih*\((bounds.minY-screen.minY)/screen.height)):exact=1"
         return try FFmpegSamplerStream(input: ["-thread_queue_size", "1", "-f", "avfoundation", "-capture_cursor", "0", "-capture_mouse_clicks", "0",
-            "-pixel_format", "bgr0", "-drop_late_frames", "1", "-framerate", "30", "-i", "Capture screen 0:none"], filter: graph)
+            "-pixel_format", "bgr0", "-drop_late_frames", "1", "-framerate", "30", "-i", "Capture screen \(display.index):none"], filter: graph)
     }
 }
 
@@ -132,7 +156,7 @@ final class SamplerImageLock {
                             connection = try SamplerConnection(current)
                             report("Controller permits the native Sampler page; acquiring current device image.")
                         }
-                        if connection != nil && (source?.bounds != window.bounds || source?.pid != window.pid || stream == nil) {
+                        if connection != nil && (source?.bounds != window.bounds || source?.pid != window.pid || source?.display != window.display || stream == nil) {
                             try? connection?.clear(); stream?.close(); stream = nil
                             source = window; imageLock = SamplerImageLock(); lastPTS = nil
                             stream = try window.stream(); contextSince = samplerClock(); lastDelivery = samplerClock()
@@ -141,6 +165,7 @@ final class SamplerImageLock {
                 } catch {
                     try? connection?.clear(); connection?.close(); connection = nil
                     stream?.close(); stream = nil; source = nil; identity = nil
+                    nextCheck = samplerClock() + 1
                     report("Semantic fallback: \(error)")
                 }
             }
@@ -160,7 +185,7 @@ final class SamplerImageLock {
                 if frame.captured <= contextSince || age > 0.25 { discarded += 1; try activeConnection.clear(); continue }
                 let start = samplerClock()
                 let before = try SamplerWindow.read(windowID)
-                guard before.bounds == activeSource.bounds, before.pid == activeSource.pid else { discarded += 1; try activeConnection.clear(); continue }
+                guard before.bounds == activeSource.bounds, before.pid == activeSource.pid, before.display == activeSource.display else { discarded += 1; try activeConnection.clear(); continue }
                 let body = try autoreleasepool { try imageLock.locate(frame) }
                 guard let body else { discarded += 1; try activeConnection.clear(); report("Semantic fallback: waiting for a unique complete Sampler body."); continue }
                 let after = try SamplerWindow.read(windowID)
