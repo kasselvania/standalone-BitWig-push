@@ -56,7 +56,7 @@ state.moved = true; observeFixture(state); makeSchematic(source, state.observati
 const moved = draw('moved-and-resized');
 assert.ok(Math.abs(moved.decisions[0].projected.x - reacquired.decisions[0].projected.x) < 1e-9);
 state.touched.clear(); assert.equal(draw('release').decisions.length, 0);
-assert.equal(draw('B-rest', 'B', true).showImage, false);
+assert.equal(draw('B-rest', 'B', true).showImage, true);
 state.touched.add(0); assert.equal(draw('B-touch', 'B', true).showImage, true);
 // Full redraw of the reusable destination removes every earlier highlight.
 state.touched.clear(); const cleanRest = draw('clean-rest');

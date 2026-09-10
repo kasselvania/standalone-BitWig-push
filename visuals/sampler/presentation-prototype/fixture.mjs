@@ -2,6 +2,13 @@
 // Epochs here are test inputs. A live source of equivalent authority is still missing.
 export function initialFixture() {
   return { mode: 'DEVICE_PARAMS', page: 'Page 1', touched: new Set(), sourceAvailable: true,
+    // Actual DeviceParamsMode menu words; states/capabilities here are generated, not API readback.
+    actions: [
+      { label: 'On', active: true }, { label: 'Parameters', active: true },
+      { label: 'Expanded', active: false }, { label: 'Chains', active: false },
+      { label: 'Banks', active: false }, { label: 'Pin Device', active: false },
+      { label: 'Window', active: false }, { label: 'Up', active: true },
+    ], showDevices: true,
     pending: false, pitch: false, moved: false, serial: 1, revision: 'fixture-binding-1',
     slots: [
       { alias: 'Speed', target: 'Speed', value: '100 %', normalized: .5, number: 100, suffix: '%', step: 1 },

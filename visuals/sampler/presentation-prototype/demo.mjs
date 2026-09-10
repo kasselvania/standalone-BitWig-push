@@ -1,11 +1,11 @@
 // Throwaway, in-memory UI exercise. No controller API or source acquisition exists here.
-import { makeSchematic, renderScreen } from './presentation.mjs';
+import { COLORS, makeSchematic, renderScreen } from './presentation.mjs';
 import { initialFixture, observeFixture, reassignFixture, settleFixture } from './fixture.mjs';
 
 const $ = id => document.getElementById(id);
 const ctx = $('screen').getContext('2d');
 const sourceImage = document.createElement('canvas');
-const variantNames = { A: 'A · Fixed legends + stable device', B: 'B · Semantics first, touch to reveal' };
+const variantNames = { A: 'A · Four values on each side', B: 'B · All eight values in one list' };
 let variant = new URL(location.href).searchParams.get('variant') === 'B' ? 'B' : 'A';
 let state, timer, scenario = 0;
 let lastResult;
@@ -24,14 +24,19 @@ function supplyObservation() {
 function render(message = '') {
   lastResult = renderScreen(ctx, state, variant, sourceImage);
   document.querySelectorAll('.knob').forEach((button, i) => button.setAttribute('aria-pressed', String(state.touched.has(i))));
+  document.querySelectorAll('.led-button').forEach((button, i) => {
+    button.title = `${state.actions[i].label} — simulated device action, not remote ${i + 1}`;
+    button.setAttribute('aria-pressed', String(state.actions[i].active));
+  });
   $('settle').disabled = !state.pending;
   $('increase').disabled = $('decrease').disabled = state.pending;
   $('variant-label').textContent = variantNames[variant];
   $('design-description').textContent = variant === 'A'
-    ? 'Proposed starting point: keep eight readable names and values under their physical knobs. Use the side space for a large touched value, and a numbered mark at its verified location. The image never moves on touch.'
-    : 'Comparison: retain a value-first resting screen. Touch reveals the same stable device view and a large value. This protects resting semantics but hides the device until interaction.';
+    ? 'Four permanent readouts on each side. Device action words stay aligned with the buttons; device/page navigation remains along the bottom. Touch adds emphasis without hiding any value or moving the image.'
+    : 'All eight permanent readouts in one left-hand list. The device sits to the right; action and navigation rows stay in place. Compare the smaller text and longer eye movement against A.';
   $('state').textContent = JSON.stringify({ input: 'GENERATED ONLY — NOT LIVE AUTHORITY', variant, mode: state.mode,
     rawTouches: [...state.touched].map(i => i + 1), pendingBinding: state.pending, sourceAvailable: state.sourceAvailable,
+    actions: state.actions, showDevices: state.showDevices,
     observation: state.observation, render: lastResult, slots: state.slots.map(({ alias, target, value }, i) => ({ slot: i + 1, alias, target, value })) }, null, 2);
   $('screen').dataset.showImage = String(lastResult.showImage);
   $('screen').dataset.annotations = String(lastResult.decisions.filter(x => x.projected).length);
@@ -49,6 +54,22 @@ for (let i = 0; i < 8; i++) {
   // Enter/Space supplies a latched touch for mouse/keyboard accessibility and multitouch comparison.
   button.addEventListener('click', e => { if (e.detail === 0) { state.touched.has(i) ? state.touched.delete(i) : state.touched.add(i); render(); } });
   $('hardware').append(button);
+  const action = document.createElement('button'); action.className = 'led-button';
+  action.style.setProperty('--slot-color', COLORS[i]);
+  action.setAttribute('aria-label', `Simulate upper button ${i + 1}: ${initialFixture().actions[i].label}`);
+  action.onclick = () => {
+    if (i === 3) state.mode = state.mode === 'DEVICE_CHAINS' ? 'DEVICE_PARAMS' : 'DEVICE_CHAINS';
+    else if (i === 4) { state.mode = 'DEVICE_PARAMS'; state.showDevices = !state.showDevices; }
+    else if (i === 7) {
+      if (!state.showDevices) state.showDevices = true;
+      else state.mode = 'VOLUME';
+    } else state.actions[i].active = !state.actions[i].active;
+    state.actions[3].active = state.mode === 'DEVICE_CHAINS';
+    state.actions[4].active = !state.showDevices && state.mode === 'DEVICE_PARAMS';
+    $('mode').value = state.mode;
+    render(`Simulated ${state.actions[i].label} button. No Bitwig action was sent. The LED's slot color is separate from this button's function.`);
+  };
+  $('action-hardware').append(action);
   const option = document.createElement('option'); option.value = i; option.textContent = `Knob ${i + 1}`; $('slot').append(option);
 }
 
@@ -68,7 +89,11 @@ window.addEventListener('blur', release);
 document.addEventListener('visibilitychange', () => { if (document.hidden) release(); });
 $('release').onclick = release;
 $('reset').onclick = reset;
-$('mode').onchange = () => { state.mode = $('mode').value; render('Context changed; touch is not treated as a binding.'); };
+$('mode').onchange = () => {
+  state.mode = $('mode').value;
+  state.actions[3].active = state.mode === 'DEVICE_CHAINS';
+  render('Context changed; touch is not treated as a binding.');
+};
 
 function editValue(direction) {
   if (state.pending) return;

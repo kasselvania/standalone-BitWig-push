@@ -1,7 +1,7 @@
 // Throwaway presentation renderer. No live Bitwig state, capture, transport, or production gate.
 import { fit, projectRegion, associatedRegion } from './geometry.mjs';
 
-export const COLORS = ['#f31936', '#ff7416', '#efd52b', '#87c847', '#51bdea', '#8c7bfa', '#ff4aa7', '#c6d1d9'];
+export const COLORS = ['#f31936', '#ff7416', '#efd52b', '#7cdb00', '#5ac787', '#519eec', '#bb63ff', '#ff4aa7'];
 const BG = '#101416', MUTED = '#a6b0b5', WHITE = '#edf2f4', ACCENT = '#9ce9cb';
 
 function text(ctx, value, x, y, size = 12, color = WHITE, maxWidth = 116) {
@@ -72,49 +72,79 @@ export function renderScreen(ctx, state, variant, sourceImage) {
   const deviceAllowed = state.mode === 'DEVICE_PARAMS' && state.observation?.status === 'verified'
     && !state.pending && state.sourceAvailable;
   const touches = [...state.touched].sort((a, b) => a - b);
-  const showImage = deviceAllowed && (variant === 'A' || touches.length > 0);
+  const showImage = deviceAllowed;
   const decisions = [];
-  if (!showImage) {
+  if (state.mode !== 'DEVICE_PARAMS') {
     state.slots.forEach((slot, i) => legend(ctx, slot, i, state.touched.has(i), true));
-    const reason = !deviceAllowed ? (state.pending ? 'BINDING UNRESOLVED · NO IMAGE' : `${state.mode} · SEMANTIC FALLBACK`) : 'TOUCH AN ENCODER · DEVICE REVEAL';
-    box(ctx, 0, 155, 960, 5, '#35433e');
+    const reason = `${state.mode} · LIVE IMPLEMENTATION RETURNS TO DRIVENBYMOSS`;
+    box(ctx, 0, 65, 960, 38, '#111719');
+    text(ctx, 'PLACEHOLDER ONLY — existing mode would own the complete screen', 200, 77, 13, MUTED, 600);
     decisions.push(reason);
     ctx.restore(); return { showImage: false, decisions, mapping: null };
   }
-  state.slots.forEach((slot, i) => legend(ctx, slot, i, state.touched.has(i)));
-  const mapping = fit(state.observation.source, { x: 210, y: 40, width: 540, height: 116 });
-  ctx.drawImage(sourceImage, mapping.source.x, mapping.source.y, mapping.source.width, mapping.source.height,
-    mapping.x, mapping.y, mapping.width, mapping.height);
-  if (!touches.length) {
-    text(ctx, 'SAMPLER', 14, 54, 18, WHITE, 185);
-    text(ctx, state.page, 14, 79, 12, MUTED, 185);
-    text(ctx, 'Touch a knob', 760, 68, 16, ACCENT, 184);
-    text(ctx, 'Number → value → location', 760, 94, 11, MUTED, 184);
+  // Both physical button rows keep their own meanings. Remote colors belong to readouts/LEDs,
+  // not action labels. Never relabel the On button as Speed merely because they share a column.
+  const actionLabels = state.actions.map(action => action.label);
+  state.actions.forEach((action, i) => {
+    const x = i * 120;
+    box(ctx, x + 1, 0, 118, 22, '#22282b');
+    ctx.font = '12px system-ui';
+    const width = ctx.measureText(action.label).width;
+    text(ctx, action.label, x + (120 - width) / 2, 3, 12, action.active ? WHITE : MUTED, 112);
+    if (action.active) box(ctx, x + 28, 20, 64, 2, '#d3dddd');
+  });
+  const navigation = state.showDevices ? ['Sampler', '', '', '', '', '', '', '']
+    : ['Page 1', 'Perform', '', '', '', '', '', ''];
+  navigation.forEach((label, i) => {
+    box(ctx, i * 120 + 1, 142, 118, 18, i === 0 ? '#9a510d' : '#1b2327');
+    text(ctx, label, i * 120 + 7, 144, 11, i === 0 ? WHITE : MUTED, 106);
+  });
+
+  // Two structural options: four permanent readouts per side, or all eight in one compact list.
+  // Both retain all values with no touch, with many touches, and while the source is unavailable.
+  const readouts = [];
+  state.slots.forEach((slot, i) => {
+    const touched = state.touched.has(i);
+    const x = variant === 'A' ? (i < 4 ? 0 : 730) : 0;
+    const y = variant === 'A' ? 24 + (i % 4) * 29 : 23 + i * 14.5;
+    const w = variant === 'A' ? 230 : 286, h = variant === 'A' ? 28 : 14;
+    box(ctx, x + 1, y, w - 2, h, touched ? '#293c3a' : '#171f23');
+    box(ctx, x + 4, y + 3, 3, h - 6, COLORS[i]);
+    text(ctx, i + 1, x + 12, y + (variant === 'A' ? 7 : 0), 12, COLORS[i], 18);
+    if (variant === 'A') {
+      text(ctx, slot.alias, x + 34, y + 1, 11, MUTED, w - 42);
+      text(ctx, slot.value, x + 34, y + 12, 15, WHITE, w - 42);
+    } else {
+      text(ctx, slot.alias, x + 33, y, 11, MUTED, 132);
+      text(ctx, slot.value, x + 173, y, 12, WHITE, 105);
+    }
+    readouts.push({ slot: i + 1, alias: slot.alias, value: slot.value, touched, x, y, width: w, height: h });
+  });
+  const viewport = variant === 'A' ? { x: 238, y: 25, width: 484, height: 114 }
+    : { x: 298, y: 25, width: 650, height: 114 };
+  const mapping = showImage ? fit(state.observation.source, viewport) : null;
+  if (mapping) {
+    ctx.drawImage(sourceImage, mapping.source.x, mapping.source.y, mapping.source.width, mapping.source.height,
+      mapping.x, mapping.y, mapping.width, mapping.height);
+  } else {
+    text(ctx, state.pending ? 'BINDING UNRESOLVED' : 'SOURCE UNAVAILABLE', viewport.x + 10, 62, 16, MUTED, viewport.width - 20);
+    text(ctx, 'Mockup only · live path must restore current semantics', viewport.x + 10, 85, 11, MUTED, viewport.width - 20);
   }
-  for (const [n, i] of touches.entries()) {
+  for (const i of touches) {
     const slot = state.slots[i];
-    const region = associatedRegion(state.observation, state.associations[i], i);
+    const region = showImage ? associatedRegion(state.observation, state.associations[i], i) : null;
     const projected = projectRegion(mapping, region);
     decisions.push({ slot: i + 1, value: slot.value,
       location: projected ? 'controlled-fixture association' : 'unresolved: no graphical claim',
       projected });
-    // Every touch remains visible in its own rail cell. Up to two enlarged side readouts;
-    // additional touches never steal/retarget the first touched control or move the image.
-    if (n < 2) {
-      const x = n === 0 ? 14 : 760;
-      text(ctx, `KNOB ${i + 1}`, x, 43, 11, ACCENT, 184);
-      text(ctx, slot.target ?? slot.alias, x, 59, 17, WHITE, 184);
-      text(ctx, slot.value, x, 83, 26, WHITE, 184);
-      text(ctx, region ? 'Location verified in fixture' : 'Location not established', x, 126, 10, region ? ACCENT : MUTED, 184);
-    }
     if (projected) {
       // Mark the observed TRIANGLE, not an invented center or size of the underlying control.
       const x = projected.x + projected.width / 2, y = projected.y + projected.height / 2;
-      ctx.strokeStyle = ACCENT; ctx.lineWidth = 1.5;
+      ctx.strokeStyle = COLORS[i]; ctx.lineWidth = 1.5;
       ctx.strokeRect(projected.x - 2, projected.y - 2, projected.width + 4, projected.height + 4);
-      box(ctx, Math.max(mapping.x, x - 8), y - 22, 16, 16, '#dff6ec');
-      text(ctx, i + 1, Math.max(mapping.x, x - 8) + 4, y - 21, 11, '#132f24', 12);
+      box(ctx, Math.max(mapping.x, x - 8), y - 22, 16, 16, COLORS[i]);
+      text(ctx, i + 1, Math.max(mapping.x, x - 8) + 4, y - 21, 11, '#101416', 12);
     }
   }
-  ctx.restore(); return { showImage: true, decisions, mapping };
+  ctx.restore(); return { showImage, decisions, mapping, actionLabels, navigation, readouts };
 }

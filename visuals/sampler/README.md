@@ -2,7 +2,7 @@
 
 Local implementation work for the maintainer's September 9, 2026 interaction request. **Not yet a live Push producer or accepted contextual replacement.** [Interaction contract](../../docs/design/sampler-context-lens.md).
 
-September 10: [touch-led 960×160 presentation preview](presentation-prototype/README.md), prepared for desk review with generated inputs, actual render checks, and an FFmpeg coordinate proof. It does not resolve the live identity/binding gaps below and does not install or connect anything to Bitwig/Push.
+September 10: [960×160 actions, all-eight-values and device-image preview](presentation-prototype/README.md), revised after the maintainer required the existing button-action words and continuous values alongside the image. Two generated layouts retain both navigation/action rows. It does not resolve the live identity/binding gaps below and does not install or connect anything to Bitwig/Push.
 
 September 10: [controller-color trace and existing-setting diagnostic](controller-color-trace.md) separates Bitwig's remote mapping colors, DrivenByMoss text-theme settings, and physical button LEDs. No new controller or capture behavior is implemented by that investigation.
 

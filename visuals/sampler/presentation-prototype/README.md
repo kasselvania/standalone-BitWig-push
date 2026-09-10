@@ -1,84 +1,61 @@
-# Sampler touch-led screen — offline design preview
+# Sampler screen — actions, eight values, and image
 
-2026-09-10. Prepared while the maintainer was away. **Not a live producer, DrivenByMoss implementation, physical acceptance, or production context protocol.**
+September 10, 2026. **Throwaway layout review, not a live Bitwig/Push implementation.** Supersedes the earlier touch-to-reveal comparison. The maintainer requires the existing button-action words and all eight remote assignments/current values to remain available alongside the device image. Touch adds emphasis; it must not be necessary to discover a value.
 
-Question: can the user immediately connect a physical encoder number, its actual target/value, and its visible location without moving the device image or losing the other seven assignments?
+Question: at 960×160, can we retain that information while leaving a useful device image? Two alternatives share the existing offline preview:
 
-## Open when back at the desk
+- **A — four readouts per side:** slots 1–4 at left, 5–8 at right. Each has a color/number, alias and formatted value. Labels use 11 px text, values 15 px. Proposed starting point.
+- **B — one eight-item list:** all slots on the left, device to the right. Labels use 11 px, values 12 px. Compare the denser list and longer eye movement, not a different color scheme.
 
-From the central worktree root:
+Both always show the image when the supplied fixture permits it, even without touch. Both retain the same action row and lower device/page navigation row. No eight-column mini-parameter panels occupy the device-image area. The old touch-to-reveal variant is removed, not another pending option.
+
+## Open the review
+
+From the repository root:
 
 ```sh
 node visuals/sampler/presentation-prototype/build-preview.mjs --open
 ```
 
-This builds a private, self-contained HTML file in the OS temporary directory and opens it in the ordinary browser. There is no server, app installation, Screen Recording prompt, Bitwig launch, socket, capability, or background producer. It works offline and makes no network requests. The file can be deleted after review; rebuilding reproduces it. `node` must be available. No packages are installed by this command.
+This builds a private self-contained HTML file in the OS temporary directory and opens it in the ordinary browser. No server, installation, permissions prompt, Bitwig launch, socket, capability, MIDI or Push output. State is in memory; reset/reload restores the fixture. Without `--open`, it prints the file path and hash. The automated browser's URL policy prohibits opening local files; do not work around that restriction. A user can open the generated file directly for interaction review.
 
-Hold the simulated knobs or keys 1–8. Enter/Space on a focused knob latches/releases its simulated touch for multitouch comparison. Value buttons simulate a separate value change. Controls underneath exercise same-label reassignment, unavailable/ambiguous markers, mode change, and source loss. Full fixture state and each annotation decision are exposed beneath the screen. The optional short scenario changes only generated in-memory state.
+Use the floating arrows or `?variant=A` / `?variant=B`. Hold simulated knobs or keys 1–8; keyboard Enter/Space on a knob toggles a latched touch. All readouts stay visible with one or many touches; the device does not move. Value controls simulate changes independently of touch. Browser focus loss releases touches. Clicking a colored upper button exercises a **simulated device action**, not a remote-parameter change.
 
-Two structurally different variants share one page; arrows or `?variant=A` / `?variant=B` select them:
+## Actual semantic words, generated state
 
-- **A, proposed starting point:** eight aligned name/value legends stay visible. A stable device diagram is fitted at bottom center. Touch gives a large value in the side space and a numbered outline at the associated **marker**, not a fabricated control center.
-- **B, comparison:** a semantic/value-first resting page reveals the device only on touch. This protects resting numeric prominence but makes the device less continuously available. It is an alternative for review, not the chosen product contract.
+Source inspected: DrivenByMoss `cf0e70ea9f2144a45c1dc6039a25c9b90a06b92b`, `DeviceParamsMode.java`, specifically `MENU`, constructor capability filtering, `onSecondRow`, `getTopMenuEnablement` and `updateDisplay2`.
 
-Both keep values visible, distinguish touch from rotation, support simultaneous touch, and withhold an unestablished location. Two enlarged side readouts are shown at most; all touched encoder legends remain highlighted. There is no camera animation, zoom, pan, or last-touched-only selection.
+The top row is `On`, `Parameters`, `Expanded`, `Chains`, `Banks`, `Pin Device`, `Window`, `Up`, in eight fixed 120-pixel columns. The real mode suppresses labels for unsupported capabilities; this fixture supplies the labels and sample states, not a live capability readback. Active states have a neutral underline, separate from the remote-color LED. The bottom row represents the existing device/page selection slots; the generated Banks toggle switches between Sampler and example page names. It does not implement real device navigation.
 
-This is a literal 960×160 canvas. Browser/OS zoom still affects physical size. The schematic has deliberately generated waveform/controls and no proprietary pixels. Labels/initial values reproduce the earlier documented observations, but the marker-to-slot assignments, source IDs, and binding revisions are **test inputs**. Only generated Speed/Pitch associations are supplied. No assumption maps other targets or assigns encoders from RGB.
+Remote values/aliases start from the prior documented Sampler observation: Speed, Pitch, Start, Glide time, Pan, Vel Sens., Gain, Output. Color families follow the approved physical LED reference: red/orange/yellow/lime/green/blue/purple/pink. RGB values are illustrative, not a calibrated hardware/monitor match. Actual target names remain exposed in the state panel; aliases are not treated as target IDs. Generated same-alias reassignment and marker association remain explicit fixture inputs.
 
-The device diagram omits modulators **by construction**; the real locator still includes the modulator area and depends on Expressions. This is not a modulator-exclusion result. Native menu/button labels, device-chain navigation and complete DrivenByMoss semantic equivalence are not designed into this preview; they must not be silently removed in a production port. The fallback diagram is not a screenshot or reimplementation of DrivenByMoss.
+No live state is inferred from this mockup. Missing source/binding data withholds the schematic; other modes show an explicitly labeled placeholder, not an imitation or acceptance proof of DrivenByMoss fallback. The live product must restore actual current semantics locally in DrivenByMoss.
 
-## Files and ownership
+## Geometry and limits
 
-- `geometry.mjs`: one fit and marker transform. Pure presentation geometry, no identity inference.
-- `fixture.mjs`: explicitly generated state; not an attempted replacement for Bitwig callbacks.
-- `presentation.mjs`: the canvas renderer used by both the page and native render check.
-- `demo.mjs`, `index.html`: throwaway interaction controls and layout comparison.
-- `build-preview.mjs`: dependency-free static packaging; no server.
-- `geometry.test.mjs`: checks the actual transform/association functions.
-- `verify-ffmpeg.mjs`: actual FFmpeg crop/scale/pad/opaque-BGRA conversion of generated input, entirely through pipes.
-- `render-check.mjs`: executes the same renderer with native Canvas and saves generated review PNGs outside Git.
+Top action strip: y0–21. Bottom navigation strip: y142–159. The center must fit between them.
 
-The prototype skill influenced the delivery: explicitly throwaway, generated/read-only, no installation, two review alternatives, one command. Tests were retained because the maintainer asked to take the work through automated preparation before human testing. No production package imports this directory. After review, remove the losing layout and simulator; port only a deliberately chosen presentation to its proper owner. Do not promote this fixture model into a context API.
+For the generated 1200×300 device body, one uniform scale produces a **456×114** image:
 
-## Automated preparation
+- A: viewport `(238,25,484,114)`, effective image `(252,25,456,114)`; 230-pixel side columns with four 29-pixel readout rows each.
+- B: viewport `(298,25,650,114)`, effective image `(395,25,456,114)`; 286-pixel left list with eight 14.5-pixel rows.
+
+This exposes the real height constraint: extra horizontal space in B does not enlarge a 4:1 image once height limits the uniform fit. Touch only changes emphasis/verified-fixture marker outlines. Multiple touches never hide another value or select a single winner by event order. The schematic omits modulators by construction; it is **not** a passed modulator-exclusion detector or a captured native Sampler. Real image density, device identity, context coherence and continuous capture/tracking remain unproved.
+
+## Verification and review status
+
+Reused existing checks, with the B resting-image expectation updated for the new always-visible requirement:
 
 ```sh
 node --test visuals/sampler/presentation-prototype/geometry.test.mjs
 node visuals/sampler/presentation-prototype/verify-ffmpeg.mjs
 node --check visuals/sampler/presentation-prototype/demo.mjs
 node --check visuals/sampler/presentation-prototype/presentation.mjs
-```
-
-For native execution of the actual renderer, `@napi-rs/canvas` must already be available to Node. The development run used the pre-existing Codex workspace dependency bundle via `NODE_PATH`; it did not install anything:
-
-```sh
 NODE_PATH=/path/to/existing/node_modules node visuals/sampler/presentation-prototype/render-check.mjs
 ```
 
-Results on September 10:
+The last command uses pre-existing `@napi-rs/canvas`; it installs nothing. September 10 local results: 9 geometry/association checks and 23 existing native-render cases pass. Generated FFmpeg coordinate/opaque-BGRA check passes; no new capture backend or fixture test was run. Native renders of A and B were visually inspected at 960×160. The browser tool refused the local URL, so browser interaction and physical readability remain **pending human review**.
 
-- Node 26.0.0; Apple Swift 6.3.1. Existing locator and marker suites rerun unchanged: 85 and 10 checks pass. No Java build or DrivenByMoss change was needed.
-- Nine coordinate/association tests pass: nonzero origins, translation/uniform scale, bounds/nonfinite refusal, unchanged image/marker transform, same-label remap, stale observation, ambiguity, slot mismatch, and copied geometry.
-- Twenty-three native render cases pass. Touch does not mutate values; touch/multitouch leave image geometry fixed; value changes alter output; unavailable/ambiguous/old marker associations draw no marker; pending rebinding draws no device image; source reacquisition does not resolve a pending binding; Track/Mix/Master/other-device states suppress the diagram; source loss suppresses it; supplied replacement observations resume; release fully removes highlights. Every rendered output pixel is opaque.
-- Source translation/scale is a generated fixture test, **not** real OCR/tracker/resize proof.
-- The initial generated rest, one-touch, and two-touch PNGs were visually inspected locally at 960×160. Native Canvas is not a browser: interactive browser verification was not completed because the automation browser refused the local-file URL. No alternate browser or security workaround was used. Human browser/physical readability remains pending.
-- Actual FFmpeg 9.0.1 accepts `crop=1200:300:90:82:exact=1,scale=464:116:flags=neighbor,pad=960:160:248:40:color=black,setsar=1,format=bgra`. Generated input: 1400×500 RGBA, source `(90,82,1200,300)`. Output: exactly 614400 bytes. This checker uses nearest-neighbor to make exact generated colors countable; it does not choose final video interpolation.
-- Projected generated marker `(308.32,120.4266666667,10.8266666667,10.8266666667)`; measured output red rectangle inclusive x308–318/y120–130, 121 pixels. Center error under one output pixel. Outside-source magenta leakage **0**, outside-destination colored pixels **0**, nonopaque pixels **0**. BGRA output SHA-256: `efc76896ad81e3aa28850138455788bf979464ea429943bbdf9675bf3ea4c5d1`.
-- Native renderer RGBA hashes: rest `2fd2b4e533243da1fdf2b39f3955e3d5bc658691dea9fcd43251ebd8c43a883b`; one touch `3704c00ef5ae6b0c558712f98df133169e4e1eccaaf13e566aaa0e99f2efe80c`; two touches `8e9d10db8cf45ecab21a7d10474ede1df82e960f5f00bdbb28918884306e78dc`. These are generated renderer results, not captured Push frames; fonts/raster backends may differ in a browser.
-- Final self-contained HTML SHA-256 `12e1c512a2b0a1bdea5395cedb0fd3e0517b6314c6293ee3a348d39973cdc9d9`; bundled JavaScript parses and has no external module imports. This is packaging/syntax proof, not a completed browser interaction test.
+Current native RGBA hashes: A rest `a810449b33afb1d96d18baf8e9235f1741b340bd12c4cceebdfaa363facde1fe`; A touch `e0f6213189d70a88742d94b84f169c19bcd9e0f29b59ff7f369b73add418232b`. These are renderer results from generated inputs, not captured Push frames. The build command prints the current packaged HTML hash. No image is committed. No live performance or hardware acceptance follows from these checks.
 
-No live performance, CPU/RSS, Bitwig binding coherence, or Push acceptance claim follows from these tests. The browser simulator has ordinary canvas allocations. It is not a qualified real-time frame pipeline.
-
-## Exact boundary before live integration
-
-Central starting head `4a6a707274484398fc41d2b3853a53e58116997b`, tree `dfca2e640332c569d9d407424e0ab9774cd5a11a`; unchanged branch `codex/sampler-context-lens`. This work does not modify DrivenByMoss. Its diagnostic head remains `a645fcb9e70e4b28a4d7a2ec7f46aaf0f13dfb59`, tree `a038e0beda4ebccd041c7779573417afb8fea6fa`, with the two pre-existing untracked native-identity prototype files preserved. Accepted integration remains `997158b0a4ddd932a0a985c8b74ffff1e631120f`.
-
-The previous trace contains new mode + old cached hardware target in the same observation. It supplies neither an atomic binding revision nor a proven native target ID/marker association. Giving independently arriving fields a fresh JSON ID would not fix that. The live association and device identity are therefore **gaps**, not implementation details that this preview claims resolved.
-
-Required live construction stays: actual DrivenByMoss context/binding owner → supported native device/current instance → current source observation and verified association → stable image + value presentation → existing composition/sole USB writer. Context exit must be enforced locally in DrivenByMoss, not only by a producer's eventual CLEAR. This turn deliberately did not introduce a context protocol, another receiver, a live producer, or an unsafe label-matching bridge.
-
-At the desk, first judge the screen at its real dimensions, including unresolved location and same-label remap. No extension swap is needed to judge it. A live test should be prepared only once the missing live authority is supplied, not by asking the maintainer to validate the simulator as if it were Bitwig.
-
-**Review verdict: pending.** This branch retains preparatory work at the maintainer's request; there is no mergeable product PR or finished Sampler interaction claim.
-
-Fixture readback during preparation: Bitwig application/audio-engine and TCP45291 listener absent; runtime contains only dormant `owner.lock`; exactly one DrivenByMoss extension in the canonical Extensions directory, SHA-256 `98dc3195ad8d911526e18b1005f09f69a1aedcb965b080565474104654345c5a`. The official artifact was never replaced in this work. No project was opened, edited, saved, discarded, or closed. Superseded generated preview copies were removed; only the final private HTML/generated review images remain outside Git. No proprietary image was acquired.
+Only this existing prototype, its readme and the owning design references change. No DrivenByMoss source/artifact, app installation or Bitwig fixture change. The prototype skill keeps this a disposable, generated, in-memory comparison. After the user chooses, retain the design answer, remove the losing variant/simulator, and implement only the chosen presentation in its proper owner. Do not promote fixture IDs or simulated actions into a production API.
