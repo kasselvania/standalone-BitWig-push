@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sampler interaction — offline design preview</title>
+<style>
+  :root { color-scheme: dark; font: 15px system-ui; background:#141617; color:#e4e7e8 }
+  * { box-sizing:border-box } body { margin:0; padding:30px 24px 100px; max-width:1100px; margin-inline:auto }
+  h1 { font-size:26px; font-weight:550; margin:8px 0 } h2 { font-size:16px; margin:0 0 12px }
+  p { line-height:1.55; max-width:850px; color:#afb7bd; margin:8px 0 20px }
+  .eyebrow { color:#80d6b5; font-size:12px; letter-spacing:1.2px; text-transform:uppercase }
+  .notice { border-left:3px solid #b69a52; padding:8px 14px; background:#232322; font-size:13px }
+  .push { margin:28px 0 20px; padding:20px; background:#080909; border:1px solid #35393c; border-radius:14px; overflow-x:auto }
+  .hardware { width:960px; display:grid; grid-template-columns:repeat(8,120px); margin:0 auto 20px }
+  .knob { border:0; background:transparent; color:#a4acad; cursor:pointer; padding:0; min-height:52px }
+  .knob span { display:block; width:40px; height:40px; margin:auto; border:2px solid #555e62; border-radius:100%; background:#22272a }
+  .knob span:before { content:''; display:block; height:12px; width:2px; background:#b0b7b9; margin:3px auto }
+  .knob[aria-pressed=true] span { border-color:#75dfb9; box-shadow:0 0 0 4px #75dfb924 }
+  .knob small { display:block; margin-top:7px }
+  canvas { display:block; width:960px; height:160px; margin:auto; background:#000 }
+  .controls { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:10px 0 }
+  button,select,input { font:inherit } button,select { border:1px solid #51595e; border-radius:6px; color:#e2e7ea; background:#262b2e; padding:8px 12px; cursor:pointer }
+  button:hover { border-color:#8bd4bb } button:focus-visible,select:focus-visible { outline:2px solid #9ae9cb; outline-offset:3px }
+  button:disabled { opacity:.4; cursor:default } label { display:inline-flex; align-items:center; gap:10px }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:22px; margin-top:26px } section { border-top:1px solid #41494e; padding-top:15px }
+  #state { white-space:pre-wrap; font:12px/1.55 ui-monospace,monospace; color:#b7c3ca; background:#1b2022; padding:12px; overflow:auto; max-height:240px }
+  #result { min-height:24px; color:#83d6b5; font-size:13px } .small { font-size:13px }
+  .switcher { position:fixed; bottom:18px; left:50%; transform:translateX(-50%); display:flex; align-items:center; gap:12px; background:#d8e7e1; color:#17221e; border-radius:30px; padding:8px; box-shadow:0 4px 22px #0009 }
+  .switcher button { border:0; border-radius:30px; background:#264d3e; padding:7px 14px }
+  #variant-label { min-width:260px; text-align:center; font-size:13px }
+  @media(max-width:740px) { .grid { grid-template-columns:1fr } body { padding:20px 10px 100px } }
+</style>
+<div class="eyebrow">Pushwig / Sampler / design preview</div>
+<h1>Which control am I touching?</h1>
+<p id="design-description"></p>
+<p class="notice">Offline and generated. No Bitwig connection, capture, MIDI, sockets, or Push output.
+  The schematic is not a Bitwig screenshot. Binding and marker associations here are controlled fixtures,
+  not a claim that live identity has been solved.</p>
+<div class="push">
+  <div class="hardware" id="hardware" aria-label="Simulated conductive encoders"></div>
+  <canvas id="screen" width="960" height="160" aria-label="Actual 960 by 160 screen layout"></canvas>
+</div>
+<p class="small">Displayed at 1× source pixels; browser/OS scaling still applies. Hold a knob above (or keys 1–8) to simulate touch.
+  No value changes on touch. Hold two to test multitouch. Browser focus loss releases all touches.</p>
+<div class="controls">
+  <label>Push context <select id="mode"><option value="DEVICE_PARAMS">Sampler · Device Parameters</option><option value="VOLUME">Track / Mix</option><option value="MASTER_TEMP">Master touch</option><option value="OTHER_DEVICE">Other device</option></select></label>
+  <button id="release">Release all</button><button id="reset">Reset preview</button>
+</div>
+<div class="grid">
+<section><h2>Touch and value</h2>
+  <div class="controls"><label>Value to edit <select id="slot"></select></label></div>
+  <div class="controls"><button id="decrease">− Value</button><button id="increase">+ Value</button></div>
+  <p class="small">Simulates an independent value update. The physical knob number stays fixed; its binding may change. Unresolved location never receives a guessed highlight.</p>
+  <h2>Same-label reassignment</h2>
+  <div class="controls"><button id="reassign">Reassign knob 1</button><button id="settle" disabled>Supply verified fixture observation</button></div>
+  <p class="small">The alias stays “binding probe” while the fixture target changes Speed ↔ Pitch. During unresolved binding, no device image or highlight is shown. The button is a test input, not a proposed user workflow or a delay-based live resolver.</p>
+</section>
+<section><h2>Source and correspondence failures</h2>
+  <div class="controls"><button id="lost">Lose source</button><button id="reacquire">New source observation</button><button id="ambiguous">Ambiguous marker</button></div>
+  <div class="controls"><button id="move">Move / resize source</button><button id="old">Inject old observation</button></div>
+  <p class="small">These exercise presentation refusal only. They do not test capture, real tracking, or DrivenByMoss mode enforcement. Track / Mix and source loss show a schematic semantic fallback, not a reproduction of DrivenByMoss.</p>
+</section>
+</div>
+<div class="controls"><button id="download">Save this generated 960×160 PNG</button><button id="demo">Play short scenario</button></div>
+<div id="result" role="status"></div>
+<details open><summary>Exact simulated state and annotation decisions</summary><pre id="state"></pre></details>
+<p class="small">Question for desk review: can you immediately identify the touched encoder, its value, and its corresponding visual location?
+  A is the proposed starting point. B tests whether preserving the familiar value-first resting page is preferable.
+  Neither layout changes the encoder bindings. No zoom, pan, or animation of the device crop.</p>
+<nav class="switcher" aria-label="Prototype layout alternatives"><button id="previous" aria-label="Previous layout">←</button><span id="variant-label"></span><button id="next" aria-label="Next layout">→</button></nav>
+<script type="module" src="demo.mjs"></script>
+</html>

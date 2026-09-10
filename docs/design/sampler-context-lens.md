@@ -27,3 +27,13 @@ Keep current-semantic redraw, raster sink, frame validation/storage, accepted pr
 ## Acceptance
 
 Prove mouse selection while Track/Mix stays semantic; Device Parameters for the matched Sampler shows the real device; current controls work; measured center/extent follow supported movement and reflow; exit/mismatch/loss restore current semantics; re-entry uses only current-context pixels. Verify ordinary controls/MPE/transport/audio/headphones and exact official extension restoration after any fixture swap. Generated tests and local image analysis are not physical acceptance.
+
+## Touch-led presentation proposal — September 10
+
+The [offline screen preview](../../visuals/sampler/presentation-prototype/README.md) makes one proposed interaction tangible before hardware changes. This is a proposal awaiting review, not an amendment claiming the product has been implemented.
+
+Keep eight encoder identities and current values legible in fixed positions. Fit the device uniformly and keep its image stationary on touch. Use the otherwise empty side space for the touched target/value; outline a numbered, currently associated marker on the image. Missing visual correspondence retains the value without inventing a location. Multiple touches must not erase the other touched controls or silently choose one by event order. No zoom/camera behavior is proposed yet. The preview compares an always-visible device against a semantic-first/touch-to-reveal alternative; the former is the proposed starting point.
+
+The UI must distinguish the editable remote alias from its current target and use actual hardware touch, not the mode-local flag observed stale after a mode change. A changed alias is not a mapping revision; an unchanged alias is not proof of the same target. Direct current value updates must not require image recognition to refresh a number.
+
+The existing diagnostic does not produce atomic context/assignment authority. Its same-label remap and triangle relocation establish a controlled observation, not universal slot-to-pixel identity. Before any live replacement, the binding owner must supply meaningful current-context identity and loss/rebind invalidation; a producer must associate current pixels with that context. A fixed delay, a freshly wrapped snapshot, name matching, or a producer-only CLEAR does not establish this. Native identity, modulator exclusion and continuous source validity also remain unproved. The preview's generated IDs and markers are deliberately not offered as a solution to those gaps.
