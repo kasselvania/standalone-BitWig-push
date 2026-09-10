@@ -65,7 +65,7 @@ Installed official extension SHA-256 was read back unchanged as `98dc3195ad8d911
 
 Still unproved: cheap continuous tracking; robust live occlusion/lifetime handling; native-device identity on the real API rather than mocks; current context/generation handoff; local DrivenByMoss mode gating; live FFmpeg-to-ingress integration; end-to-end performance; physical semantic/video switching and rollback of a future candidate. A static locator result must not be reported as any of these.
 
-## Remote-binding and touch observation — prepared, live correlation pending
+## Remote-binding and touch observation — September 9 diagnostic
 
 The maintainer subsequently authorized one narrower prerequisite: prove the relationship between the actual Push encoder binding, current remote page/value, touch state, and Bitwig's colored marker on a visible Sampler control. No new screen layout, camera behavior, or video publication is part of this observation.
 
@@ -117,8 +117,62 @@ On the earlier FFmpeg Bitwig search image (SHA-256 `7a5db69ea3bf40caf79cbf17acd2
 
 This is not an eight-slot match. Attached flags/stems, missing or obscured indications, other colored controls, and indications from another controller/context require separate attribution. The existing locator still depends on the Expressions landmark and includes the modulator area; removing that dependency remains pending rather than being silently claimed solved.
 
-### Live program and fixture state
+### Actual binding, label, value and marker observations
 
-Pending: compare stable API/Push observations and current device markers; map one slot Speed→Pitch, rename and switch pages; compare mouse/encoder edits; touch-only, two held knobs, release and a page change while held; Master temporary mode and return. Preserve user assignments/automation and agree any deliberate mapping edits before making them. No value-wiggling to infer a target. No final presentation behavior yet.
+The exact diagnostic artifact above was installed after a maintainer-confirmed normal quit and official-artifact preservation. Bitwig was launched ordinarily without JVM-option injection. The observer attached to the existing Push controller; there was no producer, video replacement, OSC controller, capture app installation or permission change. Central diagnostic tooling at `6ae14ebf1a78313df45ee7985abd578461403f00` / tree `f1a09348394e3b56ff0cb1b91502848ba658bdc2` was unchanged during this observation.
 
-At preparation, Bitwig was still open, and the official extension remained installed at the exact official SHA-256 above. **The diagnostic has not been installed and no live correlation result is claimed.** A normal save/quit, exact artifact custody, and official rollback are required before/after its temporary use. No new capture app or permission change is needed. Diagnostic logs/images stay local, are never committed, and are removed after the useful measurements are retained.
+First, the same selected Sampler and its remote page existed while Push's active mode was VOLUME: encoder 1's actual target was track Volume/-4.0 dB, although remote slot 1 already exposed Speed/100%. On entering DEVICE_PARAMS, the eight mode-requested remote proxies and observed hardware targets became:
+
+| Slot | Editable remote label | Hardware target name | Initial formatted value |
+| --- | --- | --- | --- |
+| 1 | Speed | Speed | 100 % |
+| 2 | Pitch | Pitch Transpose | 0.00 st |
+| 3 | Start | Play / Position Offset | 0.00 % |
+| 4 | Glide time | Glide time | 0.00 ms |
+| 5 | Pan | Pan | 0.00 % |
+| 6 | Vel Sens. | Velocity Sensitivity | +30.0 dB |
+| 7 | Gain | Voice Gain / Drive | 0.0 dB |
+| 8 | Output | Output | 0.0 dB |
+
+This directly distinguishes selected-device remote metadata from the current hardware binding. These names are observations, not immutable native parameter identifiers.
+
+Following the [documented instance-local preset-page workflow](https://www.bitwig.com/userguide/latest/midi_controllers/), the maintainer created temporary preset page `Perform`, assigned only its first slot to Speed, and renamed that slot `binding probe`. Shared Device Pages and the original Page 1 assignments were not edited by the agent. The maintainer then removed/reassigned only that temporary slot to Pitch and re-entered the identical alias.
+
+| State | Exact remote alias | Hardware target name | API formatted value | Sole detected device-body marker |
+| --- | --- | --- | --- | --- |
+| Speed assignment, records 337/339 | binding probe | Speed | 85.2 % | red, (1691,1681) |
+| Pitch assignment, records 348/350 | binding probe | Pitch Transpose | 0.00 st | red, (1615,1689) |
+
+Both images have the same detected device center `(1828.5,1573)` and size `1673×438` in a `3282×1890` Bitwig search image. Each marker is a 9×9 top-left triangle, RGB `(243,25,54)`, shape agreement 1. Direct image inspection places the first on Speed and the second on Pitch; the sole detected marker moved `(-76,+8)` pixels. The remote-control pane lies outside the measured body. The detector did not assign slot numbers from color: the deliberately isolated slot-1 mapping and the existing API observations establish this controlled association.
+
+Local-only search-image SHA-256 values:
+
+- Eight-slot baseline: `ae5734aeed37ac77e3ed8f8ed2116e42e74832a705d4e6d756a706a4f5957ab0`.
+- Single Speed assignment: `76ba4818eb1017ebe25d0212fcd98bf24ebbf938b859861b90758ea7bd124d04`.
+- Same-alias Pitch assignment: `6ea8f99044c13e24e13ccb71d65dc828ac9aff9a3712fd1df2af82e58ea25a43`.
+
+Commands: existing `CaptureSamplerProof` with freshly read Bitwig window ownership/bounds; FFmpeg crop of the current search rectangle; `ObserveSamplerMarkers` on the resulting image; `shasum -a 256`; complete-JSONL readbacks using Ruby/JSON. The Bitwig window moved between the baseline and temporary-page observations; no detector coordinates were edited. The Speed/Pitch comparison used screen search `(1648,458,3282,1890)` pixels from the same current window's `(824,229,1641,945)` point bounds, at measured 2× scale. Marker scans were individually 2.933458 ms and 2.854291 ms, excluding acquisition/OCR/decode. This is not a live latency distribution.
+
+**Capture-method limitation:** the complete guarded Pitch capture refused because before/after window-or-occluder metadata changed. Its acquired image was separately inspected and analyzed offline: the complete Sampler body and remote pane are unobscured in that particular frame. A retry was obscured by another app and refused recognition. Therefore the Pitch result is a static acquired-image observation, not a passed guarded live-capture run. No refused image was sent to Push. Do not promote this result into a proven continuous capture/occlusion model.
+
+The mapping route exposes removal (`remoteExists=false`, `hardwareHasTarget=false`) followed by mapping-in-progress and the new target. This proves that specific route, not that `isBeingMapped` catches every possible reassignment or that the final alias identifies its target. All other slots on Perform remained unassigned; Bitwig briefly advanced mapping-in-progress to the next empty slot after each assignment.
+
+### Conductive touch, context and asynchronous state
+
+- Hardware and active-mode touch snapshots observed `[1,2] -> [2] -> []`. The maintainer confirmed accidental rotation during the initially requested touch-only gestures. These are touch-plus-rotation observations, not a touch-only pass or evidence that conductivity changes values.
+- Encoder-originated changes carried `causedByThisControl=true`; a controlled mouse-only Speed edit produced 155 such value callbacks with the flag false, zero touch callbacks and 18 complete snapshots with no touch or remote/hardware value/format mismatch in the inspected records 87–259. This is a bounded inspected interval, not the entire edit count. The API distinguishes this hardware from other origins; only the controlled human action identifies the mouse here, not a general mouse-versus-automation classifier.
+- Later short touch/release pairs 351–354 and 355–358 showed unchanged Pitch/0.00 st and no intervening hardware-value event. Separate touch reporting without value changes is observed in those intervals, without reclassifying the earlier nudged gestures.
+- Mode change while row 1 remained touched: DEVICE_PARAMS/Speed -> VOLUME/Volume, then physical release, then return to DEVICE_PARAMS/Speed. Raw hardware touch survived the switch and cleared on release. **DeviceParams' mode-local touched flag was still true after returning with the finger released** (records 303/323/330). It is stale bookkeeping, not reliable physical-touch authority. The observer did not change that existing routing or investigate automation-gesture lifetime.
+- Master touch: slot9 true -> MASTER_TEMP, then slot9 false -> DEVICE_PARAMS, with current parameter bindings restored. The maintainer explicitly reported seeing the mixer screen. Logged return is established; a separate explicit human confirmation of the visible return was not supplied.
+- Remote-page changes are machine-observed: Perform/Pitch -> Page 1/Speed -> Perform/Pitch, including page rebinding while raw row-1 touch remained true. The maintainer could not confidently judge the requested physical page-following result. **Do not count that as physical UI acceptance** or assert the prescribed action order; the recorded sequence is what is known.
+- **Not an atomic context snapshot:** record 407 has new mode MASTER_TEMP with still-cached old Pitch target information; record 415 has restored DEVICE_PARAMS with still-cached Volume information, followed by settled Pitch data at record 420. Independently arriving mode/binding/value observations cannot simply be relabeled a coherent product authority snapshot. A fixed delay, matching label or image hash does not solve this ownership gap.
+
+### Recovery, retention and remaining boundary
+
+After the maintainer reported normal Bitwig closure, application/audio-engine processes and the ingress listener were absent. The runtime directory contained only the intentional dormant `owner.lock`, with no current manifest/capability. The diagnostic artifact was moved intact outside the scan path and the untouched official extension restored to its canonical filename. Restored SHA-256: `98dc3195ad8d911526e18b1005f09f69a1aedcb965b080565474104654345c5a`. Exactly one DrivenByMoss extension was scanned; unrelated extensions were untouched. Ordinary Bitwig was relaunched without JVM options and opened the official archive. Asked to confirm the usual DrivenByMoss display, controls, Push audio/headphones and normal quit, the maintainer replied **`confirm closed`**. Final readback independently verified application/audio-engine/listener absence, no current manifest/capability, the exact official hash and one scanned DrivenByMoss extension. This is official recovery confirmation, not acceptance of a new visual interface.
+
+**Trace-retention gap:** complete records were inspected through record 433 while the observer ran. After normal quit the raw file was observed at 350875 bytes, but it disappeared from Bitwig's temporary directory during the official relaunch before it was copied/hashed externally. Selected inspected records are retained in this account and the tool readbacks; the complete raw-trace hash, final count and unread tail are unavailable. This is an evidence-custody error, not a passed full-trace retention claim. Do not repeat the physical session merely to conceal that gap. Logs/images and project contents are not committed. The temporary Perform preset page was user-created in the test project; the agent did not delete it or discard unsaved work.
+
+After retaining the measurements and hashes, the ten PNGs generated for this binding diagnostic were deleted from their explicit private scratch locations. User-provided attachments and unrelated files were untouched. The diagnostic extension remains intact outside the scan path; its source/tests remain on the named diagnostic branch, not installed or accepted as production behavior.
+
+**Conclusion:** the controlled case demonstrates editable remote alias versus current hardware target name/value, independent conductive touch, contextual rebinding, and a matching visual marker relocation. It does not establish immutable native target identity, all assignment routes, all eight marker shapes, automatic general pixel-to-parameter association, knob-center/extent localization, native-Sampler type identity, atomic context publication, inexpensive continuous tracking, or a useful completed semantic/video interface. No production display replacement is being claimed. The next design must use actual binding ownership and hardware touch, not labels or stale per-mode flags as authority.
