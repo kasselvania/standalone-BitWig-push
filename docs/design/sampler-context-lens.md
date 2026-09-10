@@ -14,7 +14,7 @@ Selecting/loading Sampler in Bitwig alone does not replace a Track/Mix screen on
 4. The FFmpeg processing path extracts and uniformly fits that measured device rectangle. Only complete current pixels may reach the accepted ingress and sole DrivenByMoss USB writer.
 5. Context changes invalidate prior visual authority. Leaving Device Parameters, selecting another device, losing the visible device, or an ambiguous match yields current semantics. A later return must not resurrect a frame from the former context.
 
-The first unproved dependency is reliable association of the exact native Sampler cursor with the visible device and its measured center/extent. A crop rendering somewhere on Push is not a substitute for that proof. Prove this locally before installing a derivative.
+The first unproved dependency is reliable association of the exact native Sampler cursor with the visible device and its measured center/extent. A crop rendering somewhere on Push is not a substitute for that proof. Local generated checks precede installation. In the maintainer-authorized September 10 development fixture, first qualify the actual native context with the producer stopped, then enable the image path. This is a development test, not acceptance of unproved native-instance behavior.
 
 ## Initial supported case
 
@@ -28,14 +28,42 @@ Keep current-semantic redraw, raster sink, frame validation/storage, accepted pr
 
 Prove mouse selection while Track/Mix stays semantic; Device Parameters for the matched Sampler shows the real device; current controls work; measured center/extent follow supported movement and reflow; exit/mismatch/loss restore current semantics; re-entry uses only current-context pixels. Verify ordinary controls/MPE/transport/audio/headphones and exact official extension restoration after any fixture swap. Generated tests and local image analysis are not physical acceptance.
 
-## Touch-led presentation proposal — September 10
+## Approved presentation A — September 10
 
-The [offline screen preview](../../visuals/sampler/presentation-prototype/README.md) makes one proposed interaction tangible before hardware changes. This is a proposal awaiting review, not an amendment claiming the product has been implemented.
+The maintainer approved layout A in the [offline screen preview](../../visuals/sampler/presentation-prototype/README.md): four permanent readouts on each side of the stationary device image. This is design approval, not physical acceptance of a live implementation.
 
 The maintainer clarified the required information after the physical LED proof: keep the existing device-button action words and states aligned with their buttons, preserve lower device/page navigation, and continuously show all eight current remote aliases/formatted values. An LED's encoder-slot color must not relabel the button's independent device action. Touch adds emphasis; it must not be the only way to see a value.
 
-Fit the device uniformly and keep its image stationary on touch. The revised offline preview compares four permanent readouts on each side against a single eight-item left list; both retain top action and bottom navigation strips. The previous touch-to-reveal alternative is superseded. Missing visual correspondence retains the value without inventing a location. Multiple touches must not erase other readouts or silently choose one by event order. No zoom/camera behavior is proposed. Real text/image readability at 960×160 remains a review question, not a result inferred from a large desktop mockup.
+Fit the device uniformly and keep its image stationary on touch. Retain the top action and bottom navigation strips. The single-left-list and touch-to-reveal alternatives are superseded. Missing visual correspondence retains the value without inventing a location. Multiple touches must not erase other readouts or silently choose one by event order. No zoom/camera behavior is proposed. Real text/image readability at 960×160 remains a review question, not a result inferred from a large desktop mockup.
 
 The UI must distinguish the editable remote alias from its current target and use actual hardware touch, not the mode-local flag observed stale after a mode change. A changed alias is not a mapping revision; an unchanged alias is not proof of the same target. Direct current value updates must not require image recognition to refresh a number.
 
 The existing diagnostic does not produce atomic context/assignment authority. Its same-label remap and triangle relocation establish a controlled observation, not universal slot-to-pixel identity. Before any live replacement, the binding owner must supply meaningful current-context identity and loss/rebind invalidation; a producer must associate current pixels with that context. A fixed delay, a freshly wrapped snapshot, name matching, or a producer-only CLEAR does not establish this. Native identity, modulator exclusion and continuous source validity also remain unproved. The preview's generated IDs and markers are deliberately not offered as a solution to those gaps.
+
+## Live integration under development
+
+DrivenByMoss remains the renderer and data owner for all action words/states, remote aliases/formatted values, raw hardware touch and lower navigation. The producer supplies only the uniformly fitted center image, at `(238,25,484,114)` within the 960×160 output. It must not paint the readouts, interpret MIDI, or infer parameter values from pixels. Unverified remote-to-image markers are omitted; raw touch still emphasizes the correct numbered readout.
+
+The implementation retains the existing protocol-v1 128-bit producer session identity through receiver publication and display adoption. The controller requires an exact context-session identity and center destination before raster application. This changes internal metadata, not the wire format, receiver count, frame buffers, raster sink or USB writer. A prior context's publication is refused locally even if it is fresh or the producer has not yet noticed a context change.
+
+The ordinary semantic bitmap is rendered first. The compact presentation is applied only after an eligible center frame succeeds; missing, stale, wrong-context or out-of-bounds frames leave the complete ordinary semantic output intact. Native Sampler/editor association and the context-to-producer handoff must be proven before enabling this path in the fixture. The initial controller integration is not permission to substitute an arbitrary image or a display-name match for those prerequisites.
+
+### Context lifetime and handoff
+
+The native observer uses the existing catalogue UUID matcher, equality with an independently editor-following cursor, and a pinned observation cursor. It commands only its own observation cursor, never encoder binding or editor selection. Pending cursor requests grant no authority. Native identity/position observations, mode transitions and remote-page changes revoke the ticket; a qualified context gets a new UUID. Tests exercise the real observer against simulated API endpoints. They do **not** establish the live host's pinned-cursor behavior on same-index deletion/replacement or atomic callback batching. The initial fixture must keep one selected Sampler and explicitly qualify the actual API behavior; no universal device-instance or assignment-identity claim is made.
+
+The display owns a coalesced, non-secret notice at `~/.pushwig/runtime/sampler-lens-v1/<ingress-generation>.json`. Its one small metadata worker is separate from display send; it never carries frames. Atomic private-file replacement occurs only on context transitions. The accepted V5A `external-raster-v1` directory receives no additional files. Generation-specific notice/temp filenames prevent old shutdown from deleting a new lifecycle's notice. Orphaned non-secret notices after a crash are not current authority: the producer selects only the generation named by the currently validated V5A manifest.
+
+Each ticket is one producer connection's v1 session ID. Disconnect of that exact session makes the controller issue a fresh ticket; disconnect of an older context does not disturb a newer one. CLEAR keeps the current connection. A lost context invalidates pixels locally before filesystem publication catches up. Existing notifications/semantic overlays also suppress the compact image presentation. There is no new receiver, frame store, USB writer or frame queue.
+
+### Initial FFmpeg development path
+
+`SamplerLive` uses the already installed FFmpeg executable and its AVFoundation visible-screen input, with cursor/mouse-click capture off. It is **not** desktop-independent window capture. One active display and one explicitly selected current Bitwig window are supported. Current window bounds limit recognition work; device geometry still comes from Sampler's feature constellation and enclosing border, not a normalized window percentage. Window movement/reflow can clear and restart acquisition. Occlusion/loss refuses publication; window recreation requires explicit current-window reselection.
+
+FFmpeg's source PTS is retained with `-copyts`; integer showinfo PTS/timebase are paired with the exact raw frame index. Live publication requires measured agreement with the CoreMedia host clock, a frame newer than the observed context, and age no greater than 250 ms before send. This clock agreement remains a live fixture question. Old pipe data is discarded, never stamped with receipt time. A raw input buffer is reused; metadata is bounded to four timestamps and a 32 KiB diagnostic accumulator, not an application frame FIFO.
+
+The declared acquisition envelope is an active display mode no larger than 8192×4320 pixels and a cropped Bitwig search image no larger than 4096×2560. FFmpeg still allocates/copies acquisition images/packets internally; this is not zero-copy. The helper borrows its reusable search buffer synchronously. Vision reacquires labels on lock loss (at most twice a second); normal frames revalidate their sampled label pixels and enclosing border without OCR. The locator still includes the Expressions/modulator area: modulator exclusion is **not solved**.
+
+FFmpeg libswscale applies the measured crop and uniform Lanczos fit into one reusable 484×114 BGRA output (220,704 bytes). Fit rounding loses less than one output pixel per axis; remaining space is opaque black. Alpha is normalized to 255. Scaler state is reused for unchanged dimensions. The producer validates private V5A/current-context files and process birth identity, reads the capability separately, and sends unchanged v1 messages with one 250 ms complete-message deadline. It neither launches Bitwig nor installs an app or changes permissions.
+
+These are development implementations with generated regression tests. They are not yet the completed live interaction, a 30-fps result, a validated remote-to-marker map or physical acceptance.

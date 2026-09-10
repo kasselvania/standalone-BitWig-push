@@ -26,6 +26,15 @@ struct ObservationPixels {
     let width: Int
     let height: Int
     let bytes: [UInt8]
+    private var borrowed: UnsafeRawBufferPointer? = nil
+    private var rowStride: Int = 0
+    /// Synchronous live BGR0 borrow. Gray comparison is channel-order independent.
+    init(bgr0: UnsafeRawBufferPointer, width: Int, height: Int, stride: Int) throws {
+        guard width > 0, height > 0, width <= 8192, height <= 4320, stride >= width*4,
+              bgr0.count >= (height-1)*stride + width*4 else { throw NSError(domain: "SamplerLocator", code: 3) }
+        self.width = width; self.height = height; bytes = []
+        borrowed = bgr0; rowStride = stride
+    }
     init(_ image: CGImage) throws {
         guard image.width > 0, image.height > 0, image.width <= 8192, image.height <= 4320 else {
             throw NSError(domain: "SamplerLocator", code: 1)
@@ -43,6 +52,11 @@ struct ObservationPixels {
         bytes = storage
     }
     func gray(_ x: Int, _ y: Int) -> Int {
+        if let borrowed {
+            let offset = y * rowStride + x * 4
+            let a = Int(borrowed[offset]), b = Int(borrowed[offset+1]), c = Int(borrowed[offset+2])
+            return max(a,b,c)-min(a,b,c) <= 2 ? (a+b+c)/3 : -1
+        }
         let offset = (y * width + x) * 4
         let a = Int(bytes[offset]), b = Int(bytes[offset+1]), c = Int(bytes[offset+2])
         return max(a, b, c) - min(a, b, c) <= 2 ? (a+b+c)/3 : -1

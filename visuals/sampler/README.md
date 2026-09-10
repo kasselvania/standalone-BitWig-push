@@ -1,14 +1,47 @@
 # Sampler device-location proof
 
-Local implementation work for the maintainer's September 9, 2026 interaction request. **Not yet a live Push producer or accepted contextual replacement.** [Interaction contract](../../docs/design/sampler-context-lens.md).
+Local implementation work for the maintainer's September 9, 2026 interaction request. **The live producer is implemented but not yet physically qualified or accepted.** [Interaction contract](../../docs/design/sampler-context-lens.md).
 
-September 10: [960×160 actions, all-eight-values and device-image preview](presentation-prototype/README.md), revised after the maintainer required the existing button-action words and continuous values alongside the image. Two generated layouts retain both navigation/action rows. It does not resolve the live identity/binding gaps below and does not install or connect anything to Bitwig/Push.
+September 10: the maintainer chose [layout A](presentation-prototype/README.md): four permanent remote readouts on each side, original action/navigation words retained. The disposable A/B simulator is removed after the decision; its code remains in Git history. The controller renderer and bounded FFmpeg producer are now under development, **not physically accepted**.
 
 September 10: [controller-color trace and existing-setting diagnostic](controller-color-trace.md) separates Bitwig's remote mapping colors, DrivenByMoss text-theme settings, and physical button LEDs. No new controller or capture behavior is implemented by that investigation.
 
 The locator recognizes a constellation of Sampler controls, then measures the enclosing control-body border. It reports the body's center and current width/height. It does not use a stored desktop location, a normalized window crop, or a fixed device size. The measured body currently excludes the narrow device-name/power strip on the left. Exact desired presentation is pending maintainer confirmation.
 
 ## Run locally
+
+### New live development build (not yet fixture-qualified)
+
+```sh
+sampler_live_output=$(mktemp -d /tmp/pushwig-sampler-live.XXXXXX)
+sh visuals/sampler/build-live.sh "$sampler_live_output"
+```
+
+The runner uses installed Swift and FFmpeg 9 libraries, builds outside the checkout, and runs generated locator, stream, crop/fit, private-schema and blocked-socket tests. It does not acquire the desktop or touch Bitwig/Push. Current generated results: 85 existing locator checks; 112 live-path checks including 40 changing FFmpeg `testsrc` frames, padded stride, different crop pixels, output-buffer reuse, an intentional consumer stall and a stalled-reader write failure at approximately 250 ms (one timing sample, not a performance campaign).
+
+The separate DrivenByMoss branch `pushwig/sampler-context-render` is based on the physically passed, still-unmerged LED head `cf0e70ea9f2144a45c1dc6039a25c9b90a06b92b`. Its six affected suites cover settings/rendezvous/lifecycle, actual raster pipeline, actual DeviceParams mode data/touch and the native coordinator against fake API endpoints. Native endpoint tests are not real Bitwig API acceptance.
+
+Development fixture identities, September 10:
+
+- DrivenByMoss head `93fb2a48d1e35dfeb69f902a44d8035a0b7db557`, tree `622983fad14bab0a16df950eac4976112583b59d`.
+- Tested Java-21 extension: 14,420,465 bytes; SHA-256 `abe439c9813f879db51a7a6f69b9270ffeec33e9346a8e534f96d7fee2fe9dbd`.
+- Built `SamplerLive` executable SHA-256 `fb80db4fa4bca66b000ed9677e947e892b48b69d9b73eac1787e60bc4658d881`.
+- All six Java suites pass. Composition tests pass 470 checks standalone, then 582 with the actual Swift generated sender connected to the production Java receiver/pipeline. The latter verifies exact center bytes and full semantic restoration after CLEAR, not physical Push output.
+- The final package was built once with explicit Homebrew Java/Javac 21.0.11 and Maven 3.9.16. `PushUsbDisplay.class`, `BitmapImpl.class` and `IRasterWritableBitmap.class` remain byte-identical to the LED-tested artifact; no generated archive is committed.
+
+Reproduce the cross-language generated check after the Java test runner and Swift build: run `SamplerLensCompositionTest` with the built `TestSamplerLive` executable as its sole argument, using the same Java classpath as `scripts/test-pushwig-sampler-context.sh`. No real capability, Bitwig frame or hardware connection is used.
+
+Only after safe derivative custody and an ordinary Bitwig launch, run:
+
+```sh
+"$sampler_live_output/SamplerLive" CURRENT_EXPLICIT_BITWIG_WINDOW_ID 180
+```
+
+Read the ID from the current Bitwig window, not a historical record. The producer waits for the controller's native-Sampler Device Parameters context, reads the private V5A manifest and generation-specific context notice, and supplies only the center image. Leaving the page restores actual semantics locally in the controller. It never supplies aliases, values or button meanings. Stop with Ctrl-C or let the bounded duration expire. Restore the exact official extension after testing.
+
+Current limitations and actual ownership are in the [design](../../docs/design/sampler-context-lens.md#initial-ffmpeg-development-path). Most importantly: visible-screen acquisition, conservative occlusion refusal, one display, explicit window instance, English Sampler features, no proven modulator exclusion, no image markers, no live performance or physical acceptance yet. The older individual observations below are historical evidence, not qualification of the new producer.
+
+### Original single-frame local observation
 
 Requires the installed Apple Swift toolchain/Vision and FFmpeg. No app installation, new app identity, permission reset, or DrivenByMoss replacement is involved. Screen capture still requires ordinary macOS permission; the tool does not change it.
 
