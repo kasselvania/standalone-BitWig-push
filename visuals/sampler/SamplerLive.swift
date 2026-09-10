@@ -35,6 +35,15 @@ struct SamplerWindow: Equatable {
     let bounds: CGRect
     let occluders: [CGRect]
     let display: SamplerDisplay
+    /// Unrelated windows are not the selected source's identity. Coverage is checked against
+    /// the measured device at both observations, not by equality of the entire desktop list.
+    func sameCapture(as other: SamplerWindow) -> Bool {
+        id == other.id && pid == other.pid && bounds == other.bounds && display == other.display
+    }
+    func permits(_ body: SamplerBounds, width: Int, height: Int, after: SamplerWindow) -> Bool {
+        sameCapture(as: after) && !covers(body, width: width, height: height)
+            && !after.covers(body, width: width, height: height)
+    }
     static func read(_ id: CGWindowID) throws -> SamplerWindow {
         let pids = Set(NSRunningApplication.runningApplications(withBundleIdentifier: "com.bitwig.studio").map(\.processIdentifier))
         let list = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] ?? []
@@ -193,12 +202,12 @@ final class SamplerImageLock {
                 if frame.captured <= contextSince || age > 0.25 { count(frame.captured <= contextSince ? "beforeContext" : "oldAtRead"); discarded += 1; try activeConnection.clear(); continue }
                 let start = samplerClock()
                 let before = try SamplerWindow.read(windowID)
-                guard before.bounds == activeSource.bounds, before.pid == activeSource.pid, before.display == activeSource.display else { count("geometryChange"); discarded += 1; try activeConnection.clear(); continue }
+                guard before.sameCapture(as: activeSource) else { count("geometryChange"); discarded += 1; try activeConnection.clear(); continue }
                 let body = try autoreleasepool { try imageLock.locate(frame) }
                 guard let body else { count("locatorMissing"); discarded += 1; try activeConnection.clear(); report("Semantic fallback: waiting for a unique complete Sampler body."); continue }
                 let after = try SamplerWindow.read(windowID)
-                guard before == after else { count("sourceChangedDuringFrame"); discarded += 1; try activeConnection.clear(); continue }
-                guard !after.covers(body, width: frame.width, height: frame.height) else { count("occluded"); discarded += 1; try activeConnection.clear(); continue }
+                guard before.sameCapture(as: after) else { count("sourceChangedDuringFrame"); discarded += 1; try activeConnection.clear(); continue }
+                guard before.permits(body, width: frame.width, height: frame.height, after: after) else { count("occluded"); discarded += 1; try activeConnection.clear(); continue }
                 guard try SamplerAuthority.read() == activeIdentity else { count("contextChangedDuringFrame"); discarded += 1; try activeConnection.clear(); continue }
                 guard let output = sampler_fit_frame(fit, frame.bytes.baseAddress?.assumingMemoryBound(to: UInt8.self), frame.bytes.count,
                     Int32(frame.width), Int32(frame.height), Int32(frame.width*4), Int32(body.x), Int32(body.y), Int32(body.width), Int32(body.height)) else {

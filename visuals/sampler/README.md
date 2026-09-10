@@ -17,7 +17,7 @@ sampler_live_output=$(mktemp -d /tmp/pushwig-sampler-live.XXXXXX)
 sh visuals/sampler/build-live.sh "$sampler_live_output"
 ```
 
-The runner uses installed Swift and FFmpeg 9 libraries, builds outside the checkout, and runs generated locator, stream, crop/fit, private-schema and blocked-socket tests. It does not acquire the desktop or touch Bitwig/Push. Current generated results: 117 locator checks; 129 live-path checks including 40 changing FFmpeg `testsrc` frames, padded stride, different crop pixels, output-buffer reuse, large-window storage, multiple-display selection, an intentional consumer stall and a stalled-reader write failure at 250.069 ms (one timing sample, not a performance campaign).
+The runner uses installed Swift and FFmpeg 9 libraries, builds outside the checkout, and runs generated locator, stream, crop/fit, private-schema and blocked-socket tests. It does not acquire the desktop or touch Bitwig/Push. Current generated results: 117 locator checks; 145 live-path checks including 40 changing FFmpeg `testsrc` frames, padded stride, different crop pixels, output-buffer reuse, large-window storage, multiple-display selection, unrelated-window continuity versus actual coverage, EOF/close, an intentional consumer stall and a stalled-reader write failure at 250.921 ms (one timing sample, not a performance campaign). It also builds the opt-in generated `TestSamplerHandoff` benchmark below.
 
 The separate DrivenByMoss branch `pushwig/sampler-context-render` is based on the physically passed, still-unmerged LED head `cf0e70ea9f2144a45c1dc6039a25c9b90a06b92b`. Its six affected suites cover settings/rendezvous/lifecycle, actual raster pipeline, actual DeviceParams mode data/touch and the native coordinator against fake API endpoints. Native endpoint tests are not real Bitwig API acceptance.
 
@@ -54,6 +54,56 @@ Remaining work is capture/delivery and source-lifetime reliability, not another 
 Final diagnostic-only source build after removing the failed scaling change: executable SHA-256 `1bab6937f3e797eaf9c75be2d65600eab996ee3504c74ad03772a83035916f5b`; 117 locator and 129 live-path generated checks pass. This executable has not been live-qualified and is not offered as a flicker fix. The tested Java extension was unchanged throughout the producer attempts.
 
 **Official restoration, September 10 at 20:04:55 UTC:** after the maintainer reported normal Bitwig closure, `pgrep`, `lsof` and scoped process/file listings verified application/audio-engine, port-45291 listener and test-producer absence. The current manifest, capability and Sampler-context notice were absent; the intentional dormant `owner.lock` was retained. The tested derivative was moved intact outside scan paths, and the untouched official backup moved back to the canonical extension filename. `shasum -a 256` confirmed official SHA-256 `98dc3195ad8d911526e18b1005f09f69a1aedcb965b080565474104654345c5a` and retained derivative SHA-256 `abe439c9813f879db51a7a6f69b9270ffeec33e9346a8e534f96d7fee2fe9dbd`. Exactly one DrivenByMoss extension was scanned; both unrelated extensions were untouched. Ordinary `open -a 'Bitwig Studio'` launch followed with all three JVM-option variables absent, and readback showed no ingress listener or session files. Asked to confirm the standard display, controls, Push audio/headphones, absence of captured imagery and normal quit, the maintainer replied **“confirmed, closed.”** Final readback at 20:08:01 UTC independently verified application/audio-engine, producer and listener absence, no live manifest/capability/context notice, the exact official hash and one scanned DrivenByMoss extension. The dormant `owner.lock` remains. This completes official recovery, not acceptance of the failed live-feed test.
+
+### September 10 delivery repair — local proof, physical recheck pending
+
+Repair basis: central `0e623eb9ba00eccfb8c06e3778ae931ca8a1a606`, tree `45d3b417102627cabff493cc01b054f4a9c959b2`. DrivenByMoss remains at `93fb2a48d1e35dfeb69f902a44d8035a0b7db557` / tree `622983fad14bab0a16df950eac4976112583b59d`; its source and tested archive were not modified or rebuilt. Layout A, freshness limits, V5A discovery, v1 messages, raster and USB owners are unchanged.
+
+The previous synchronous handoff spent too much of each frame interval transferring a 50,840,832-byte raw image through the Darwin pipe. A generated same-size workload with 17 ms of intervening computation reproduced accumulated delay. Direct writes and reducing reader overhead alone did not sustain that imposed workload. The retained repair uses an anonymous local socket pair for **the same FFmpeg stdout byte stream**, direct AVIO writes, a one-packet output queue and a nonblocking drain-before-poll reader. Readback verifies send/receive kernel capacities at no more than 262,144 bytes each. No new listener, named socket, worker, application frame FIFO, second image buffer or capture backend is added. The source PTS and frame-index pairing remain intact. FFmpeg still owns separate native allocations/queues; the socket limit is not a total native-memory claim.
+
+Separately, whole-desktop occluder-array equality was a false source-identity test. A generated regression now proves that unrelated window movement can leave the same captured source valid. The selected window/owner/bounds/display must still match, and the measured device must be uncovered at **both** before/after observations. Occlusion, movement during processing and replacement still refuse output. This does not solve the capture-time occlusion/association gap or explain the earlier intermittent application/process lookup failures; those remain named live checks.
+
+Reproduction, after the normal build above:
+
+```sh
+"$sampler_live_output/TestSamplerHandoff" 360 17
+```
+
+The committed benchmark uses a 5488×2316 red source with an alternating blue marker, 60 warmup frames and 300 measured frames. It stamps Unix time at FFmpeg's filter exit, maps that to the host clock with a clock-jump refusal, and imposes 17 ms of test-only synchronous computation before the next read. This measures handoff, **not native acquisition or the actual locator/fit/send work**. No full-image copy is allocated for comparisons. All 359 marker changes, both sampled color regions, dimensions, frame/PTS order and input-buffer reuse passed; pixel mismatches were zero.
+
+| Exact final generated build, 300 samples | p50 ms | p95 ms | Max ms |
+| --- | ---: | ---: | ---: |
+| Filter exit → complete read | 10.374 | 33.378 | 92.503 |
+| Filter exit → imposed work complete | 27.380 | 50.379 | 109.528 |
+| Delivery intervals | 33.044 | 36.705 | 80.979 |
+
+Observed delivery 30.282 fps; zero measured completions exceeded 250 ms. The matched original implementation delivered 27.275 fps with filter-to-work p50 469.337 / p95 705.517 / max 760.707 ms; all 300 measured completions exceeded 250 ms. These are short, sequential runs, not an isolated scheduling environment or endurance proof. An earlier socket-repair iteration had p95 193.773 / max 322.717 ms and six over-250-ms samples under the same synthetic work budget. Retain that variability: the final run is not a promise that scheduling can never cause a late frame.
+
+A separate temporary non-publishing measurement exercised the **actual FFmpeg AVFoundation input** with cursor capture off, exact current display ID 5 / 6860×2894 pixels, a 5488×2316 search at `(0,0)`, unchanged source PTS, the same 17-ms test workload and 60+300 frames. The source images were discarded; no proprietary pixels were saved. Bitwig remained closed, no ingress connection was made, and the official extension remained installed.
+
+| Actual acquisition measurement, 300 samples each | Original p50/p95/max ms | Repaired p50/p95/max ms |
+| --- | --- | --- |
+| Capture PTS → complete read | 716.743 / 916.697 / 930.681 | 62.021 / 69.456 / 83.789 |
+| Capture PTS → imposed work complete | 733.744 / 933.698 / 947.681 | 79.041 / 86.476 / 101.074 |
+| Delivery interval | 34.705 / 41.319 / 61.363 | 35.666 / 40.184 / 58.777 |
+
+Original delivery 27.905 fps / 255 over-250-ms samples; repaired delivery 30.008 fps / zero over-250-ms samples. This confirms source-clock agreement and a useful acquisition/handoff improvement at the failed fixture's image size. It excludes Sampler recognition, actual process/context validation, fitting, socket publication, receiver and physical Push. CPU/RSS were not remeasured for this repair; neither old snapshots nor kernel-buffer capacity establish total working-set growth.
+
+Commands: `xcrun swiftc -O -warnings-as-errors FFmpegSamplerStream.swift MeasureAcquisition.swift -o MeasureAcquisition`, then `MeasureAcquisition 5`; the original stream file was exported from the exact basis using `git archive`, not a rewritten baseline. Both diagnostic children exited and left no FFmpeg process. Native observer SHA-256 `14ea9194497c51ad877bf0847e265f77e21d47c1602a030a6804e0873698de3f`; repaired observer executable `7176239a6c2307fa1f4659c9f384548fcf0bd430f2787fa6da5189c159dad3f0`; original observer executable `b53148825e25aca5d63adcb12d079fdca047cad822d5481aef071f44b9de9bf7`. This temporary observer is not a new installed application or product entry point; the generated regression is retained in Git.
+
+Final repair identities (FFmpeg 9.0.1, installed Homebrew `9.0.1_1`; ordinary external Swift build, no installation or permission change):
+
+| Material | SHA-256 |
+| --- | --- |
+| `FFmpegSamplerStream.swift` | `57f149fb419ec071818c5318911625ec601031c2414771faf1b8de974dbfe891` |
+| `SamplerLive.swift` | `5309003a5c4c54fb09e710bdea5ec5595da75c7eb9f21f2896848b8022852d19` |
+| `TestSamplerLive.swift` | `d393fe0443c86ee6884e6b2a1847f8a7fba3255f4222a41cd0b6fe7dc53a4b6c` |
+| `TestSamplerHandoff.swift` | `10c61a9335f719c61dd30d2b900e88860655648fe1aaccfc3dc13a111defb95f` |
+| `build-live.sh` | `e1e8c79fa3eeba3514121adb67367a43ecbc0a4ddc21abcd15a58fa8abef62bd` |
+| `SamplerLive`, 288,104 bytes | `4e4f529585f930dfa1bfda0bd3e950294fbc0b9784cadd0bc21a08a70a6aa280` |
+| `TestSamplerHandoff` | `11e304a70d93d4ede9d2711a61591cb121563f97d50bd564958ccbd8e6882c3e` |
+
+117 locator and 145 live-path checks pass, including bounded/idempotent close, natural child EOF, output reuse, changing generated frames and unchanged protocol deadline. **The corrected complete Sampler-to-Push path is not yet physically rechecked.** Stable fallback/resumption, actual identity lookup behavior and locator/ingress costs remain to observe. The previously failed live run stays failed; this is not a new accepted product claim.
 
 Only after safe derivative custody and an ordinary Bitwig launch, run:
 

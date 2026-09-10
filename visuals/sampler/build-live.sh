@@ -6,10 +6,13 @@ sampler_output=${1:?usage: build-live.sh existing-output-directory}
 test -d "$sampler_output"
 xcrun clang -O2 -Wall -Wextra -Werror -I/opt/homebrew/include \
     -c "$sampler_source/SamplerFit.c" -o "$sampler_output/SamplerFit.o"
-for sampler_program in SamplerLive TestSamplerLive TestSamplerLocator
+for sampler_program in SamplerLive TestSamplerLive TestSamplerLocator TestSamplerHandoff
 do
     if [ "$sampler_program" = TestSamplerLocator ]; then
         xcrun swiftc -O "$sampler_source/SamplerLocator.swift" "$sampler_source/TestSamplerLocator.swift" -o "$sampler_output/$sampler_program"
+    elif [ "$sampler_program" = TestSamplerHandoff ]; then
+        xcrun swiftc -O -warnings-as-errors "$sampler_source/FFmpegSamplerStream.swift" \
+            "$sampler_source/TestSamplerHandoff.swift" -o "$sampler_output/$sampler_program"
     elif [ "$sampler_program" = TestSamplerLive ]; then
         xcrun swiftc -O -warnings-as-errors -D SAMPLER_TEST -import-objc-header "$sampler_source/SamplerFit.h" \
             "$sampler_source/SamplerLocator.swift" "$sampler_source/FFmpegSamplerStream.swift" \

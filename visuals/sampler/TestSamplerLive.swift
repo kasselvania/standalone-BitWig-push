@@ -15,7 +15,7 @@ import Foundation
         if CommandLine.arguments.count == 3 && CommandLine.arguments[1] == "--interop" {
             try interop(); return
         }
-        try fit(); try authority(); try displays(); try stream(); try largeWindow(); try socketDeadline()
+        try fit(); try authority(); try displays(); try sourceContinuity(); try stream(); try streamEOF(); try largeWindow(); try socketDeadline()
         print("SamplerLive generated checks: PASS (\(checks)); no capture, Bitwig, Push or permission changes")
     }
     static func interop() throws {
@@ -97,6 +97,8 @@ import Foundation
     static func stream() throws {
         let reader = try FFmpegSamplerStream(input:["-re","-f","lavfi","-i","testsrc=size=640x160:rate=30"],filter:"null")
         defer { reader.close() }
+        try check(reader.transportBuffers.receive > 0 && reader.transportBuffers.receive <= 262144 &&
+                  reader.transportBuffers.send > 0 && reader.transportBuffers.send <= 262144,"Kernel byte storage is bounded independently of frame size")
         var count = 0, last = -1.0, pointer: UnsafeRawPointer?
         var differences = 0, previous = Data()
         let deadline = samplerClock()+8
@@ -110,7 +112,25 @@ import Foundation
             previous = image; count += 1
             if count == 3 { usleep(250_000) } // Deliberate consumer stall; bounded metadata must survive.
         }
-        try check(count == 40 && differences > 10, "Current generated frames change through actual FFmpeg pipe")
+        try check(count == 40 && differences > 10, "Current generated frames change through actual FFmpeg handoff")
+        let closeStart = samplerClock()
+        reader.close(); reader.close()
+        try check(samplerClock()-closeStart < 1.5,"Stalled/backpressured FFmpeg child closes boundedly and idempotently")
+        try refuses { _ = try reader.nextFrame() }
+    }
+    static func streamEOF() throws {
+        let reader = try FFmpegSamplerStream(input:["-f","lavfi","-i","color=c=red:size=640x160:rate=30","-frames:v","2"],filter:"null")
+        defer { reader.close() }
+        var frames = 0
+        let deadline = samplerClock()+3
+        while frames < 2 && samplerClock() < deadline {
+            if let frame = try reader.nextFrame() {
+                try check(frame.index == frames,"Final complete frames survive child EOF")
+                frames += 1
+            }
+        }
+        try check(frames == 2,"Finite child delivered both complete frames")
+        try refuses { _ = try reader.nextFrame(timeout:0.5) }
     }
     static func displays() throws {
         let a = SamplerDisplay(id:5,index:0,bounds:CGRect(x:0,y:0,width:3430,height:1447),pixelWidth:6860,pixelHeight:2894)
@@ -138,6 +158,28 @@ import Foundation
             pointer = frame.bytes.baseAddress; count += 1
         }
         try check(count == 2,"Current window size passes actual FFmpeg transport")
+    }
+    static func sourceContinuity() throws {
+        let display = SamplerDisplay(id:5,index:0,bounds:CGRect(x:0,y:0,width:1600,height:1000),pixelWidth:3200,pixelHeight:2000)
+        let bounds = CGRect(x:100,y:100,width:1000,height:800)
+        let body = SamplerBounds(centerX:800,centerY:1200,width:800,height:300,borderGray:70)
+        func window(_ occluders:[CGRect], id:UInt32 = 42, pid:Int32 = 123, rectangle:CGRect? = nil) -> SamplerWindow {
+            SamplerWindow(id:id,pid:pid,bounds:rectangle ?? bounds,occluders:occluders,display:display)
+        }
+        let before = window([CGRect(x:1200,y:100,width:100,height:100)])
+        let unrelatedMoved = window([CGRect(x:1250,y:110,width:100,height:100)])
+        try check(before != unrelatedMoved && before.sameCapture(as:unrelatedMoved),"Unrelated desktop metadata is not source identity")
+        try check(before.permits(body,width:2000,height:1600,after:unrelatedMoved),"Unrelated window movement must not trigger fallback")
+        let covered = window([CGRect(x:400,y:650,width:100,height:100)])
+        try check(!before.permits(body,width:2000,height:1600,after:covered),"New device occlusion refuses")
+        try check(!covered.permits(body,width:2000,height:1600,after:before),"Prior device occlusion also refuses, even if uncovered afterward")
+        try check(!before.permits(body,width:2000,height:1600,after:window([],id:43)),"Window replacement refuses prior source")
+        try check(!before.permits(body,width:2000,height:1600,after:window([],pid:124)),"Owner replacement refuses prior source")
+        try check(!before.permits(body,width:2000,height:1600,after:window([],rectangle:bounds.offsetBy(dx:10,dy:0))),"Move during frame processing refuses")
+        try check(!before.permits(body,width:2000,height:1600,after:window([],rectangle:CGRect(x:100,y:100,width:900,height:800))),"Resize during frame processing refuses")
+        let changedDisplay = SamplerDisplay(id:6,index:0,bounds:display.bounds,pixelWidth:3200,pixelHeight:2000)
+        let replaced = SamplerWindow(id:42,pid:123,bounds:bounds,occluders:[],display:changedDisplay)
+        try check(!before.sameCapture(as:replaced),"Display identity still participates in capture authority")
     }
     static func socketDeadline() throws {
         let listener = socket(AF_INET,SOCK_STREAM,0); try check(listener >= 0,"Listener")

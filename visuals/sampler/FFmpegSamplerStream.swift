@@ -9,8 +9,12 @@ func samplerRequire(_ condition: Bool, _ message: String) throws {
 func samplerClock() -> Double { CMTimeGetSeconds(CMClockGetTime(CMClockGetHostTimeClock())) }
 
 /// One synchronous reader, one reusable frame, bounded timestamp metadata. No frame FIFO.
+/// Anonymous AF_UNIX byte stream: no port, filesystem socket or extra worker. Fixed 256 KiB
+/// kernel buffers avoid Darwin pipe's small-chunk handoff bottleneck for large raw frames.
 /// FFmpeg -copyts/showinfo exposes source PTS, not pipe-read time disguised as acquisition time.
 final class FFmpegSamplerStream {
+    static let transportCapacity = 262144
+    private(set) var transportBuffers = (receive: 0, send: 0)
     static func byteCount(width: Int, height: Int) throws -> Int {
         // The search is a subset of the already bounded physical-display acquisition. Do not
         // impose a smaller arbitrary width that rejects an ordinary large Bitwig window.
@@ -24,7 +28,8 @@ final class FFmpegSamplerStream {
         let bytes: UnsafeRawBufferPointer // Borrowed until next nextFrame()/close; no async retention.
     }
     struct Stamp { let index: Int, pts: Int64, width: Int, height: Int }
-    private let child = Process(), video = Pipe(), diagnostics = Pipe()
+    private let child = Process(), diagnostics = Pipe()
+    private let videoRead: FileHandle, videoWrite: FileHandle
     private var storage: UnsafeMutableRawPointer?
     private var length = 0, used = 0, width = 0, height = 0, frameIndex = 0
     private var lines = Data(), stamps: [Stamp] = []
@@ -35,23 +40,42 @@ final class FFmpegSamplerStream {
     private static let timePattern = try! NSRegularExpression(pattern: #"config in time_base: (\d+)/(\d+)"#)
 
     init(input: [String], filter: String) throws {
+        var sockets: [Int32] = [-1, -1]
+        try samplerRequire(socketpair(AF_UNIX, SOCK_STREAM, 0, &sockets) == 0, "Cannot create local FFmpeg byte transport")
+        videoRead = FileHandle(fileDescriptor: sockets[0], closeOnDealloc: true)
+        videoWrite = FileHandle(fileDescriptor: sockets[1], closeOnDealloc: true)
+        var capacity = Int32(Self.transportCapacity)
+        try samplerRequire(setsockopt(sockets[0], SOL_SOCKET, SO_RCVBUF, &capacity, socklen_t(MemoryLayout<Int32>.size)) == 0 &&
+                           setsockopt(sockets[1], SOL_SOCKET, SO_SNDBUF, &capacity, socklen_t(MemoryLayout<Int32>.size)) == 0,
+                           "Cannot bound local FFmpeg byte transport")
+        for fd in sockets {
+            try samplerRequire(fcntl(fd, F_SETFD, FD_CLOEXEC) == 0, "Cannot isolate FFmpeg transport descriptors")
+        }
+        var receive: Int32 = 0, send: Int32 = 0
+        var size = socklen_t(MemoryLayout<Int32>.size)
+        try samplerRequire(getsockopt(sockets[0], SOL_SOCKET, SO_RCVBUF, &receive, &size) == 0 &&
+                           getsockopt(sockets[1], SOL_SOCKET, SO_SNDBUF, &send, &size) == 0 &&
+                           receive > 0 && receive <= capacity && send > 0 && send <= capacity,
+                           "Local FFmpeg buffer bound was not applied")
+        transportBuffers = (Int(receive), Int(send))
         child.executableURL = URL(fileURLWithPath: "/opt/homebrew/bin/ffmpeg")
         child.arguments = ["-hide_banner", "-nostdin", "-loglevel", "info", "-nostats", "-copyts", "-filter_threads", "1"]
             + input + ["-an", "-vf", filter + ",format=bgr0,showinfo=checksum=0", "-fps_mode", "passthrough",
-                       "-threads", "1", "-c:v", "rawvideo", "-f", "rawvideo", "pipe:1"]
+                       "-threads", "1", "-c:v", "rawvideo", "-thread_queue_size", "1",
+                       "-avioflags", "direct", "-f", "rawvideo", "pipe:1"]
         child.standardInput = FileHandle.nullDevice
-        child.standardOutput = video; child.standardError = diagnostics
+        child.standardOutput = videoWrite; child.standardError = diagnostics
         try child.run()
         launched = true
-        video.fileHandleForWriting.closeFile(); diagnostics.fileHandleForWriting.closeFile()
-        for fd in [video.fileHandleForReading.fileDescriptor, diagnostics.fileHandleForReading.fileDescriptor] {
-            try samplerRequire(fcntl(fd, F_SETFL, O_NONBLOCK) == 0, "Cannot configure bounded FFmpeg pipes")
+        videoWrite.closeFile(); diagnostics.fileHandleForWriting.closeFile()
+        for fd in [videoRead.fileDescriptor, diagnostics.fileHandleForReading.fileDescriptor] {
+            try samplerRequire(fcntl(fd, F_SETFL, O_NONBLOCK) == 0, "Cannot configure bounded FFmpeg reads")
         }
     }
     deinit { close(); scratch.deallocate(); storage?.deallocate() }
     func close() {
         if stopped { return }; stopped = true
-        video.fileHandleForReading.closeFile(); diagnostics.fileHandleForReading.closeFile()
+        videoRead.closeFile(); diagnostics.fileHandleForReading.closeFile()
         if child.isRunning {
             child.terminate() // Only our FFmpeg child. Never Bitwig.
             let deadline = samplerClock() + 1
@@ -103,6 +127,8 @@ final class FFmpegSamplerStream {
     func nextFrame(timeout: Double = 0.1) throws -> Frame? {
         try samplerRequire(!stopped, "FFmpeg stream is closed")
         let deadline = samplerClock() + timeout
+        var fds = [pollfd(fd: diagnostics.fileHandleForReading.fileDescriptor, events: 0, revents: 0),
+                   pollfd(fd: videoRead.fileDescriptor, events: 0, revents: 0)]
         while samplerClock() < deadline {
             try parseDiagnostics()
             if length > 0 && used == length && !stamps.isEmpty, let timebase {
@@ -113,8 +139,18 @@ final class FFmpegSamplerStream {
                              captured: Double(stamp.pts) * timebase,
                              bytes: UnsafeRawBufferPointer(start: storage, count: length))
             }
-            var fds = [pollfd(fd: diagnostics.fileHandleForReading.fileDescriptor, events: stamps.count < 4 ? Int16(POLLIN) : 0, revents: 0),
-                       pollfd(fd: video.fileHandleForReading.fileDescriptor, events: length > used ? Int16(POLLIN) : 0, revents: 0)]
+            // Drain immediately available video without polling/allocating a descriptor array
+            // for every chunk. Poll only when the nonblocking read would wait.
+            if let storage, used < length {
+                let count = Darwin.read(fds[1].fd, storage.advanced(by: used), length-used)
+                if count > 0 { used += count; continue }
+                if count == 0 { throw SamplerFailure(description: "Incomplete FFmpeg frame") }
+                if errno == EINTR { continue }
+                try samplerRequire(errno == EAGAIN || errno == EWOULDBLOCK, "FFmpeg video read failed")
+            }
+            fds[0].events = stamps.count < 4 ? Int16(POLLIN) : 0
+            fds[1].events = length > used ? Int16(POLLIN) : 0
+            fds[0].revents = 0; fds[1].revents = 0
             let wait = max(1, min(50, Int((deadline - samplerClock()) * 1000)))
             let ready = poll(&fds, 2, Int32(wait))
             if ready < 0 && errno == EINTR { continue }
@@ -129,7 +165,9 @@ final class FFmpegSamplerStream {
             if fds.contains(where: { $0.revents & Int16(POLLERR | POLLNVAL) != 0 }) {
                 throw SamplerFailure(description: "FFmpeg pipe failed")
             }
-            if !child.isRunning && used != length { throw SamplerFailure(description: "FFmpeg acquisition ended") }
+            if fds[1].revents & Int16(POLLHUP) != 0 && fds[1].revents & Int16(POLLIN) == 0 && used != length {
+                throw SamplerFailure(description: "FFmpeg acquisition ended")
+            }
         }
         return nil
     }
