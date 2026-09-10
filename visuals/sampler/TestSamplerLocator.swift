@@ -49,7 +49,7 @@ import Foundation
     }
 
     static func main() throws {
-        for scale in [0.6,0.75,1.0,1.25,1.5] {
+        for scale in [0.5,0.56,0.6,0.75,1.0,1.25,1.5] {
             for (x,y,extra) in [(90,100,0),(450,380,0),(180,230,180),(280,180,-160)] {
                 let (image,landmarks,expected) = try fixture(x:x,y:y,scale:scale,extraWidth:extra)
                 let pixels = try ObservationPixels(image)

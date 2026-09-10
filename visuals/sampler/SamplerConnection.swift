@@ -96,8 +96,8 @@ struct SamplerAuthority: Equatable {
         guard let generation = m["session_generation"] as? String, isHex(generation, count: 32) else { throw SamplerFailure(description: "Invalid ingress generation") }
         let notices = try openChild(runtime, "sampler-lens-v1"); defer { Darwin.close(notices) }
         let authority = try parse(manifest, notice: readFile(notices, generation + ".json", cap: 1024))
-        try samplerRequire(NSRunningApplication(processIdentifier: authority.pid)?.bundleIdentifier == "com.bitwig.studio" &&
-                           sampler_process_start_millis(authority.pid) == authority.started, "Ingress owner no longer matches Bitwig process/start")
+        try samplerRequire(NSRunningApplication(processIdentifier: authority.pid)?.bundleIdentifier == "com.bitwig.studio", "Ingress owner application lookup no longer matches Bitwig")
+        try samplerRequire(sampler_process_start_millis(authority.pid) == authority.started, "Ingress owner process-start lookup changed or failed")
         try samplerRequire(try readFile(ingress, "current.json", cap: 4096) == manifest, "Ingress changed during discovery")
         return authority
     }
