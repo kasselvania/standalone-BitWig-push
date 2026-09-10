@@ -1,6 +1,6 @@
 # Sampler device-location proof
 
-Local implementation work for the maintainer's September 9, 2026 interaction request. **The live producer is implemented but not yet physically qualified or accepted.** [Interaction contract](../../docs/design/sampler-context-lens.md).
+Local implementation work for the maintainer's September 9, 2026 interaction request. **The repaired live producer passed a focused steady-image/context-return and controls/audio recheck; it is not yet final-product accepted.** Exact measurements, remaining limitations and official recovery are recorded below. [Interaction contract](../../docs/design/sampler-context-lens.md).
 
 September 10: the maintainer chose [layout A](presentation-prototype/README.md): four permanent remote readouts on each side, original action/navigation words retained. The disposable A/B simulator is removed after the decision; its code remains in Git history. The controller renderer and bounded FFmpeg producer are now under development, **not physically accepted**.
 
@@ -55,7 +55,7 @@ Final diagnostic-only source build after removing the failed scaling change: exe
 
 **Official restoration, September 10 at 20:04:55 UTC:** after the maintainer reported normal Bitwig closure, `pgrep`, `lsof` and scoped process/file listings verified application/audio-engine, port-45291 listener and test-producer absence. The current manifest, capability and Sampler-context notice were absent; the intentional dormant `owner.lock` was retained. The tested derivative was moved intact outside scan paths, and the untouched official backup moved back to the canonical extension filename. `shasum -a 256` confirmed official SHA-256 `98dc3195ad8d911526e18b1005f09f69a1aedcb965b080565474104654345c5a` and retained derivative SHA-256 `abe439c9813f879db51a7a6f69b9270ffeec33e9346a8e534f96d7fee2fe9dbd`. Exactly one DrivenByMoss extension was scanned; both unrelated extensions were untouched. Ordinary `open -a 'Bitwig Studio'` launch followed with all three JVM-option variables absent, and readback showed no ingress listener or session files. Asked to confirm the standard display, controls, Push audio/headphones, absence of captured imagery and normal quit, the maintainer replied **“confirmed, closed.”** Final readback at 20:08:01 UTC independently verified application/audio-engine, producer and listener absence, no live manifest/capability/context notice, the exact official hash and one scanned DrivenByMoss extension. The dormant `owner.lock` remains. This completes official recovery, not acceptance of the failed live-feed test.
 
-### September 10 delivery repair — local proof, physical recheck pending
+### September 10 delivery repair — local proof and focused physical recheck
 
 Repair basis: central `0e623eb9ba00eccfb8c06e3778ae931ca8a1a606`, tree `45d3b417102627cabff493cc01b054f4a9c959b2`. DrivenByMoss remains at `93fb2a48d1e35dfeb69f902a44d8035a0b7db557` / tree `622983fad14bab0a16df950eac4976112583b59d`; its source and tested archive were not modified or rebuilt. Layout A, freshness limits, V5A discovery, v1 messages, raster and USB owners are unchanged.
 
@@ -103,7 +103,31 @@ Final repair identities (FFmpeg 9.0.1, installed Homebrew `9.0.1_1`; ordinary ex
 | `SamplerLive`, 288,104 bytes | `4e4f529585f930dfa1bfda0bd3e950294fbc0b9784cadd0bc21a08a70a6aa280` |
 | `TestSamplerHandoff` | `11e304a70d93d4ede9d2711a61591cb121563f97d50bd564958ccbd8e6882c3e` |
 
-117 locator and 145 live-path checks pass, including bounded/idempotent close, natural child EOF, output reuse, changing generated frames and unchanged protocol deadline. **The corrected complete Sampler-to-Push path is not yet physically rechecked.** Stable fallback/resumption, actual identity lookup behavior and locator/ingress costs remain to observe. The previously failed live run stays failed; this is not a new accepted product claim.
+117 locator and 145 live-path checks pass, including bounded/idempotent close, natural child EOF, output reuse, changing generated frames and unchanged protocol deadline. The corrected path received the focused physical observation below. The previously failed live run stays failed; this recheck does not establish complete product acceptance.
+
+#### Focused repaired run, September 10, approximately 21:12–21:15 UTC
+
+Exact tested central head `bba029e2ddf63edc0aa4be670807e1fe0f6bdf04`, tree `9599a2687e3b9f37478b119c94df375bb383d443`; `SamplerLive` SHA-256 `4e4f529585f930dfa1bfda0bd3e950294fbc0b9784cadd0bc21a08a70a6aa280`. The Java head/tree and archive above were reused without rebuilding. The installed candidate and untouched official backup were both rehashed. The maintainer enabled the existing restart-scoped setting; current-process readback then showed one listener, one current manifest/capability and a Sampler context. No JVM options were injected.
+
+Invocation: `SamplerLive 20531 180`. The selected current Bitwig window was 2744×1158 logical points, with a 5488×2316 acquisition search and an automatically measured 1659×438 Sampler body. Window ID is a run identity, not future configuration. The destination remained `(238,25,484,114)`. The initial locator refused output; later the selected window was raised through ordinary application UI, and current-image publication began. This sequence does not assign every locator refusal to coverage.
+
+The maintainer directly reported **“it works GREAT”**, described the image as looking fantastic, and independently exercised leaving the device-context page and returning. The image returned with a small perceived delay. This supports steady-image usability during the observed interval and contextual return; it does not quantify reacquisition latency, prove every displayed action/value, or independently confirm every control/audio row. The producer ended normally at its 180-second bound, sent CLEAR/disconnected, and both producer and FFmpeg were absent at the 21:16:44 UTC check. Bitwig remained open awaiting normal maintainer shutdown and exact official restoration.
+
+| Complete repaired live run | Samples | p50 ms | p95 ms | Max ms |
+| --- | ---: | ---: | ---: | ---: |
+| Source PTS intervals | 5,164 | 33.333 | 33.334 | 66.667 |
+| Complete frame-read invocation | 5,166 | 13.386 | 31.014 | 90.840 |
+| Capture PTS → read completion | 5,166 | 64.937 | 184.172 | 466.250 |
+| Accepted processing, excluding frame read | 3,421 | 15.902 | 22.379 | 173.015 |
+| Capture PTS → accepted send completion | 3,421 | 79.875 | 124.537 | 249.408 |
+
+3,451 frames were sent; accepted timing excludes the first 30 accepted frames. All 1,714 explicit frame discards are accounted for: 1,661 missing locator, 32 too old after processing, 19 too old at read and two context changes during processing. Other event counters were three acquisition starts, four context changes, 15 delivery-timeout checks and one frame failure. The frame failure was a selected-window ownership refusal followed by a new acquisition attempt; the exact lookup cause remains unresolved. No subsequent accepted-frame log followed that final attempt before the run ended, so this event is not separately claimed to have recovered. The user's successful device-page return occurred earlier and has its own accepted-frame readback.
+
+These distributions separate approximately 30-fps source delivery from accepted publication. They do not claim uninterrupted 30-fps output, zero late frames, zero fallback or a measured end-to-end physical display latency. Compared with the earlier failed run, accepted capture-to-send p95 decreased from 248.618 to 124.537 ms while the freshness limit and Java artifact stayed unchanged. The runs were not controlled matched workloads.
+
+One early same-run process snapshot showed producer 39.3% CPU / 202,208 KiB RSS and FFmpeg 33.5% / 1,101,248 KiB RSS. These are snapshots, not peak, steady-state or growth measurements. No frames, screenshots, capability contents or raw logs are committed. Remaining limitations include visible-screen coverage, locator acquisition failures, the intermittent ownership lookup refusal, unmeasured contextual return latency and native capture memory cost.
+
+Asked specifically about pads, pressure, encoders, transport and Push audio/headphones, the maintainer confirmed **“yes. they all worked fine. bitwig is now closed.”** Process/listener readback and session-directory inspection found no Bitwig application/audio-engine, producer, FFmpeg, listener, manifest, capability or context notice; the intentional dormant `owner.lock` remained. At **21:20:17 UTC**, the tested derivative was moved intact outside scan paths and the untouched official backup restored. SHA-256 readback was exactly `98dc3195ad8d911526e18b1005f09f69a1aedcb965b080565474104654345c5a`; the retained derivative still matched `abe439c9813f879db51a7a6f69b9270ffeec33e9346a8e534f96d7fee2fe9dbd`. One DrivenByMoss extension was scanned and unrelated extensions were untouched. Ordinary `open -a 'Bitwig Studio'` followed with all three JVM-option variables absent. Asked to confirm the standard display, controls and audio/headphones with no captured image, then quit normally, the maintainer replied **“Confirmed, and quit.”** Final readback at **21:27:22 UTC** verified no Bitwig application/audio-engine/plugin-host, producer or FFmpeg process, no port-45291 connection/listener and no live manifest/capability/context notice. Only the dormant `owner.lock` remained. The official hash and sole scanned DrivenByMoss extension were reverified. This completes the focused physical repair check and exact official recovery, not a claim that all source-lifetime or product limitations are resolved.
 
 Only after safe derivative custody and an ordinary Bitwig launch, run:
 
@@ -113,7 +137,7 @@ Only after safe derivative custody and an ordinary Bitwig launch, run:
 
 Read the ID from the current Bitwig window, not a historical record. The producer waits for the controller's native-Sampler Device Parameters context, reads the private V5A manifest and generation-specific context notice, and supplies only the center image. Leaving the page restores actual semantics locally in the controller. It never supplies aliases, values or button meanings. Stop with Ctrl-C or let the bounded duration expire. Restore the exact official extension after testing.
 
-Current limitations and actual ownership are in the [design](../../docs/design/sampler-context-lens.md#initial-ffmpeg-development-path). Most importantly: visible-screen acquisition, conservative occlusion refusal, window wholly within one unambiguous display (additional displays allowed), explicit window instance, English Sampler features, no proven modulator exclusion, no image markers, no live performance or physical acceptance yet. The older individual observations below are historical evidence, not qualification of the new producer.
+Current limitations and actual ownership are in the [design](../../docs/design/sampler-context-lens.md#initial-ffmpeg-development-path). Most importantly: visible-screen acquisition, conservative occlusion refusal, window wholly within one unambiguous display (additional displays allowed), explicit window instance, English Sampler features, no proven modulator exclusion and no image markers. The focused live measurements and physical observations above do not establish final product acceptance. The older individual observations below are historical evidence, not qualification of the new producer.
 
 ### Original single-frame local observation
 
