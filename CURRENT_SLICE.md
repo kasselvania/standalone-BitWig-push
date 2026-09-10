@@ -1,10 +1,10 @@
 # Current work
 
-**Sampler contextual lens — daily-use producer pass, September 10.**
+**Sampler contextual lens — daily-use service check failed; implementation paused.**
 
 The maintainer subsequently authorized the [Sampler context interaction](docs/design/sampler-context-lens.md), approved its LED/presentation behavior, and physically confirmed the repaired live image with context return and normal controls/audio. The official extension was restored exactly afterward. This branch is development work, not accepted main or an end-user release.
 
-The current pass removes transient window-ID/timed-command setup, makes the producer idle outside its valid controller context, and provides bounded start/stop/status behavior. The existing FFmpeg visible-screen acquisition and layout remain; there is no new capture backend or DrivenByMoss change in this pass. Installed-service permissions, restart and daily-use behavior still need direct qualification. See [run instructions and exact evidence](visuals/sampler/README.md).
+The September 10 installed-service check found current controller context and connected after the maintainer enabled the existing setting and restarted Bitwig, but delivered zero captured frames. The maintainer rejected further iteration on this end-user setup approach. The service is stopped and disabled at login; Bitwig/FFmpeg/producer/listener are absent; the exact official extension was restored at 22:40:50 UTC. The service implementation is not qualified daily-use tooling. No further implementation or fixture test is active. See [exact evidence](visuals/sampler/README.md#installed-service-check-failed--september-10).
 
 ## Preserve
 
