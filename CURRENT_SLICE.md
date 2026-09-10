@@ -1,8 +1,10 @@
 # Current work
 
-**Capture-experiment retirement — no capture implementation active.**
+**Sampler contextual lens — daily-use producer pass, September 10.**
 
-The maintainer stopped V5B and authorized removal of the accumulated capture experiments from current product code and architecture, plus recoverable removal of agent-added Mac tools. This supersedes the former execution instruction to continue [issue #57](https://github.com/kasselvania/standalone-BitWig-push/issues/57).
+The maintainer subsequently authorized the [Sampler context interaction](docs/design/sampler-context-lens.md), approved its LED/presentation behavior, and physically confirmed the repaired live image with context return and normal controls/audio. The official extension was restored exactly afterward. This branch is development work, not accepted main or an end-user release.
+
+The current pass removes transient window-ID/timed-command setup, makes the producer idle outside its valid controller context, and provides bounded start/stop/status behavior. The existing FFmpeg visible-screen acquisition and layout remain; there is no new capture backend or DrivenByMoss change in this pass. Installed-service permissions, restart and daily-use behavior still need direct qualification. See [run instructions and exact evidence](visuals/sampler/README.md).
 
 ## Preserve
 
@@ -11,11 +13,12 @@ The maintainer stopped V5B and authorized removal of the accumulated capture exp
 - Semantic/control behavior, current-semantic restoration, raster sink, V1D-2 receiver/protocol, sole Push USB writer.
 - Accepted V5A ordinary-launch activation and private rendezvous.
 - Published history and factual experiment records.
+- The Sampler development controller head `93fb2a48d1e35dfeb69f902a44d8035a0b7db557` and approved LED/action/value presentation, without confusing that unmerged branch with accepted integration.
 
-## Remove from the active product
+## Not part of this pass
 
-The experimental macOS capture package and its tests, profiles and packaging; capture-specific and unimplemented presentation/workspace designs that had acquired standing as required structure.
+Slice mode, device browsing, remote-to-image markers, arbitrary-device recognition, hidden-window capture, a generic device/source framework, Linux, and changes to protocol/raster/USB/MIDI/audio owners.
 
-No DrivenByMoss edit, new capture backend, FFmpeg implementation, device-localization project or physical test matrix belongs to this cleanup. No history rewrite or merge is authorized.
+V2–V5B capture packages and speculative structures remain retired. This work does not resume [issue #57](https://github.com/kasselvania/standalone-BitWig-push/issues/57) or rehabilitate those experiments. No merge or unrelated housekeeping is authorized.
 
 [Retirement boundary](docs/research/capture-experiments-retired.md).

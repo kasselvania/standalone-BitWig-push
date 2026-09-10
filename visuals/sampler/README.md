@@ -1,12 +1,73 @@
-# Sampler device-location proof
+# Sampler contextual lens
 
 Local implementation work for the maintainer's September 9, 2026 interaction request. **The repaired live producer passed a focused steady-image/context-return and controls/audio recheck; it is not yet final-product accepted.** Exact measurements, remaining limitations and official recovery are recorded below. [Interaction contract](../../docs/design/sampler-context-lens.md).
 
-September 10: the maintainer chose [layout A](presentation-prototype/README.md): four permanent remote readouts on each side, original action/navigation words retained. The disposable A/B simulator is removed after the decision; its code remains in Git history. The controller renderer and bounded FFmpeg producer are now under development, **not physically accepted**.
+September 10: the maintainer chose [layout A](presentation-prototype/README.md): four permanent remote readouts on each side, original action/navigation words retained. The disposable A/B simulator is removed after the decision; its code remains in Git history. The repaired image has since passed the focused physical check below; the new daily-use producer pass remains unqualified on hardware.
 
 September 10: [controller-color trace and existing-setting diagnostic](controller-color-trace.md) separates Bitwig's remote mapping colors, DrivenByMoss text-theme settings, and physical button LEDs. No new controller or capture behavior is implemented by that investigation.
 
-The locator recognizes a constellation of Sampler controls, then measures the enclosing control-body border. It reports the body's center and current width/height. It does not use a stored desktop location, a normalized window crop, or a fixed device size. The measured body currently excludes the narrow device-name/power strip on the left. Exact desired presentation is pending maintainer confirmation.
+The locator recognizes a constellation of Sampler controls, then measures the enclosing control-body border. It reports the body's center and current width/height. It does not use a stored desktop location, a normalized window crop, or a fixed device size. The measured body excludes the narrow device-name/power strip on the left; modulator exclusion is still not solved.
+
+## Daily-use producer pass — September 10, prepared for live verification
+
+Scope: the already approved Sampler interaction, not Slice mode or Browser. Construction and ownership are in the [daily-use design](../../docs/design/sampler-context-lens.md#daily-use-pass--commissioned-september-10). Implementation basis `ccc781b000399239b54563193047c0f5598c3b7f`, tree `77efb4ea546b86fe5e37f483109dea2182854420`. The exact changed sources are identified by the commit containing this record; source and test hashes below tie the external build to that content without a self-referential commit hash.
+
+Changes:
+
+- No-argument `SamplerLive` runs until stopped, discovers current controller authority, and selects exactly one visible layer-zero window owned by that verified Bitwig PID. Missing/ambiguous windows abstain. A diagnostic `--window-id` override and bounded `--duration` remain available; neither is needed in ordinary mode.
+- No eligible Sampler context means no FFmpeg child and no connection. Context exit clears/closes both. Return reacquires current pixels under a fresh controller ticket. Same-source landmark signatures may survive the exit, but are revalidated on fresh pixels; no frame survives it. Geometry/window/display changes reset that cache.
+- Process birth and executable are read through `libproc`; executable bundle identity is checked against `com.bitwig.studio`. This removes dependence on AppKit's run-loop-updated running-application list in a synchronous CLI. [Apple documents that update behavior](https://developer.apple.com/documentation/appkit/nsrunningapplication). It is a plausible contributor to the earlier intermittent refusal, **not a proven historical root cause** and not yet a physically verified repair.
+- A failed connection known to precede HELLO can retry its unused ticket. Any attempted/partial HELLO still consumes it. V1 wire messages, sequence, destination, 250-ms message deadline and receiver are unchanged.
+- One producer lock and one overwritten status file live in `~/.pushwig/sampler-producer-v1`, outside Java's ingress/context directories. Eight timing series retain at most 10,000 samples each. Per-iteration autorelease pools bound autoreleased objects; no new capture worker, image store or FIFO is added. FFmpeg's native allocation remains separate and is not zero-copy.
+
+### Build and normal start/stop
+
+```sh
+sampler_build=$(mktemp -d /tmp/pushwig-sampler-live.XXXXXX)
+sh visuals/sampler/build-live.sh "$sampler_build"
+
+sampler_package=$(mktemp -d /tmp/pushwig-sampler-package.XXXXXX)
+sh visuals/sampler/sampler-service.sh prepare "$sampler_build/SamplerLive" "$sampler_package"
+sh visuals/sampler/sampler-service.sh verify "$sampler_package"
+```
+
+Preparation installs and starts nothing. Once the exact build is ready for the controlled live check:
+
+```sh
+sh visuals/sampler/sampler-service.sh install "$sampler_package"
+sh visuals/sampler/sampler-service.sh start
+sh visuals/sampler/sampler-service.sh status
+sh visuals/sampler/sampler-service.sh stop
+```
+
+Installation is deliberately disabled until `start`. It installs the producer below `~/.pushwig/sampler-producer-v1` and one per-user `~/Library/LaunchAgents/com.kasselvania.pushwig.sampler.plist`. `start` also enables future login startup; `stop` unloads it and disables future login startup. There is no root daemon, foreground capture application, Bitwig launcher, JVM-option injection, or preference editor. The installer refuses existing installations rather than silently overwriting them. Inspect/stop an old installation before a deliberately managed update; automatic updating is not implemented.
+
+The agent does not auto-respawn on process failure; inspect status and explicitly start it again. Status is bounded to 16 KiB and refreshed approximately every five seconds; stdout/stderr go to `/dev/null` under launchd. A crash can leave the last snapshot (or an incomplete private status temporary file); **check `observedAt`, live PID and process birth, not a retained “Live” string, for liveness**. The snapshot contains no capability or pixels. `owner.lock` is dormant after exit and is not session authority.
+
+This exact service launch path has **not yet been capture-permission or physical-use qualified**. No agent is installed or loaded by preparation/tests. Do not infer TCC permission from a prior terminal capture, reset permissions, or repeatedly replace app identities to make it work. The next live check must establish ordinary permission behavior once. `SamplerLive` is a locally linker/ad-hoc-signed executable, not a notarized app; installed Homebrew FFmpeg libraries remain dependencies.
+
+The official extension cannot provide this development Sampler context. Live testing still uses the already-tested derivative under the save/quit/install/rollback procedure, not another Java build. The producer never replaces an extension itself.
+
+### Exact local result
+
+Apple Swift 6.3.1, target arm64 macOS 26; installed FFmpeg 9.0.1 (`libswscale.10`, `libavutil.61`). The complete affected runner passed **117 locator + 206 live-path checks**. These include 61 new daily-use checks exercising the actual production loop with generated FFmpeg source bytes, real fit/alpha conversion and a real loopback protocol peer: pre-context idle, pre-HELLO failure/retry, exactly one activation, context return, ambiguity, move/resize, recreation, context loss during processing, stale-frame refusal, new ingress generation, and idempotent shutdown. The generated peer is test-only; it adds no production receiver. The generated locator tests independently cover recognition; the lifecycle test supplies known body coordinates so it does not pretend to validate live OCR.
+
+The socket-backpressure regression exited at **250.484 ms** (one sample; not a performance campaign). After the full build, the focused package test passed **8 checks**, including no transient runtime arguments, output-log suppression, overwrite refusal and tamper refusal. One initial package attempt exposed that this installed `plutil -replace` inserts an array element; preparation now starts with an empty array and explicitly inserts one executable. The invalid staged package was never installed. The maintained runner includes this package test for subsequent builds.
+
+A two-second run of the exact executable with Bitwig closed exited normally with zero accepted/discarded frames, zero timing samples, and `capturing=false`. Four normal missing-authority polls were counted. It created only its private producer lock/status; no extension, capture permission, launch agent or Bitwig setting changed. This proves the idle executable path, **not installed-service capture or daily-use performance**.
+
+| Artifact/source | SHA-256 |
+| --- | --- |
+| Exact `SamplerLive`, 329,976 bytes; `codesign --verify --strict` passed | `ea02b0bb5df7543c055e216460df416634c3423bbcfdd69605646948dbe6413d` |
+| Prepared agent plist (contains local installation path; not committed) | `34d65493846b95acddf62f1046d18c80dd3acc6baaf1872c46f1bbe66dfa6d32` |
+| `SamplerLive.swift` | `20a22b5d1bc5e0a588b89aa6ecece437bd62d5e47a8d632e4f6e4dcf2e4f77cd` |
+| `SamplerConnection.swift` | `117a72ea54c9e8126e911cd8873f039a75657a42b6d6ffd4696ff17217cfaeeb` |
+| `SamplerProcess.swift` | `8b61a861a0ce442f8c54a70cb0490eb1798a30ae728f1a9afc262b4f42602f68` |
+| `SamplerHost.c` | `bcb48bf24bd6b8781ba2c1933a21fd09b610f6da11df080484b2da7da6a138a0` |
+| `SamplerService.swift` | `d17759e7b25370e68e8061413829959bf894affc84ac0c1df68f50f71b0d673e` |
+| `TestSamplerRuntime.swift` | `3000946c642fdd956dd05dc6dab3753011d774da0d625de7b83714d3ee8d53a2` |
+
+No new physical result, lower context-return latency, sustained RSS result or service-permission success is claimed. The known visible-screen/occlusion limitations, Expressions/modulator inclusion and unproved arbitrary same-index device replacement remain. Java head/tree and tested artifact below are unchanged; the official extension remains installed with SHA-256 `98dc3195ad8d911526e18b1005f09f69a1aedcb965b080565474104654345c5a`.
 
 ## Run locally
 
@@ -17,7 +78,7 @@ sampler_live_output=$(mktemp -d /tmp/pushwig-sampler-live.XXXXXX)
 sh visuals/sampler/build-live.sh "$sampler_live_output"
 ```
 
-The runner uses installed Swift and FFmpeg 9 libraries, builds outside the checkout, and runs generated locator, stream, crop/fit, private-schema and blocked-socket tests. It does not acquire the desktop or touch Bitwig/Push. Current generated results: 117 locator checks; 145 live-path checks including 40 changing FFmpeg `testsrc` frames, padded stride, different crop pixels, output-buffer reuse, large-window storage, multiple-display selection, unrelated-window continuity versus actual coverage, EOF/close, an intentional consumer stall and a stalled-reader write failure at 250.921 ms (one timing sample, not a performance campaign). It also builds the opt-in generated `TestSamplerHandoff` benchmark below.
+The runner uses installed Swift and FFmpeg 9 libraries, builds outside the checkout, and runs generated locator, stream, crop/fit, private-schema and blocked-socket tests. It does not acquire the desktop or touch Bitwig/Push. Before the daily-use additions above, the focused delivery-repair build passed 117 locator checks and 145 live-path checks including 40 changing FFmpeg `testsrc` frames, padded stride, different crop pixels, output-buffer reuse, large-window storage, multiple-display selection, unrelated-window continuity versus actual coverage, EOF/close, an intentional consumer stall and a stalled-reader write failure at 250.921 ms (one timing sample, not a performance campaign). It also builds the opt-in generated `TestSamplerHandoff` benchmark below.
 
 The separate DrivenByMoss branch `pushwig/sampler-context-render` is based on the physically passed, still-unmerged LED head `cf0e70ea9f2144a45c1dc6039a25c9b90a06b92b`. Its six affected suites cover settings/rendezvous/lifecycle, actual raster pipeline, actual DeviceParams mode data/touch and the native coordinator against fake API endpoints. Native endpoint tests are not real Bitwig API acceptance.
 

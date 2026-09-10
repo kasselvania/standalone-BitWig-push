@@ -70,4 +70,22 @@ These are development implementations with generated regression tests. They are 
 
 The September 10 live layout run failed reliability: individual frames looked good to the maintainer, but video repeatedly fell back to semantics. [Retained timings and the rejected local optimization](../../visuals/sampler/README.md#september-10-live-layout-flicker-failure-not-acceptance) are implementation evidence, not an accepted source model. Capture and transport must sustain current frames; extending stale validity or presenting an old image is not the repair. Ordinary occlusion and display changes also need a usable, stable fallback/reacquisition experience before acceptance.
 
-The subsequent delivery repair passes generated checks and a non-publishing native FFmpeg acquisition measurement. It does not reclassify the failed physical test: corrected locator/context/fit/ingress composition still requires a focused live Push recheck, including the previously observed intermittent process/window identity lookup refusals. No layout, Java, receiver, freshness or protocol change is part of this repair.
+The subsequent delivery repair passed a focused physical steady-image/context-return and controls/audio recheck, followed by byte-exact official recovery. [The exact run and remaining limitations](../../visuals/sampler/README.md#focused-repaired-run-september-10-approximately-21122115-utc) remain separate from final-product acceptance. One intermittent identity refusal and a small perceived return delay were retained. The repair did not change layout, Java, receiver, freshness or protocol.
+
+## Daily-use pass — commissioned September 10
+
+Keep the approved presentation and controller owners. This pass makes the existing producer usable without an agent supplying a window ID or a timed command; it does not add Slice mode, Browser, image markers, a new capture backend or a general device framework.
+
+Construction/runtime:
+
+1. A separately stoppable per-user producer starts through ordinary local service tooling. Its singleton lock and bounded status file are outside the accepted ingress directory. It neither launches Bitwig nor edits its preferences.
+2. With no valid current V5A/Sampler notice, it remains idle with no FFmpeg child and no connection.
+3. Validate the manifest owner's PID, birth time and actual executable's Bitwig bundle identity using current kernel/filesystem facts. Do not make this synchronous command-line loop depend on AppKit's run-loop-updated running-application list.
+4. Select exactly one visible ordinary window of that verified PID. Titles, largest/first window and monitor position do not choose it. Missing/ambiguous ownership restores semantics; diagnostic explicit-window selection remains available.
+5. Current eligible context plus current unique source permits the existing synchronous FFmpeg/locator/fit/v1 path. Context loss closes capture and clears/disconnects; geometry/window/session changes invalidate old pixels and restart from current facts.
+6. Cached landmark geometry may survive a context exit only for the same source geometry. Every reused landmark still has to validate against newly acquired pixels before publication. Neither cached imagery nor a reused context ticket is allowed.
+7. Normal shutdown clears/disconnects and stops the owned FFmpeg child. Status/metrics storage remains bounded during an untimed run.
+
+The first unproved daily-use dependency is source/permission behavior when the producer is started through its installed user-service path rather than this development terminal. That must be verified explicitly, without permission resets or a new capture-family search. A build or service-process listing is not daily-use acceptance.
+
+Shared code is limited to actual process/window lifetime, bounded transport, crop/fit, and controller-owned bindings/presentation. Sampler recognition and its eligibility notice remain device-specific. Device categories and future behavior-family designs do not impose inheritance trees or a public profile SDK.

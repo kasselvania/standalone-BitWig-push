@@ -6,9 +6,10 @@
 docs/            accepted contracts, contributor guides and research references
 evidence/        historical experiment and real-hardware records
 scripts/         repository maintenance
+visuals/sampler/ current narrow Sampler lens development, generated tests and run evidence
 ```
 
-The retired `capture/macos` package is no longer built or tested as current tooling. There is no capture helper to install and no screen-recording permission prerequisite for working on the accepted frame/activation foundation.
+The retired `capture/macos` package is no longer built or tested as current tooling. There is no screen-recording permission prerequisite for working on the accepted frame/activation foundation or running the generated Sampler tests. Real Sampler video does require ordinary capture permission; it is separately qualified, never enabled through TCC manipulation.
 
 Historical source is linked from [capture retirement](research/capture-experiments-retired.md). Do not copy it back into the product merely to make old build commands work.
 
@@ -38,7 +39,7 @@ Use that repository's affected test runner when changing runtime code; do not ad
 
 Read [Protocols](PROTOCOLS.md) and the [ordinary-launch activation guide](design/ordinary-launch-ingress-activation.md). A producer discovers the current private session, reads its capability separately and publishes bounded complete frames. The official upstream extension has no Pushwig ingress; that is expected.
 
-A generated producer can exercise the accepted path without a screen-capture backend. New production video work requires an explicit implementation request; this cleanup supplies no replacement source.
+A generated producer can exercise the accepted path without a screen-capture backend. The maintainer's subsequent Sampler implementation request is documented in its [design](design/sampler-context-lens.md). Use its [one build/test runner and start/stop instructions](../visuals/sampler/README.md); do not resurrect retired helper commands. No DrivenByMoss rebuild is needed for the current producer-only pass.
 
 ## Safe physical work
 

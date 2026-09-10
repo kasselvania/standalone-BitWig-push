@@ -43,9 +43,11 @@ The [activation design](design/ordinary-launch-ingress-activation.md) owns the i
 
 ## Video-source status
 
-No capture implementation is currently maintained or selected. The V2–V5B helpers and their unimplemented resolver/camera/workspace structures are retired, not a framework that successor work must extend.
+The V2–V5B helpers and their unimplemented resolver/camera/workspace structures are retired, not a framework that successor work must extend.
 
-A future producer needs only to satisfy the existing authenticated frame and session contracts. The maintainer's requested FFmpeg-based video/composition direction has not yet been implemented or qualified. There is no claim of permanent API support, device recognition, or Linux compatibility.
+The current [Sampler lens development](design/sampler-context-lens.md) uses FFmpeg AVFoundation visible-screen acquisition, a Sampler-specific locator, uniform fit and the existing ingress. DrivenByMoss retains context eligibility, button actions, remote values, touch and final presentation. This is not hidden-window capture, arbitrary-device recognition, permanent API support or Linux compatibility.
+
+Its daily-use producer owns only its own lifecycle/status and current image work. It remains idle without eligible controller authority. Reusable mechanisms are justified by actual shared responsibilities; native-device categories, behavior families, Sampler-specific behavior and Browser workflow are distinct concerns, not a speculative class hierarchy.
 
 [Historical experiments and retirement](research/capture-experiments-retired.md) retain findings without granting them architectural authority.
 

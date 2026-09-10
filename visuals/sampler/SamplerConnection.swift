@@ -1,4 +1,3 @@
-import AppKit
 import Darwin
 import Foundation
 
@@ -96,8 +95,7 @@ struct SamplerAuthority: Equatable {
         guard let generation = m["session_generation"] as? String, isHex(generation, count: 32) else { throw SamplerFailure(description: "Invalid ingress generation") }
         let notices = try openChild(runtime, "sampler-lens-v1"); defer { Darwin.close(notices) }
         let authority = try parse(manifest, notice: readFile(notices, generation + ".json", cap: 1024))
-        try samplerRequire(NSRunningApplication(processIdentifier: authority.pid)?.bundleIdentifier == "com.bitwig.studio", "Ingress owner application lookup no longer matches Bitwig")
-        try samplerRequire(sampler_process_start_millis(authority.pid) == authority.started, "Ingress owner process-start lookup changed or failed")
+        try SamplerProcess.read(authority.pid).requireBitwig(started: authority.started)
         try samplerRequire(try readFile(ingress, "current.json", cap: 4096) == manifest, "Ingress changed during discovery")
         return authority
     }
@@ -118,6 +116,10 @@ struct SamplerAuthority: Equatable {
 
 /// Existing v1 framing; one connection per context ticket, complete-message deadline 250 ms.
 final class SamplerConnection {
+    struct StartupFailure: Error, CustomStringConvertible {
+        let authenticationAttempted: Bool, cause: Error
+        var description: String { String(describing:cause) }
+    }
     let authority: SamplerAuthority
     private var fd: Int32 = -1, sequence: UInt64 = 0
     private var header = [UInt8](repeating: 0, count: 80)
@@ -129,6 +131,7 @@ final class SamplerConnection {
         self.authority = authority
         guard let session = authority.session else { throw SamplerFailure(description: "No Sampler context") }
         fd = socket(AF_INET, SOCK_STREAM, 0)
+        var authenticationAttempted = false
         do {
             try samplerRequire(fd >= 0 && fcntl(fd, F_SETFL, O_NONBLOCK) == 0, "Cannot create bounded producer socket")
             var one: Int32 = 1
@@ -148,8 +151,11 @@ final class SamplerConnection {
             var capability = try capabilityReader?() ?? authority.capability()
             defer { _ = capability.withUnsafeMutableBytes { $0.initializeMemory(as: UInt8.self, repeating: 0) } }
             try samplerRequire(capability.count == 32 && (try authorityReader()) == authority, "Authority changed before authentication")
+            authenticationAttempted = true
             try capability.withUnsafeBytes { try message(type: 1, sequence: 0, payload: $0) }
-        } catch { close(); throw error }
+        } catch {
+            close(); throw StartupFailure(authenticationAttempted:authenticationAttempted,cause:error)
+        }
     }
     deinit { close() }
     func close() {

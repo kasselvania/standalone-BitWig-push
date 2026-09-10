@@ -6,11 +6,13 @@ The accepted DrivenByMoss integration provides current-semantic composition, a v
 
 V5A's generated-frame acceptance demonstrated physical Push control/audio continuity, fallback, shutdown/restart and exact official rollback. [Design](design/ordinary-launch-ingress-activation.md) · [Evidence](../evidence/v5a-ordinary-ingress-activation/README.md).
 
-## Current reset
+## Current interaction
 
 The accumulated V2–V5B capture experiments are retired from current code and architectural structure. Their historical results remain inspectable, but they are not prerequisites or a reusable product framework.
 
-The maintainer wants a simple FFmpeg-based video/composition layer feeding the proven ingress. That is the requested direction, not a selected acquisition API, validated design or implemented backend. No replacement is built in this cleanup.
+The maintainer subsequently commissioned the [Sampler contextual lens](design/sampler-context-lens.md). Its useful live image, colored encoder-slot LEDs, permanent values and retained button actions passed a focused physical check. The immediate job is dependable daily-use startup/context/loss/recovery for that same interaction, not another source framework.
+
+After that passes, Sampler Slice mode is a concrete test of device-specific dynamic presentation. Device browsing is a separate controller workflow deserving its own design, not an instrument subclass. Shared mechanics should be extracted only where these real interactions demonstrate reuse; device category, remote-binding semantics, behavior family and device-specific state must not be conflated.
 
 ## Later possibilities, not active structure
 

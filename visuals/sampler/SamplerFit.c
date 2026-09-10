@@ -4,15 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <libproc.h>
-#include <sys/proc_info.h>
-
-int64_t sampler_process_start_millis(int32_t pid) {
-    struct proc_bsdinfo info;
-    if (proc_pidinfo(pid, PROC_PIDTBSDINFO, 0, &info, sizeof(info)) != sizeof(info)) return -1;
-    return (int64_t)info.pbi_start_tvsec * 1000 + info.pbi_start_tvusec / 1000;
-}
-
 struct SamplerFit { struct SwsContext *scaler; uint8_t output[484 * 114 * 4]; };
 SamplerFit *sampler_fit_create(void) { return calloc(1, sizeof(SamplerFit)); }
 void sampler_fit_destroy(SamplerFit *fit) {

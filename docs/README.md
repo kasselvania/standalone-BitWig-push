@@ -16,9 +16,9 @@
 - [Ordinary-launch activation and rendezvous](design/ordinary-launch-ingress-activation.md)
 - [V5A physical acceptance and rollback](../evidence/v5a-ordinary-ingress-activation/README.md)
 
-## Current maintenance
+## Current development
 
-[CURRENT_SLICE.md](../CURRENT_SLICE.md) records capture-experiment retirement. [The retirement record](research/capture-experiments-retired.md) identifies the removal boundary and published history. V5B is stopped; no capture implementation is active.
+[CURRENT_SLICE.md](../CURRENT_SLICE.md) points to the narrow [Sampler contextual lens](design/sampler-context-lens.md), its daily-use pass and [tests/evidence](../visuals/sampler/README.md). [The retirement record](research/capture-experiments-retired.md) remains the removal boundary for V2–V5B; those experiments are not resumed.
 
 ## Other references
 
