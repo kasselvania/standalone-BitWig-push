@@ -57,13 +57,21 @@ The Text preference was restored to `ffffff`; its white swatch and shorthand `ff
 
 The inspected source offers a plausible explanation for the refresh behavior: `AbstractGraphicDisplay.send` compares `ModelInfo`, while a Text-theme change does not change `ParameterComponent`'s equality fields. This is source-consistent with navigation causing a redraw, **not an independently reproduced root-cause proof against the installed official binary**. No redraw repair was made.
 
-## Smallest proposed controller-only improvement
+## Superseded screen-accent proposal
 
 Keep existing Device Parameters names, formatted values, parameter bars and controls. Add a small slot-number/color accent in that existing semantic view, using an explicit eight-slot presentation palette corresponding to the observed Bitwig ordering. The starting display seam is `DeviceParamsMode.updateDisplay2` and its parameter-component presentation, not video ingress or `PushUsbDisplay`.
 
 This would be an explicitly maintained palette, not live synchronization with a user-editable Bitwig palette. It must remain contextual to the current device-parameter binding, handle empty/reassigned slots, and leave Track/Mix and existing button-function LEDs intact. Do not wire it to the undocumented last-clicked color as a shortcut. A change to LED meanings is a separate product decision, not necessary for this first semantic improvement.
 
 This is a recommendation, not implemented/accepted behavior. It does not localize a device control in pixels, solve asynchronous context authority or stale touch bookkeeping, provide new target identity, or qualify a screen feed.
+
+## Maintainer-approved LED-only direction
+
+The maintainer subsequently rejected decorating the on-screen parameter slots: that contextual screen is intended to make way for the Sampler visual. The approved immediate proof instead uses the **physical upper display buttons beneath the eight encoders** as the remote-slot color reference. The earlier screen-accent recommendation above is superseded, not an additional work item.
+
+Construction/runtime: keep the existing Push hardware registration, group indices, mode manager and parameter binding. While Push 3 is in Device Parameters mode, its existing upper-row color supplier returns the corresponding remote-slot palette color for an existing remote and off for an unassigned slot or missing device. Leaving that mode returns light ownership to the next existing mode, including temporary Master mode. Button actions, the lower device/page-selection row, displayed pixels, touch routing, ingress and USB output do not change. No new setting, queue, observer, writer or producer is needed.
+
+The first physical question is whether the existing Push palette gives a useful recognizable match to Bitwig's eight slot-color families. This is a fixed presentation mapping, not a live RGB readback or a promise of exact perceptual equality between LEDs and a monitor. Physical LED/function acceptance remains pending. Push 1/2 are outside this first proof and should retain their existing behavior.
 
 ## Verification and custody
 
@@ -79,3 +87,17 @@ javap -classpath /path/to/extension-api-21.jar \
 ```
 
 No executable source changed in this continuation; no Java build or physical matrix was rerun. Only this note and its README link are added. No screenshot, proprietary frame, token, project, or complete log is committed.
+
+## LED-only implementation follow-through
+
+After the maintainer approved the physical-LED interpretation, one clean DrivenByMoss worktree/branch was created directly from accepted integration `997158b0a4ddd932a0a985c8b74ffff1e631120f` / tree `dbf3dc8d4e6d6b95a654088f85b8a183584063b7`. The earlier diagnostic branch and its untracked files were not included or changed. This later implementation is separate from the read-only investigation described above.
+
+- Branch: `pushwig/device-remote-led-colors`; source head `6e8e15f463977ad980befe1bd5fb0d3e12ba2d13`, tree `6d366ced9c09654a3d2845f49a4a5641a9e19cd4`, parent the accepted integration above. Pushed and read back from origin; not merged.
+- Production change: only `src/main/java/de/mossgrabers/controller/ableton/push/mode/device/DeviceParamsMode.java`. The existing upper row is `ROW2_1`–`ROW2_8`, MIDI CC 102–109. The lower device/page buttons are untouched.
+- Existing Push palette indices: `5, 9, 13, 17, 25, 37, 48, 56` (red/orange/yellow/lime/green/blue/purple/pink). Push 3 and the actual active `DEVICE_PARAMS` mode are required. Missing device/unassigned remote yields off. The new branch of the color method has no allocation or I/O; one static eight-int array is initialized once. This is still a color-family mapping, not calibrated equality with monitor pixels.
+- Committed focused test: `DeviceRemoteLedColorTest.java`; runner `scripts/test-pushwig-remote-led-colors.sh`; [implementation/run note](https://github.com/kasselvania/DrivenByMoss/blob/6e8e15f463977ad980befe1bd5fb0d3e12ba2d13/docs/pushwig-remote-led-colors.md). The tests exercise the production modes, manager and page provider with fake DAW/hardware endpoints, not a duplicate mode implementation.
+- Focused suite passes 190 assertions, including repeated reads, remote replacement through the real bank-page observer, binding preservation, lower-row colors, existing button actions, Track/Volume/Device Chains/temporary Master exits and returns, and Push 1/2 regressions. The same test against the accepted package fails at the new eight-color expectation, confirming that it distinguishes the old behavior. Assertions are not separate physical cases.
+- One final Java 21.0.11/Maven 3.9.16 package build through `scripts/test-pushwig-external-ingress-activation.sh`; its existing settings, rendezvous, and receiver/display lifecycle suites all pass. The focused suite also passes against the final package. `git diff --check` passes.
+- Final candidate archive: 14,402,949 bytes; SHA-256 `c2e1355b0f10772ad5ab246cbd1fd6c546c41fc2df71a7885a34ab026b76af40`. `unzip`/`diff -qr` comparison to accepted V5A archive `ea69daa18a41011105c8228035dd377964ca05f5cf37196f0629fc70824050e6` finds only `DeviceParamsMode.class` different; all other payloads and the manifest are byte-identical, with no added/removed entries. `PushUsbDisplay.class` is unchanged at `288b576b3f2ed064f8d9a0c6f6d384fb3516a0858cc22e7879bee896df83dec3`. Screen/action method bodies within the changed class are unchanged in the source diff.
+
+Physical LED hue/function acceptance is **pending**. At this checkpoint the official installed extension was independently rehashed unchanged, Bitwig was running, and no ingress manifest/capability existed (only dormant `owner.lock`). The maintainer was asked to save/quit before any swap; no installation, force quit, or unsaved-project discard occurred. Neither the deterministic tests nor this pushed branch constitute physical acceptance. No source PR or new central PR was opened at this checkpoint.
