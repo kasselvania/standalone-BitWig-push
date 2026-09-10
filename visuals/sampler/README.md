@@ -4,6 +4,8 @@ Local implementation work for the maintainer's September 9, 2026 interaction req
 
 September 10: [touch-led 960×160 presentation preview](presentation-prototype/README.md), prepared for desk review with generated inputs, actual render checks, and an FFmpeg coordinate proof. It does not resolve the live identity/binding gaps below and does not install or connect anything to Bitwig/Push.
 
+September 10: [controller-color trace and existing-setting diagnostic](controller-color-trace.md) separates Bitwig's remote mapping colors, DrivenByMoss text-theme settings, and physical button LEDs. No new controller or capture behavior is implemented by that investigation.
+
 The locator recognizes a constellation of Sampler controls, then measures the enclosing control-body border. It reports the body's center and current width/height. It does not use a stored desktop location, a normalized window crop, or a fixed device size. The measured body currently excludes the narrow device-name/power strip on the left. Exact desired presentation is pending maintainer confirmation.
 
 ## Run locally
