@@ -18,7 +18,7 @@ do
         xcrun swiftc -module-cache-path "$sampler_output/ModuleCache" -O -warnings-as-errors -D SAMPLER_TEST -import-objc-header "$sampler_source/SamplerBridge.h" \
             "$sampler_source/SamplerLocator.swift" "$sampler_source/FFmpegSamplerStream.swift" \
             "$sampler_source/SamplerProcess.swift" \
-            "$sampler_source/SamplerConnection.swift" "$sampler_source/SamplerLive.swift" "$sampler_source/TestSamplerLive.swift" "$sampler_source/TestSamplerRuntime.swift" \
+            "$sampler_source/SamplerConnection.swift" "$sampler_source/SamplerLive.swift" "$sampler_source/TestSamplerLive.swift" "$sampler_source/TestSamplerRuntime.swift" "$sampler_source/TestSamplerLocator.swift" \
             "$sampler_output/SamplerFit.o" "$sampler_output/SamplerHost.o" -L/opt/homebrew/lib -lswscale -lavutil -o "$sampler_output/$sampler_program"
     else
         xcrun swiftc -module-cache-path "$sampler_output/ModuleCache" -O -warnings-as-errors -import-objc-header "$sampler_source/SamplerBridge.h" \

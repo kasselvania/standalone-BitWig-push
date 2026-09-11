@@ -2,7 +2,10 @@ import CoreGraphics
 import CoreText
 import Foundation
 
-@main struct TestSamplerLocator {
+#if !SAMPLER_TEST
+@main
+#endif
+struct TestSamplerLocator {
     static var checks = 0
     static func check(_ value: Bool, _ label: String) {
         guard value else { fputs("FAIL: \(label)\n", stderr); exit(1) }

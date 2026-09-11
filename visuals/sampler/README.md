@@ -40,7 +40,34 @@ Eight metric series each retain at most 10,000 timings, with lifetime counts/max
 
 The installed LaunchAgent reached controller context but FFmpeg delivered zero complete frames. The exact background permission/source cause was not established. The service was disabled and the official artifact restored exactly. This slice does not retry that approach. The complete failed implementation and evidence remain in Git history at `2277be61cc45200c81b93874d005c92b13509724`.
 
-### Foreground qualification
+### Continuity repairs — generated verification, physical check pending
+
+Latest maintainer authorization treats the foreground lifecycle as provisionally proven and permits two repository-owned corrections without reopening acquisition. Foreground checkpoint `dada4a96a35d0a1214b726503c03612dd8b4ef31`, tree `b4c420273927f74811de502b74e73bc32cf9a2d7`, preserves the service deletion, useful runtime and factual blocked session. The checkpoint is not acceptance. The previous blocked-run record below remains historical evidence, not a prohibition on this newly authorized repair.
+
+**Controller repair:** DrivenByMoss commit `56d8a7e8cbc25c1212a983a0f8824d1d55674f3e`, parent `93fb2a48d1e35dfeb69f902a44d8035a0b7db557`, tree `d4aaf37dd2d55e73cbdfaf43943c04df9e0f4533`. Exact played-note/chord origin is `AbstractView.displayChord()`. It now uses `IDisplay.notifyPlayedChord()` whose default remains ordinary notification. Push2Display suppresses only that typed full-screen feedback during eligible available Sampler context. Every other notification/overlay stays blocking; no string matching and no producer notification awareness. This is the authorized minimal suppression option, not a compact badge.
+
+Changed Java paths: `framework/controller/display/IDisplay.java`, `framework/featuregroup/AbstractView.java`, `controller/ableton/push/controller/Push2Display.java` under `src/main/java/de/mossgrabers/`, and `src/test/java/de/mossgrabers/controller/ableton/push/controller/ExternalRasterIngressLifecycleTest.java`. Java 21 package and all six affected suites passed (settings, rendezvous, lifecycle; composition 470, LEDs 217, native API simulation 35). Initial sandbox socket refusal was resolved by running the same compiled tests with loopback permission, not another build. Real production display tests preserve image for typed notes, refuse identical ordinary-notification text, retain blocking graph/notification precedence and restore ordinary note feedback after context revoke. Extracted `PushUsbDisplay`, receiver, latest-frame store and external pipeline classes remain byte-identical to the prior tested derivative.
+
+Prepared extension JAR: 14,420,711 bytes, SHA-256 `128b5e9239d55c635e5da69cbc3c43bbbf3f4070047c5047a1fdac76841c4750`. It has **not been installed**. One Java package build only; no receiver/protocol/USB change.
+
+**Producer repair:** the existing SamplerImageLock now distinguishes acquiring/locked/suspect/lost, scores patches instead of requiring zero differing samples, and checks current body edges. The [exact confidence and lifetime rules](../../docs/design/sampler-context-lens.md#foreground-continuity-repair--authorized-after-the-blocked-run) are initial generated-test-qualified thresholds, not empirically tuned real-Sampler claims. Suspect output uses newly captured bytes only, with at least two-thirds good anchors and three coherent edges, at most three frames and 100 ms after strict verification. Context/source/occlusion/staleness loss invalidates geometry; no retained image or changed freshness deadline. The recognizer and uniform-fit implementation themselves are unchanged.
+
+Final affected command: `sh visuals/sampler/build-live.sh /tmp/pushwig-sampler-continuity.95RKOB`. **117 locator + 239 live-path checks passed.** Reused generated locator fixture tests exercise actual strict body detection, one-patch tolerance, three-frame and elapsed-time cutoffs, structural-majority and edge refusal, recovery, hard invalidation, empty/ambiguous OCR and cooldown classification. Actual runtime tests retain source/session checks, validate transition record fields/bounds and contiguous refusal-run accounting. Generated no-first-frame stop: 612.018 ms with shortened 500-ms test bound. Generated stalled socket: 250.241 ms. These are regression samples, not new live performance distributions.
+
+Prepared foreground executable: 383,704 bytes, SHA-256 `b8608c79f2088bd9111dade7b4818031a2ca90083fee748242e4bc1adc32512d`. Source hashes:
+
+| File | SHA-256 |
+| --- | --- |
+| SamplerLive.swift | `9acf94b378148fa53f3aec3cd030b3e95bc8f6f51405b70b0399b42f2199557f` |
+| TestSamplerRuntime.swift | `4e7f8c628777fd840c93f5ccf935bd0829097a83095314d9fb6fd1a61164e6ca` |
+| TestSamplerLocator.swift | `54b4dfe245034a82eb515808bf18f907dfff7bf0288a3f1f39a84bf4e772dfbe` |
+| build-live.sh | `1325eafd9d9d1e91aa2a4e6ae5dc2b81cc94369c530b06e73aa2529f2697cfa3` |
+
+Final metrics now include classified tracker reasons, a last-128 transition ring with identity/geometry/confidence/action/source-time, per-reason contiguous refusal-burst counts and maximum lengths. No frames/capabilities/status files or background service. The bounded ring is not a complete long-session trace; accepted-stage timing still excludes rejected frames and warmup.
+
+At **2026-09-11 03:47:51 UTC** read-only verification found the exact official SHA `98dc3195ad8d911526e18b1005f09f69a1aedcb965b080565474104654345c5a`, no Bitwig/engine/producer/FFmpeg/listener and no active session files; dormant owner.lock remained. No fixture launch, permission change or installation was performed while the maintainer was away. Required next step is one combined foreground physical session with notes, repeated contexts, encoders/touch, move/resize, source coverage, producer restart, controls/audio and exact rollback. Neither candidate is physically accepted or final-PR-ready yet.
+
+### Previous foreground qualification — blocked run
 
 **SAMPLER_FOREGROUND_UTILITY_BLOCKED:** generated verification passed and automatic foreground entry/return worked physically, but normal note-name notifications suppress the Sampler image. The run stopped at that continuity limitation, and exact official rollback passed. Five fully qualified exit/return cycles, move/resize, producer-only restart and every candidate controls/audio row were not individually confirmed; do not claim the complete acceptance program passed. The retained earlier successful focused product checkpoint remains `ccc781b000399239b54563193047c0f5598c3b7f`. No new DrivenByMoss build or source change was made.
 
@@ -104,7 +131,7 @@ Accepted-stage distributions exclude the first 30 sends per acquisition and all 
 
 **Rollback completed:** user Ctrl-C was followed by observed producer/FFmpeg absence. The maintainer quit Bitwig normally. At 23:33:15 UTC application/audio-engine/listener/session files were absent. The derivative was moved intact outside scan paths and the untouched official file restored; exactly one scanned copy matched `98dc3195ad8d911526e18b1005f09f69a1aedcb965b080565474104654345c5a`. Ordinary official Bitwig was relaunched and the maintainer confirmed standard display with no image, controls, Push audio/headphones, then normal quit. At **23:35:06 UTC**, final readback verified all Bitwig/producer/FFmpeg/listener processes absent, current manifest/capability/Sampler notice absent, dormant ingress `owner.lock` retained, official hash still exact, and old service still disabled.
 
-The foreground edits and this result remain local/uncommitted because the requested commit/push is gated on the complete physical pass. No final Sampler PR was opened. The next review must address the confirmed notification composition limitation and distinguish locator continuity from it, without pretending the entire foreground acceptance program is complete.
+At the end of that run the foreground edits were left uncommitted under its original success gate. The maintainer subsequently corrected that process and explicitly authorized checkpointing plus the two repairs above. No final Sampler PR was opened, and the earlier incomplete physical program is not retroactively claimed as complete.
 
 ## Run locally
 

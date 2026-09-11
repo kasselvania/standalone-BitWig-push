@@ -99,47 +99,110 @@ struct SamplerWindow: Equatable {
     }
 }
 
-/// Static control labels are checked on every frame; OCR reacquires only when that lock fails.
-/// This is conservative feature continuity, not arbitrary-device/hidden-window identification.
+/// Geometry/feature state only; never retains an image or a borrowed frame.
 final class SamplerImageLock {
+    enum State: String { case acquiring, locked, suspect, lost }
+    private(set) var state: State = .acquiring
+    private(set) var reason = "acquiring"
+    private(set) var anchorConfidence = 0.0, borderConfidence = 0.0
+    private(set) var body: SamplerBounds?
+    private(set) var reasons: [String:Int] = [:]
     private var landmarks: [Landmark] = [], signatures: [[Int]] = []
-    private var dimensions = [0,0]
-    private var lastRecognition = -Double.infinity
-    private func signature(_ pixels: ObservationPixels, _ mark: Landmark) -> [Int] {
+    private var dimensions = [0,0], misses = 0
+    private var lastRecognition = -Double.infinity, verifiedAt = -Double.infinity
+    private let recognize: (FFmpegSamplerStream.Frame) throws -> [Landmark]
+    init(recognize: @escaping (FFmpegSamplerStream.Frame) throws -> [Landmark] = SamplerImageLock.recognize) {
+        self.recognize = recognize
+    }
+    private func mark(_ value: String) { reason = value; reasons[value,default:0] += 1 }
+    func invalidate(_ cause: String) {
+        state = .lost; body = nil; landmarks = []; signatures = []; dimensions = [0,0]
+        misses = 0; verifiedAt = -.infinity; lastRecognition = -.infinity
+        anchorConfidence = 0; borderConfidence = 0; mark(cause)
+    }
+    private func signature(_ pixels: ObservationPixels, _ mark: Landmark, dx: Int = 0, dy: Int = 0) -> [Int] {
         var result: [Int] = []; result.reserveCapacity(64)
         for y in 0..<4 { for x in 0..<16 {
-            let px = Int(mark.x + (Double(x)+0.5)*mark.width/16)
-            let py = Int(mark.y + (Double(y)+0.5)*mark.height/4)
+            let px = Int(mark.x + (Double(x)+0.5)*mark.width/16)+dx
+            let py = Int(mark.y + (Double(y)+0.5)*mark.height/4)+dy
+            guard px >= 0 && py >= 0 && px < pixels.width && py < pixels.height else { return [] }
             result.append(pixels.gray(px,py))
         } }
         return result
     }
-    func locate(_ frame: FFmpegSamplerStream.Frame) throws -> SamplerBounds? {
-        let pixels = try ObservationPixels(bgr0: frame.bytes, width: frame.width, height: frame.height, stride: frame.width*4)
-        if dimensions == [frame.width,frame.height] && !landmarks.isEmpty {
-            var differences = 0, total = 0
-            for (index, mark) in landmarks.enumerated() {
-                let current = signature(pixels, mark)
-                for i in 0..<current.count {
-                    total += 1
-                    if abs(current[i]-signatures[index][i]) > 12 { differences += 1 }
-                }
+    private func borders(_ pixels: ObservationPixels, _ body: SamplerBounds) -> Double {
+        guard body.x >= 0 && body.y >= 0 && body.width > 0 && body.height > 0 &&
+              body.x+body.width <= pixels.width && body.y+body.height <= pixels.height else { return 0 }
+        var edges = 0
+        for edge in 0..<4 {
+            var matched = 0
+            for i in 0..<32 {
+                let t = (Double(i)+0.5)/32
+                let x = edge < 2 ? body.x+Int(t*Double(body.width)) : body.x+(edge == 2 ? 0 : body.width-1)
+                let y = edge < 2 ? body.y+(edge == 0 ? 0 : body.height-1) : body.y+Int(t*Double(body.height))
+                if abs(pixels.gray(x,y)-body.borderGray) <= 4 { matched += 1 }
             }
-            if differences == 0, total > 0, let body = SamplerLocator.locate(pixels, landmarks: landmarks) { return body }
+            if matched >= 28 { edges += 1 }
         }
-        landmarks = []; signatures = []
-        guard samplerClock()-lastRecognition >= 0.5 else { return nil }
-        lastRecognition = samplerClock()
-        guard let provider = CGDataProvider(dataInfo: nil, data: frame.bytes.baseAddress!, size: frame.bytes.count, releaseData: { _,_,_ in }),
-              let image = CGImage(width: frame.width, height: frame.height, bitsPerComponent: 8, bitsPerPixel: 32,
-                bytesPerRow: frame.width*4, space: CGColorSpaceCreateDeviceRGB(),
-                bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.noneSkipFirst.rawValue | CGBitmapInfo.byteOrder32Little.rawValue),
-                provider: provider, decode: nil, shouldInterpolate: false, intent: .defaultIntent) else { return nil }
-        let found = try SamplerLocator.landmarks(in: image)
-        guard let body = SamplerLocator.locate(pixels, landmarks: found) else { return nil }
-        // Do not retain CGImage/provider/borrowed frame beyond this synchronous method.
-        landmarks = found; signatures = found.map { signature(pixels, $0) }; dimensions = [frame.width,frame.height]
-        return body
+        return Double(edges)/4
+    }
+    static func recognize(_ frame: FFmpegSamplerStream.Frame) throws -> [Landmark] {
+        guard let provider = CGDataProvider(dataInfo:nil,data:frame.bytes.baseAddress!,size:frame.bytes.count,releaseData:{ _,_,_ in }),
+              let image = CGImage(width:frame.width,height:frame.height,bitsPerComponent:8,bitsPerPixel:32,
+                bytesPerRow:frame.width*4,space:CGColorSpaceCreateDeviceRGB(),
+                bitmapInfo:CGBitmapInfo(rawValue:CGImageAlphaInfo.noneSkipFirst.rawValue | CGBitmapInfo.byteOrder32Little.rawValue),
+                provider:provider,decode:nil,shouldInterpolate:false,intent:.defaultIntent) else { return [] }
+        return try SamplerLocator.landmarks(in:image)
+    }
+    func locate(_ frame: FFmpegSamplerStream.Frame) throws -> SamplerBounds? {
+        let pixels = try ObservationPixels(bgr0:frame.bytes,width:frame.width,height:frame.height,stride:frame.width*4)
+        let now = samplerClock()
+        if dimensions != [0,0] && dimensions != [frame.width,frame.height] { invalidate("source_changed") }
+        if let prior = body, !landmarks.isEmpty {
+            var good = 0
+            for (index,landmark) in landmarks.enumerated() {
+                var best = 0
+                // Tiny local antialias/raster shift search, not a device movement tracker.
+                for (dx,dy) in [(0,0),(-1,0),(1,0),(0,-1),(0,1)] {
+                    let current = signature(pixels,landmark,dx:dx,dy:dy)
+                    if current.count == 64 {
+                        best = max(best,zip(current,signatures[index]).filter { abs($0-$1) <= 12 }.count)
+                    }
+                }
+                if best >= 58 { good += 1 } // >=90% agreement within a patch.
+            }
+            anchorConfidence = Double(good)/Double(landmarks.count)
+            if good < landmarks.count { mark("signature_mismatch") }
+            borderConfidence = borders(pixels,prior)
+            if anchorConfidence >= 0.8 && borderConfidence == 1,
+               let measured = SamplerLocator.locate(pixels,landmarks:landmarks) {
+                body = measured; verifiedAt = now; misses = 0; state = .locked; mark("tracked")
+                return measured
+            }
+            misses += 1
+            mark(anchorConfidence < 0.8 ? "signature_majority_failed" : "border_check_failed")
+            // Current structural majority is mandatory even during the short suspect interval.
+            if anchorConfidence >= 2.0/3 && borderConfidence >= 0.75 &&
+               misses <= 3 && now-verifiedAt <= 0.1 {
+                state = .suspect; mark("suspect_current_geometry")
+                return prior
+            }
+            state = .lost
+        }
+        if now-lastRecognition < 0.5 { mark("ocr_cooldown"); return nil }
+        state = .acquiring; lastRecognition = now
+        let found: [Landmark]
+        do { found = try recognize(frame) }
+        catch { state = .lost; mark("ocr_error"); return nil }
+        guard !found.isEmpty else { state = .lost; mark("ocr_no_landmarks"); return nil }
+        if Set(found.map(\.label)).count != found.count { state = .lost; mark("ocr_ambiguous"); return nil }
+        guard let measured = SamplerLocator.locate(pixels,landmarks:found) else {
+            state = .lost; mark("body_not_found"); return nil
+        }
+        landmarks = found; signatures = found.map { signature(pixels,$0) }; dimensions = [frame.width,frame.height]
+        body = measured; verifiedAt = now; misses = 0; anchorConfidence = 1; borderConfidence = borders(pixels,measured)
+        state = .locked; mark("acquired")
+        return measured
     }
 }
 
@@ -177,6 +240,30 @@ final class SamplerRuntime {
     private var imageLock = SamplerImageLock(), consumed: String?, contextSince = samplerClock()
     private var nextCheck = 0.0, lastDelivery = samplerClock(), lastPTS: Double?, acceptedInAcquisition = 0
     private var receivedFirstFrame = false
+    private var events: [[String:Any]] = [], eventTotal = 0, eventKey = ""
+    private var burstReason: String?, burstLength = 0, bursts: [String:Int] = [:], maxBurst: [String:Int] = [:]
+    private var observedPTS: Double = 0
+    private func event(_ action: String) {
+        let key = imageLock.state.rawValue+":"+action+":"+imageLock.reason
+        guard key != eventKey else { return }; eventKey = key; eventTotal += 1
+        let b = imageLock.body
+        let item: [String:Any] = ["monotonic":samplerClock(),"sourcePTS":observedPTS,
+            "state":imageLock.state.rawValue,"reason":imageLock.reason,"action":action,
+            "ingress":identity?.generation ?? "none","context":identity?.session ?? "none",
+            "pid":identity?.pid ?? 0,"processBirth":identity?.started ?? 0,"window":source?.id ?? 0,
+            "windowBounds":source.map { [$0.bounds.minX,$0.bounds.minY,$0.bounds.width,$0.bounds.height] } ?? [],
+            "display":source?.display.id ?? 0,
+            "body":b.map { [$0.x,$0.y,$0.width,$0.height] } ?? [],
+            "anchorConfidence":imageLock.anchorConfidence,"borderConfidence":imageLock.borderConfidence]
+        if events.count == 128 { events.removeFirst() }
+        events.append(item)
+    }
+    private func finishBurst() {
+        if let reason = burstReason {
+            bursts[reason,default:0] += 1; maxBurst[reason] = max(maxBurst[reason,default:0],burstLength)
+        }
+        burstReason = nil; burstLength = 0
+    }
     private var processing = SamplerTiming(), sourceToSend = SamplerTiming(), intervals = SamplerTiming()
     private var reads = SamplerTiming(), arrivalAges = SamplerTiming(), fitTimes = SamplerTiming(), locateTimes = SamplerTiming(), sendTimes = SamplerTiming()
     private(set) var accepted = 0, discarded = 0, reasons: [String:Int] = [:]
@@ -194,9 +281,10 @@ final class SamplerRuntime {
     deinit { close(); sampler_fit_destroy(fit) }
     private func count(_ reason: String) { reasons[reason,default:0] += 1 }
     private func releaseCapture() {
+        event("release_capture"); finishBurst()
         try? connection?.clear(); connection?.close(); connection = nil
         stream?.close(); stream = nil; lastPTS = nil
-        // Retain only geometry/label signatures. There is no retained frame to replay.
+        imageLock.invalidate("context_or_source_released")
     }
     func close() {
         guard !closed else { return }; closed = true
@@ -207,6 +295,12 @@ final class SamplerRuntime {
         state = authorityUnavailable ? "Waiting for Bitwig/V5A; external ingress disabled or unavailable. Semantic fallback: \(error)" : "Semantic fallback: \(error)"
     }
     private func reject(_ reason: String, message: String) throws {
+        if burstReason != reason { finishBurst(); burstReason = reason }
+        burstLength += 1
+        event(reason)
+        if ["geometryChange","sourceChangedDuringFrame","contextChangedDuringFrame","occluded","beforeContext","oldAtRead","oldAfterProcessing"].contains(reason) {
+            imageLock.invalidate(reason)
+        }
         discarded += 1; count(reason); try connection?.clear(); state = message
     }
     /// Returns only an idle delay. Frame receipt itself already waits boundedly for capture.
@@ -245,7 +339,7 @@ final class SamplerRuntime {
                 }
                 if source.map({ !$0.sameCapture(as:window) }) ?? true {
                     if source != nil { count("geometryReacquisition"); state = "Source geometry changed; semantic fallback and fresh acquisition" }
-                    imageLock = SamplerImageLock()
+                    imageLock.invalidate("source_changed")
                     try connection?.clear(); stream?.close(); stream = nil
                 }
                 if stream == nil {
@@ -262,11 +356,13 @@ final class SamplerRuntime {
             let readStart = samplerClock()
             guard let frame = try stream.nextFrame() else {
                 if lastPTS != nil && samplerClock()-lastDelivery > 0.25 {
-                    count("deliveryTimeout"); try connection.clear(); state = "Semantic fallback: capture delivery timeout"
+                    count("deliveryTimeout"); imageLock.invalidate("frame_delivery_timeout"); event("frame_delivery_timeout")
+                    try connection.clear(); state = "Semantic fallback: capture delivery timeout"
                 }
                 return 0
             }
             lastDelivery = samplerClock()
+            observedPTS = frame.captured
             if !receivedFirstFrame {
                 receivedFirstFrame = true; count("firstCompleteFrame")
                 state = "Locating Sampler in the current complete frame"
@@ -288,11 +384,14 @@ final class SamplerRuntime {
             guard before.sameCapture(as:source) else {
                 try reject("geometryChange",message:"Semantic fallback: source geometry changed"); return 0
             }
+            if let prior = imageLock.body, before.covers(prior,width:frame.width,height:frame.height) {
+                try reject("occluded",message:"Semantic fallback: source occluded"); return 0
+            }
             let locateStart = samplerClock()
             let body = try inputs.locate(imageLock,frame)
             let locateMs = (samplerClock()-locateStart)*1000
             guard let body else {
-                try reject("locatorMissing",message:"Semantic fallback: locator temporarily unavailable in complete source frames"); return 0
+                try reject(imageLock.reason,message:"Semantic fallback: locator \(imageLock.reason)"); return 0
             }
             let after = try inputs.window(identity.pid,explicitID)
             guard before.sameCapture(as:after) else {
@@ -315,6 +414,7 @@ final class SamplerRuntime {
             }
             let sendStart = samplerClock()
             try connection.frame(UnsafeRawBufferPointer(start:output,count:484*114*4))
+            finishBurst(); event(imageLock.state == .suspect ? "publish_current_suspect" : "publish_current")
             accepted += 1; acceptedInAcquisition += 1
             if acceptedInAcquisition > 30 {
                 processing.add((samplerClock()-start)*1000); sourceToSend.add((samplerClock()-frame.captured)*1000)
@@ -331,7 +431,10 @@ final class SamplerRuntime {
         ["state":state,"accepted":accepted,"discarded":discarded,"processing":processing.summary,
          "captureToSend":sourceToSend.summary,"sourceIntervals":intervals.summary,"frameRead":reads.summary,
          "ageAtRead":arrivalAges.summary,"locate":locateTimes.summary,"fit":fitTimes.summary,"send":sendTimes.summary,
-         "reasons":reasons,"capturing":isCapturing,"failure":failure ?? "none",
+         "reasons":reasons,"trackingReasons":imageLock.reasons,"trackingEvents":events,"trackingEventTotal":eventTotal,
+         "refusalBursts":bursts,"maxRefusalBurstFrames":maxBurst,
+         "openBurstReason":burstReason ?? "none","openBurstFrames":burstLength,
+         "capturing":isCapturing,"failure":failure ?? "none",
          "timingScope":"p50/p95: last 10000 measured samples; max: lifetime; accepted stages exclude first 30 sends per acquisition"]
     }
 }
