@@ -264,7 +264,7 @@ extension TestSamplerLive {
         try check(peer.received.filter { $0.type == 3 }.isEmpty && peer.closedConnections == 1,"No-image failure disconnects; existing client correctly omits redundant CLEAR")
     }
     static func foreground() throws {
-        try foregroundOptionsAndSelection(); try ffmpegResolution(); try processAndCustody(); try runtimeLifecycle(); try noFirstFrame(); try tracker()
+        try foregroundOptionsAndSelection(); try ffmpegResolution(); try processAndCustody(); try runtimeLifecycle(); try noFirstFrame(); try tracker(); try occlusionRecovery()
     }
     static func tracker() throws {
         let (image,marks,expected) = try TestSamplerLocator.fixture(x:90,y:100,scale:1)
@@ -312,5 +312,108 @@ extension TestSamplerLive {
         let ambiguous = SamplerImageLock(recognize:{ _ in marks+[marks[0]] })
         _ = try bytes.withUnsafeBytes { try ambiguous.locate(.init(index:0,width:original.width,height:original.height,captured:samplerClock(),bytes:$0)) }
         try check(ambiguous.reason == "ocr_ambiguous","Duplicate OCR is classified, never selected first")
+
+        var ocrAvailable = true
+        let recovery = SamplerImageLock(recognize:{ _ in ocrAvailable ? marks : [] })
+        func recover() throws -> SamplerBounds? {
+            try bytes.withUnsafeBytes { try recovery.locate(.init(index:0,width:original.width,height:original.height,captured:samplerClock(),bytes:$0)) }
+        }
+        for cause in ["geometryChange","sourceChangedDuringFrame","contextChangedDuringFrame","beforeContext",
+                      "oldAtRead","oldAfterProcessing","frame_delivery_timeout","context_or_source_released","source_changed"] {
+            bytes = original.bytes; ocrAvailable = true
+            _ = try recover(); recovery.revokeForOcclusion()
+            try check(recovery.body == nil && recovery.occlusionCandidate == expected,"Coverage revokes body, retains hypothesis")
+            recovery.invalidate(cause); ocrAvailable = false
+            try check(recovery.coverageBody == nil && (try recover()) == nil,"Hard loss \(cause) destroys candidate even with unchanged pixels")
+            recovery.invalidate("reset")
+        }
+        bytes = original.bytes; ocrAvailable = true; _ = try recover()
+        recovery.revokeForOcclusion(); ocrAvailable = false
+        patch(marks[0]); patch(marks[1])
+        try check(try recover() == nil && recovery.occlusionCandidate == nil && recovery.reason == "occlusion_signature_failed","Two changed patches cannot use suspect grace after coverage")
+        try check(try recover() == nil && recovery.reason == "ocr_no_landmarks","Failed candidate returns to ordinary OCR without publishing")
+        recovery.invalidate("reset"); bytes = original.bytes; ocrAvailable = true; _ = try recover()
+        recovery.revokeForOcclusion(); ocrAvailable = false
+        for x in expected.x..<(expected.x+expected.width) {
+            for c in 0..<3 { bytes[(expected.y*original.width+x)*4+c] = 250 }
+        }
+        try check(try recover() == nil && recovery.reason == "occlusion_border_failed","One failed border rejects recovery, not three-edge grace")
+        recovery.invalidate("reset"); bytes = original.bytes; ocrAvailable = true; _ = try recover()
+        recovery.revokeForOcclusion(); recovery.validateDimensions(width:original.width+1,height:original.height)
+        try check(recovery.coverageBody == nil,"Dimension change discards candidate before coverage or OCR")
+        ocrAvailable = true
+        try check(try recover() == expected,"Fresh full OCR remains available after invalidation")
+    }
+
+    static func occlusionRecovery() throws {
+        let (image,marks,body) = try TestSamplerLocator.fixture(x:90,y:100,scale:0.6)
+        let pixels = try ObservationPixels(image)
+        // Two alternating generated source images have identical anchors but different center pixels.
+        // Real FFmpeg delivers them, and the real runtime crops/sends the current borrowed bytes.
+        var raw = Data()
+        for channel in [0,2] {
+            var bytes = pixels.bytes
+            for y in (Int(body.centerY)-25)..<(Int(body.centerY)+25) {
+                for x in (Int(body.centerX)-25)..<(Int(body.centerX)+25) {
+                    for c in 0..<3 { bytes[(y*pixels.width+x)*4+c] = c == channel ? 255 : 0 }
+                }
+            }
+            raw.append(contentsOf:bytes)
+        }
+        let file = FileManager.default.temporaryDirectory.appendingPathComponent("sampler-generated-"+UUID().uuidString+".bgr0")
+        try raw.write(to:file); defer { try? FileManager.default.removeItem(at:file) }
+        let peer = try SamplerTestPeer(); defer { try? peer.close() }
+        let authority = SamplerAuthority(generation:String(repeating:"a",count:32),session:String(repeating:"b",count:32),port:peer.port,pid:123,started:456,capabilityFile:"generated")
+        let display = SamplerDisplay(id:5,index:0,bounds:CGRect(x:0,y:0,width:2000,height:1200),pixelWidth:2000,pixelHeight:1200)
+        let bounds = CGRect(x:50,y:50,width:pixels.width,height:pixels.height)
+        var covered = false, ocrCalls = 0, acquisitionCount = 0
+        var lock: SamplerImageLock?, expectedCenters: [[UInt8]] = []
+        var inputs = SamplerRuntime.Inputs()
+        inputs.authority = { authority }
+        inputs.window = { _,_ in SamplerWindow(id:42,pid:123,bounds:bounds,occluders:covered ? [bounds] : [],display:display) }
+        inputs.connect = { try SamplerConnection($0,capabilityReader:{ [UInt8](repeating:42,count:32) },authorityReader:{ authority }) }
+        inputs.recognize = { _ in ocrCalls += 1; return ocrCalls == 1 ? marks : [] }
+        inputs.acquire = { _,executable in
+            acquisitionCount += 1
+            let offset = Int64((Date().timeIntervalSince1970-samplerClock())*1_000_000)
+            return try FFmpegSamplerStream(input:["-re","-stream_loop","-1","-f","rawvideo","-pixel_format","bgr0","-video_size","\(pixels.width)x\(pixels.height)","-framerate","30","-i",file.path],filter:"settb=expr=1/1000000,setpts=RTCTIME-\(offset)",executable:executable)
+        }
+        inputs.locate = { tracker,frame in
+            lock = tracker
+            let found = try tracker.locate(frame)
+            if found != nil {
+                let offset = (Int(body.centerY)*frame.width+Int(body.centerX))*4
+                expectedCenters.append([frame.bytes[offset],frame.bytes[offset+1],frame.bytes[offset+2],255])
+            }
+            return found
+        }
+        let runtime = try SamplerRuntime(inputs:inputs); defer { runtime.close() }
+        func run(_ condition: () -> Bool) throws {
+            let end = samplerClock()+4
+            while !condition() && samplerClock() < end {
+                let delay = autoreleasepool { runtime.step() }
+                if delay > 0 { usleep(useconds_t(delay*1_000_000)) }
+            }
+            try check(condition(),"Generated occlusion runtime: \(runtime.state)")
+        }
+        try run { runtime.accepted >= 3 }
+        for cycle in 1...3 {
+            let accepted = runtime.accepted, priorOccluded = runtime.reasons["occluded",default:0]
+            covered = true
+            try run { runtime.reasons["occluded",default:0] >= priorOccluded+4 }
+            usleep(20000)
+            try check(runtime.accepted == accepted && lock?.body == nil && lock?.occlusionCandidate == body,"Covered frames revoke authority and never publish")
+            try check(peer.received.filter { $0.type == 3 }.count == cycle,"One immediate wire CLEAR per coverage transition")
+            covered = false
+            try run { runtime.accepted >= accepted+3 }
+            try check(lock?.occlusionCandidate == nil && ocrCalls == 1,"Strict uncovered current-frame recovery succeeds with fresh OCR unavailable")
+        }
+        runtime.close(); usleep(20000)
+        let payloads = peer.received.filter { $0.type == 2 }.map(\.payload)
+        let center = (57*484+242)*4
+        try check(payloads.count == runtime.accepted && payloads.count == expectedCenters.count,"Every located current test frame delivered exactly once")
+        try check(zip(payloads,expectedCenters).allSatisfy { Array($0[center..<center+4]) == $1 },"Wire center pixels equal each current frame, never retained imagery")
+        try check(Set(expectedCenters.map { $0[0] }).count == 2,"Both changing source marker colors reached the real wire")
+        try check(acquisitionCount == 1 && lock?.coverageBody == nil,"Repeated coverage needs no source restart; close destroys all hypotheses")
     }
 }

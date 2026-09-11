@@ -106,6 +106,9 @@ final class SamplerImageLock {
     private(set) var reason = "acquiring"
     private(set) var anchorConfidence = 0.0, borderConfidence = 0.0
     private(set) var body: SamplerBounds?
+    // Non-authoritative geometry only. Runtime uses it to refuse covered frames, never to fit.
+    private(set) var occlusionCandidate: SamplerBounds?
+    var coverageBody: SamplerBounds? { body ?? occlusionCandidate }
     private(set) var reasons: [String:Int] = [:]
     private var landmarks: [Landmark] = [], signatures: [[Int]] = []
     private var dimensions = [0,0], misses = 0
@@ -116,9 +119,20 @@ final class SamplerImageLock {
     }
     private func mark(_ value: String) { reason = value; reasons[value,default:0] += 1 }
     func invalidate(_ cause: String) {
-        state = .lost; body = nil; landmarks = []; signatures = []; dimensions = [0,0]
+        state = .lost; body = nil; occlusionCandidate = nil; landmarks = []; signatures = []; dimensions = [0,0]
         misses = 0; verifiedAt = -.infinity; lastRecognition = -.infinity
         anchorConfidence = 0; borderConfidence = 0; mark(cause)
+    }
+    func revokeForOcclusion() {
+        if occlusionCandidate == nil {
+            guard state == .locked, let body else { invalidate("occluded"); return }
+            occlusionCandidate = body
+        }
+        body = nil; state = .lost; misses = 0; verifiedAt = -.infinity
+        anchorConfidence = 0; borderConfidence = 0; mark("occlusion_candidate")
+    }
+    func validateDimensions(width: Int, height: Int) {
+        if dimensions != [0,0] && dimensions != [width,height] { invalidate("source_changed") }
     }
     private func signature(_ pixels: ObservationPixels, _ mark: Landmark, dx: Int = 0, dy: Int = 0) -> [Int] {
         var result: [Int] = []; result.reserveCapacity(64)
@@ -157,8 +171,9 @@ final class SamplerImageLock {
     func locate(_ frame: FFmpegSamplerStream.Frame) throws -> SamplerBounds? {
         let pixels = try ObservationPixels(bgr0:frame.bytes,width:frame.width,height:frame.height,stride:frame.width*4)
         let now = samplerClock()
-        if dimensions != [0,0] && dimensions != [frame.width,frame.height] { invalidate("source_changed") }
-        if let prior = body, !landmarks.isEmpty {
+        validateDimensions(width:frame.width,height:frame.height)
+        let recovering = occlusionCandidate != nil
+        if let prior = coverageBody, !landmarks.isEmpty {
             var good = 0
             for (index,landmark) in landmarks.enumerated() {
                 var best = 0
@@ -176,8 +191,17 @@ final class SamplerImageLock {
             borderConfidence = borders(pixels,prior)
             if anchorConfidence >= 0.8 && borderConfidence == 1,
                let measured = SamplerLocator.locate(pixels,landmarks:landmarks) {
-                body = measured; verifiedAt = now; misses = 0; state = .locked; mark("tracked")
+                body = measured; occlusionCandidate = nil; verifiedAt = now; misses = 0; state = .locked
+                mark(recovering ? "occlusion_reacquired" : "tracked")
                 return measured
+            }
+            if recovering {
+                // A failed hypothesis cannot use suspect grace or authorize this frame.
+                // Ordinary full OCR may run on the next fresh frame.
+                let cause = anchorConfidence < 0.8 ? "occlusion_signature_failed" :
+                    (borderConfidence < 1 ? "occlusion_border_failed" : "occlusion_body_failed")
+                invalidate(cause)
+                return nil
             }
             misses += 1
             mark(anchorConfidence < 0.8 ? "signature_majority_failed" : "border_check_failed")
@@ -233,6 +257,7 @@ final class SamplerRuntime {
         var connect: (SamplerAuthority) throws -> SamplerConnection = { try SamplerConnection($0) }
         var acquire: (SamplerWindow, URL) throws -> FFmpegSamplerStream = { try $0.stream(executable:$1) }
         var locate: (SamplerImageLock, FFmpegSamplerStream.Frame) throws -> SamplerBounds? = { try $0.locate($1) }
+        var recognize: (FFmpegSamplerStream.Frame) throws -> [Landmark] = SamplerImageLock.recognize
     }
     private let inputs: Inputs, explicitID: CGWindowID?, fit: OpaquePointer, ffmpeg: URL
     var onState: ((String) -> Void)?
@@ -277,6 +302,7 @@ final class SamplerRuntime {
         self.ffmpeg = try ffmpeg ?? SamplerFFmpeg.resolve()
         guard let fit = sampler_fit_create() else { throw SamplerFailure(description:"Cannot allocate fixed center output") }
         self.fit = fit; self.explicitID = explicitID; self.inputs = inputs
+        self.imageLock = SamplerImageLock(recognize:inputs.recognize)
     }
     deinit { close(); sampler_fit_destroy(fit) }
     private func count(_ reason: String) { reasons[reason,default:0] += 1 }
@@ -298,7 +324,8 @@ final class SamplerRuntime {
         if burstReason != reason { finishBurst(); burstReason = reason }
         burstLength += 1
         event(reason)
-        if ["geometryChange","sourceChangedDuringFrame","contextChangedDuringFrame","occluded","beforeContext","oldAtRead","oldAfterProcessing"].contains(reason) {
+        if reason == "occluded" { imageLock.revokeForOcclusion() }
+        if ["geometryChange","sourceChangedDuringFrame","contextChangedDuringFrame","beforeContext","oldAtRead","oldAfterProcessing"].contains(reason) {
             imageLock.invalidate(reason)
         }
         discarded += 1; count(reason); try connection?.clear(); state = message
@@ -384,7 +411,8 @@ final class SamplerRuntime {
             guard before.sameCapture(as:source) else {
                 try reject("geometryChange",message:"Semantic fallback: source geometry changed"); return 0
             }
-            if let prior = imageLock.body, before.covers(prior,width:frame.width,height:frame.height) {
+            imageLock.validateDimensions(width:frame.width,height:frame.height)
+            if let prior = imageLock.coverageBody, before.covers(prior,width:frame.width,height:frame.height) {
                 try reject("occluded",message:"Semantic fallback: source occluded"); return 0
             }
             let locateStart = samplerClock()
