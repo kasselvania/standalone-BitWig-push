@@ -88,14 +88,14 @@ struct SamplerWindow: Equatable {
             width: Double(body.width)*bounds.width/Double(width), height: Double(body.height)*bounds.height/Double(height)).insetBy(dx: -2, dy: -2)
         return occluders.contains { $0.intersects(rectangle) }
     }
-    func stream() throws -> FFmpegSamplerStream {
+    func stream(executable: URL) throws -> FFmpegSamplerStream {
         let screen = display.bounds
         // Only the recognition search follows the current window. Device bounds come from the
         // Sampler constellation/border, never these desktop fractions. FFmpeg uses actual iw/ih.
         let graph = "crop=w=floor(iw*\(bounds.width/screen.width)):h=floor(ih*\(bounds.height/screen.height)):"
             + "x=floor(iw*\((bounds.minX-screen.minX)/screen.width)):y=floor(ih*\((bounds.minY-screen.minY)/screen.height)):exact=1"
         return try FFmpegSamplerStream(input: ["-thread_queue_size", "1", "-f", "avfoundation", "-capture_cursor", "0", "-capture_mouse_clicks", "0",
-            "-pixel_format", "bgr0", "-drop_late_frames", "1", "-framerate", "30", "-i", "Capture screen \(display.index):none"], filter: graph)
+            "-pixel_format", "bgr0", "-drop_late_frames", "1", "-framerate", "30", "-i", "Capture screen \(display.index):none"], filter: graph, executable:executable)
     }
 }
 
@@ -168,20 +168,26 @@ final class SamplerRuntime {
         var authority: () throws -> SamplerAuthority = SamplerAuthority.read
         var window: (Int32, CGWindowID?) throws -> SamplerWindow = { try SamplerWindow.read(ownerPID:$0,explicitID:$1) }
         var connect: (SamplerAuthority) throws -> SamplerConnection = { try SamplerConnection($0) }
-        var acquire: (SamplerWindow) throws -> FFmpegSamplerStream = { try $0.stream() }
+        var acquire: (SamplerWindow, URL) throws -> FFmpegSamplerStream = { try $0.stream(executable:$1) }
         var locate: (SamplerImageLock, FFmpegSamplerStream.Frame) throws -> SamplerBounds? = { try $0.locate($1) }
     }
-    private let inputs: Inputs, explicitID: CGWindowID?, fit: OpaquePointer
+    private let inputs: Inputs, explicitID: CGWindowID?, fit: OpaquePointer, ffmpeg: URL
+    var onState: ((String) -> Void)?
     private var connection: SamplerConnection?, stream: FFmpegSamplerStream?, source: SamplerWindow?, identity: SamplerAuthority?
     private var imageLock = SamplerImageLock(), consumed: String?, contextSince = samplerClock()
     private var nextCheck = 0.0, lastDelivery = samplerClock(), lastPTS: Double?, acceptedInAcquisition = 0
+    private var receivedFirstFrame = false
     private var processing = SamplerTiming(), sourceToSend = SamplerTiming(), intervals = SamplerTiming()
     private var reads = SamplerTiming(), arrivalAges = SamplerTiming(), fitTimes = SamplerTiming(), locateTimes = SamplerTiming(), sendTimes = SamplerTiming()
     private(set) var accepted = 0, discarded = 0, reasons: [String:Int] = [:]
-    private(set) var state = "Waiting for ordinary Bitwig / enabled Sampler context"
+    private(set) var state = "Waiting for Bitwig/V5A; external ingress disabled or unavailable" {
+        didSet { if state != oldValue { count("stateTransitions"); onState?(state) } }
+    }
+    private(set) var failure: String?
     private(set) var closed = false
     var isCapturing: Bool { stream != nil }
-    init(explicitID: CGWindowID? = nil, inputs: Inputs = Inputs()) throws {
+    init(explicitID: CGWindowID? = nil, ffmpeg: URL? = nil, inputs: Inputs = Inputs()) throws {
+        self.ffmpeg = try ffmpeg ?? SamplerFFmpeg.resolve()
         guard let fit = sampler_fit_create() else { throw SamplerFailure(description:"Cannot allocate fixed center output") }
         self.fit = fit; self.explicitID = explicitID; self.inputs = inputs
     }
@@ -196,9 +202,9 @@ final class SamplerRuntime {
         guard !closed else { return }; closed = true
         releaseCapture(); state = "Stopped; ordinary DrivenByMoss semantics"
     }
-    private func fallback(_ error: Error) {
+    private func fallback(_ error: Error, authorityUnavailable: Bool = false) {
         releaseCapture(); identity = nil; nextCheck = samplerClock()+0.5
-        state = "Semantic fallback: \(error)"
+        state = authorityUnavailable ? "Waiting for Bitwig/V5A; external ingress disabled or unavailable. Semantic fallback: \(error)" : "Semantic fallback: \(error)"
     }
     private func reject(_ reason: String, message: String) throws {
         discarded += 1; count(reason); try connection?.clear(); state = message
@@ -208,14 +214,16 @@ final class SamplerRuntime {
         guard !closed else { return 0.25 }
         if samplerClock() >= nextCheck {
             nextCheck = samplerClock()+0.1
+            var readingAuthority = true
             do {
                 let current = try inputs.authority()
+                readingAuthority = false
                 if current != identity {
                     count("contextChange"); releaseCapture()
                     identity = current; contextSince = samplerClock()
                 }
                 guard let session = current.session else {
-                    state = "Ordinary semantics: not the supported Sampler parameter page"
+                    state = "Waiting for supported Sampler Device Parameters context; ordinary semantics"
                     return 0.1
                 }
                 let window = try inputs.window(current.pid,explicitID)
@@ -236,27 +244,33 @@ final class SamplerRuntime {
                     }
                 }
                 if source.map({ !$0.sameCapture(as:window) }) ?? true {
+                    if source != nil { count("geometryReacquisition"); state = "Source geometry changed; semantic fallback and fresh acquisition" }
                     imageLock = SamplerImageLock()
                     try connection?.clear(); stream?.close(); stream = nil
                 }
                 if stream == nil {
-                    source = window; lastPTS = nil; acceptedInAcquisition = 0
-                    count("acquisitionStart"); stream = try inputs.acquire(window)
+                    source = window; lastPTS = nil; acceptedInAcquisition = 0; receivedFirstFrame = false
+                    count("acquisitionStart"); state = "Starting FFmpeg acquisition"
+                    stream = try inputs.acquire(window,ffmpeg)
                     contextSince = samplerClock(); lastDelivery = samplerClock()
-                    state = "Locating the current visible Sampler"
+                    state = "Waiting for the first complete frame (5-second startup bound)"
                 }
-            } catch { count("authorityOrSourceFailure"); fallback(error) }
+            } catch { count("authorityOrSourceFailure"); fallback(error,authorityUnavailable:readingAuthority) }
         }
         guard let stream, let source, let connection, let identity else { return 0.1 }
         do {
             let readStart = samplerClock()
             guard let frame = try stream.nextFrame() else {
-                if samplerClock()-lastDelivery > 0.25 {
+                if lastPTS != nil && samplerClock()-lastDelivery > 0.25 {
                     count("deliveryTimeout"); try connection.clear(); state = "Semantic fallback: capture delivery timeout"
                 }
                 return 0
             }
             lastDelivery = samplerClock()
+            if !receivedFirstFrame {
+                receivedFirstFrame = true; count("firstCompleteFrame")
+                state = "Locating Sampler in the current complete frame"
+            }
             if let lastPTS {
                 try samplerRequire(frame.captured > lastPTS,"Capture timestamp did not advance")
                 intervals.add((frame.captured-lastPTS)*1000)
@@ -278,14 +292,14 @@ final class SamplerRuntime {
             let body = try inputs.locate(imageLock,frame)
             let locateMs = (samplerClock()-locateStart)*1000
             guard let body else {
-                try reject("locatorMissing",message:"Semantic fallback: waiting for one complete visible Sampler"); return 0
+                try reject("locatorMissing",message:"Semantic fallback: locator temporarily unavailable in complete source frames"); return 0
             }
             let after = try inputs.window(identity.pid,explicitID)
             guard before.sameCapture(as:after) else {
                 try reject("sourceChangedDuringFrame",message:"Semantic fallback: source changed during processing"); return 0
             }
             guard before.permits(body,width:frame.width,height:frame.height,after:after) else {
-                try reject("occluded",message:"Semantic fallback: another window covers Sampler"); return 0
+                try reject("occluded",message:"Semantic fallback: source occluded; another window covers Sampler"); return 0
             }
             guard try inputs.authority() == identity else {
                 try reject("contextChangedDuringFrame",message:"Semantic fallback: controller context changed"); return 0
@@ -306,7 +320,10 @@ final class SamplerRuntime {
                 processing.add((samplerClock()-start)*1000); sourceToSend.add((samplerClock()-frame.captured)*1000)
                 locateTimes.add(locateMs); fitTimes.add(fitMs); sendTimes.add((samplerClock()-sendStart)*1000)
             }
-            state = "Live Sampler \(body.width)×\(body.height); controller readouts unchanged"
+            state = "Active Sampler image; controller readouts unchanged"
+        } catch let error as FFmpegSamplerStream.StartupFailure {
+            count("firstFrameFailure"); failure = error.description
+            state = error.description; close()
         } catch { count("frameFailure"); fallback(error) }
         return 0
     }
@@ -314,16 +331,17 @@ final class SamplerRuntime {
         ["state":state,"accepted":accepted,"discarded":discarded,"processing":processing.summary,
          "captureToSend":sourceToSend.summary,"sourceIntervals":intervals.summary,"frameRead":reads.summary,
          "ageAtRead":arrivalAges.summary,"locate":locateTimes.summary,"fit":fitTimes.summary,"send":sendTimes.summary,
-         "reasons":reasons,"capturing":isCapturing,
+         "reasons":reasons,"capturing":isCapturing,"failure":failure ?? "none",
          "timingScope":"p50/p95: last 10000 measured samples; max: lifetime; accepted stages exclude first 30 sends per acquisition"]
     }
 }
 
 struct SamplerOptions {
     var windowID: CGWindowID?, duration: Double?
+    var ffmpeg: String?
     init(_ args: [String]) throws {
         var remaining = args
-        // Retain the former bounded diagnostic invocation; ordinary service needs no arguments.
+        // Retain the former bounded diagnostic invocation; ordinary foreground use needs no arguments.
         if args.count == 2 && !args[0].hasPrefix("--") { remaining = ["--window-id",args[0],"--duration",args[1]] }
         while !remaining.isEmpty {
             let option = remaining.removeFirst()
@@ -331,9 +349,24 @@ struct SamplerOptions {
             let value = remaining.removeFirst()
             if option == "--window-id", windowID == nil, let id = UInt32(value), id > 0 { windowID = id }
             else if option == "--duration", duration == nil, let seconds = Double(value), seconds.isFinite, seconds > 0, seconds <= 1800 { duration = seconds }
+            else if option == "--ffmpeg", ffmpeg == nil, !value.isEmpty { ffmpeg = value }
             else { throw SamplerFailure(description:"Invalid or repeated option: \(option)") }
         }
     }
+}
+
+/// Transition-only terminal output. Rapid frame-driven alternation is summarized at most once
+/// per second; no per-frame logs or status files. Final counters retain every transition/reason.
+final class SamplerConsole {
+    private var last = "", pending = "", next = 0.0
+    let write: (String) -> Void
+    init(write: @escaping (String) -> Void = { print($0); fflush(stdout) }) { self.write = write }
+    func observe(_ state: String, now: Double = samplerClock(), force: Bool = false) {
+        pending = state
+        guard state != last, force || now >= next else { return }
+        write(state); last = state; next = now+1
+    }
+    func flush(now: Double = samplerClock()) { observe(pending,now:now) }
 }
 
 #if !SAMPLER_TEST
@@ -341,7 +374,7 @@ struct SamplerOptions {
     static var stopping: Int32 = 0
     static func main() {
         if CommandLine.arguments.dropFirst().elementsEqual(["--help"]) {
-            print("SamplerLive [--duration seconds] [--window-id diagnostic-ID]\nNo arguments: wait for current Bitwig/Sampler context, select one current window, run until stopped.")
+            print("SamplerLive [--ffmpeg executable-path] [--duration seconds] [--window-id diagnostic-ID]\nNo arguments: resolve FFmpeg through this Terminal's PATH, wait for current Bitwig/Sampler context, select one current window, run until Ctrl-C. No service or status file.")
             return
         }
         do { try run() }
@@ -350,24 +383,25 @@ struct SamplerOptions {
     static func run() throws {
         let options = try SamplerOptions(Array(CommandLine.arguments.dropFirst()))
         signal(SIGINT) { _ in SamplerLive.stopping = 1 }; signal(SIGTERM) { _ in SamplerLive.stopping = 1 }
-        let service = try SamplerService()
-        defer { service.close() }
-        let runtime = try SamplerRuntime(explicitID:options.windowID)
+        let ffmpeg = try SamplerFFmpeg.resolve(explicit:options.ffmpeg)
+        print("FFmpeg executable: \(ffmpeg.path)")
+        let runtime = try SamplerRuntime(explicitID:options.windowID,ffmpeg:ffmpeg)
         defer { runtime.close() }
+        let console = SamplerConsole()
+        runtime.onState = { state in
+            // Non-frame lifecycle events must not disappear between consecutive loop steps.
+            console.observe(state,force:state.hasPrefix("Starting FFmpeg") || state.hasPrefix("Waiting for the first") || state.hasPrefix("Locating Sampler") || state.hasPrefix("Source geometry changed") || state.hasPrefix("Stopped") || state.hasPrefix("FFmpeg/source failure"))
+        }
+        console.observe(runtime.state)
         let deadline = options.duration.map { samplerClock()+$0 } ?? .infinity
-        var lastState = "", nextStatus = 0.0
-        while stopping == 0 && samplerClock() < deadline {
+        while stopping == 0 && !runtime.closed && samplerClock() < deadline {
             let delay = autoreleasepool { runtime.step() }
-            // One overwritten bounded snapshot, not a never-ending file/console log.
-            if samplerClock() >= nextStatus {
-                try service.publish(runtime.summary); nextStatus = samplerClock()+5
-                if runtime.state != lastState { print(runtime.state); fflush(stdout); lastState = runtime.state }
-            }
+            console.flush()
             if delay > 0 { usleep(useconds_t(delay*1_000_000)) }
         }
         runtime.close()
-        try service.publish(runtime.summary)
         print(String(decoding:try JSONSerialization.data(withJSONObject:runtime.summary,options:[.sortedKeys]),as:UTF8.self))
+        if let failure = runtime.failure { throw SamplerFailure(description:failure) }
     }
 }
 #endif

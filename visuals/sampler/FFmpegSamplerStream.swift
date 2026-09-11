@@ -8,11 +8,46 @@ func samplerRequire(_ condition: Bool, _ message: String) throws {
 }
 func samplerClock() -> Double { CMTimeGetSeconds(CMClockGetTime(CMClockGetHostTimeClock())) }
 
+enum SamplerFFmpeg {
+    static func resolve(explicit: String? = nil, path: String? = ProcessInfo.processInfo.environment["PATH"]) throws -> URL {
+        func executable(_ name: String) -> URL? {
+            guard !name.isEmpty else { return nil }
+            let url = URL(fileURLWithPath:name).standardizedFileURL.resolvingSymlinksInPath()
+            var info = stat()
+            guard stat(url.path,&info) == 0, info.st_mode & S_IFMT == S_IFREG,
+                  access(url.path,X_OK) == 0 else { return nil }
+            return url
+        }
+        if let explicit {
+            guard let url = executable(explicit) else { throw SamplerFailure(description:"--ffmpeg must name an executable regular file: \(explicit)") }
+            return url
+        }
+        for directory in (path ?? "").split(separator:":",omittingEmptySubsequences:false) {
+            if let url = executable(URL(fileURLWithPath:directory.isEmpty ? "." : String(directory)).appendingPathComponent("ffmpeg").path) { return url }
+        }
+        throw SamplerFailure(description:"ffmpeg is not executable on this Terminal's PATH; supply --ffmpeg /path/to/ffmpeg")
+    }
+}
+
 /// One synchronous reader, one reusable frame, bounded timestamp metadata. No frame FIFO.
 /// Anonymous AF_UNIX byte stream: no port, filesystem socket or extra worker. Fixed 256 KiB
 /// kernel buffers avoid Darwin pipe's small-chunk handoff bottleneck for large raw frames.
 /// FFmpeg -copyts/showinfo exposes source PTS, not pipe-read time disguised as acquisition time.
 final class FFmpegSamplerStream {
+    struct StartupFailure: Error, CustomStringConvertible { let description: String }
+    static let firstFrameTimeout = 5.0
+    static let diagnosticCapacity = 4096
+    private var diagnosticTail = Data()
+    private var firstFrameDeadline = Double.infinity
+    private let startupTimeout: Double
+    var processID: Int32 { child.processIdentifier }
+    var diagnosticExcerpt: String {
+        let bytes = (diagnosticTail + lines).suffix(Self.diagnosticCapacity)
+        let text = String(decoding:bytes,as:UTF8.self).unicodeScalars.map { scalar -> String in
+            scalar.value >= 32 && scalar.value != 127 || scalar == "\n" || scalar == "\t" ? String(scalar) : "?"
+        }.joined()
+        return text.isEmpty ? "(no stderr received)" : text
+    }
     static let transportCapacity = 262144
     private(set) var transportBuffers = (receive: 0, send: 0)
     static func byteCount(width: Int, height: Int) throws -> Int {
@@ -39,7 +74,9 @@ final class FFmpegSamplerStream {
     private static let stampPattern = try! NSRegularExpression(pattern: #"\bn:\s*(\d+)\s+pts:\s*(-?\d+).*\bs:(\d+)x(\d+)\b"#)
     private static let timePattern = try! NSRegularExpression(pattern: #"config in time_base: (\d+)/(\d+)"#)
 
-    init(input: [String], filter: String) throws {
+    init(input: [String], filter: String, executable: URL? = nil, startupTimeout: Double = FFmpegSamplerStream.firstFrameTimeout) throws {
+        self.startupTimeout = startupTimeout
+        try samplerRequire(startupTimeout.isFinite && startupTimeout > 0 && startupTimeout <= Self.firstFrameTimeout,"Invalid first-frame deadline")
         var sockets: [Int32] = [-1, -1]
         try samplerRequire(socketpair(AF_UNIX, SOCK_STREAM, 0, &sockets) == 0, "Cannot create local FFmpeg byte transport")
         videoRead = FileHandle(fileDescriptor: sockets[0], closeOnDealloc: true)
@@ -58,7 +95,7 @@ final class FFmpegSamplerStream {
                            receive > 0 && receive <= capacity && send > 0 && send <= capacity,
                            "Local FFmpeg buffer bound was not applied")
         transportBuffers = (Int(receive), Int(send))
-        child.executableURL = URL(fileURLWithPath: "/opt/homebrew/bin/ffmpeg")
+        child.executableURL = try executable ?? SamplerFFmpeg.resolve()
         child.arguments = ["-hide_banner", "-nostdin", "-loglevel", "info", "-nostats", "-copyts", "-filter_threads", "1"]
             + input + ["-an", "-vf", filter + ",format=bgr0,showinfo=checksum=0", "-fps_mode", "passthrough",
                        "-threads", "1", "-c:v", "rawvideo", "-thread_queue_size", "1",
@@ -67,6 +104,7 @@ final class FFmpegSamplerStream {
         child.standardOutput = videoWrite; child.standardError = diagnostics
         try child.run()
         launched = true
+        firstFrameDeadline = samplerClock()+startupTimeout
         videoWrite.closeFile(); diagnostics.fileHandleForWriting.closeFile()
         for fd in [videoRead.fileDescriptor, diagnostics.fileHandleForReading.fileDescriptor] {
             try samplerRequire(fcntl(fd, F_SETFL, O_NONBLOCK) == 0, "Cannot configure bounded FFmpeg reads")
@@ -103,6 +141,11 @@ final class FFmpegSamplerStream {
         while stamps.count < 4, let end = lines.firstIndex(of: 10) {
             let line = String(decoding: lines[..<end], as: UTF8.self)
             lines.removeSubrange(...end)
+            // Keep diagnostics, not an ever-growing per-frame showinfo log.
+            if !line.contains("Parsed_showinfo_") {
+                diagnosticTail.append(contentsOf:(line+"\n").utf8)
+                if diagnosticTail.count > Self.diagnosticCapacity { diagnosticTail = Data(diagnosticTail.suffix(Self.diagnosticCapacity)) }
+            }
             if let parts = groups(Self.timePattern, line), let n = Double(parts[0]), let d = Double(parts[1]) {
                 try samplerRequire(n > 0 && d > 0, "Invalid source timebase")
                 let value = n / d
@@ -125,11 +168,25 @@ final class FFmpegSamplerStream {
     }
     /// Short polls allow caller to revoke context/source without waiting behind capture.
     func nextFrame(timeout: Double = 0.1) throws -> Frame? {
+        do { return try receiveFrame(timeout:timeout) }
+        catch let error as StartupFailure { throw error }
+        catch { throw SamplerFailure(description:"\(error)\nFFmpeg stderr (bounded):\n\(diagnosticExcerpt)") }
+    }
+    private func checkFirstFrameDeadline() throws {
+        if frameIndex == 0 && samplerClock() >= firstFrameDeadline {
+            let message = "FFmpeg/source failure: no complete first frame within \(startupTimeout) seconds; locator was not run.\nFFmpeg stderr (bounded):\n\(diagnosticExcerpt)"
+            close()
+            throw StartupFailure(description:message)
+        }
+    }
+    private func receiveFrame(timeout: Double) throws -> Frame? {
         try samplerRequire(!stopped, "FFmpeg stream is closed")
+        try checkFirstFrameDeadline()
         let deadline = samplerClock() + timeout
         var fds = [pollfd(fd: diagnostics.fileHandleForReading.fileDescriptor, events: 0, revents: 0),
                    pollfd(fd: videoRead.fileDescriptor, events: 0, revents: 0)]
         while samplerClock() < deadline {
+            try checkFirstFrameDeadline()
             try parseDiagnostics()
             if length > 0 && used == length && !stamps.isEmpty, let timebase {
                 let stamp = stamps.removeFirst()
@@ -169,6 +226,7 @@ final class FFmpegSamplerStream {
                 throw SamplerFailure(description: "FFmpeg acquisition ended")
             }
         }
+        try checkFirstFrameDeadline()
         return nil
     }
 }

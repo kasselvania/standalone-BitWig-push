@@ -20,7 +20,7 @@ The implementation is in [kasselvania/DrivenByMoss](https://github.com/kasselvan
 
 The V2–V5B capture experiments are no longer maintained production tooling or architectural prerequisites. The macOS capture package, its tests/profiles/build scripts, and the associated unimplemented capture/presentation designs have been removed from the current tree. Published source and experimental findings remain available in Git history and retained evidence.
 
-There is no supported end-user capture application. The subsequent [Sampler contextual lens](docs/design/sampler-context-lens.md) is an explicitly commissioned, narrow FFmpeg implementation—not a continuation of the retired capture framework. Its repaired live layout passed a focused physical check; ordinary daily-use startup is now being qualified. [Build/run instructions and evidence](visuals/sampler/README.md).
+There is no supported end-user capture application. The subsequent [Sampler contextual lens](docs/design/sampler-context-lens.md) is an explicitly commissioned, narrow FFmpeg implementation—not a continuation of the retired capture framework. Its repaired live layout passed a focused physical check; no-argument foreground use is now being qualified. [Build/run instructions and evidence](visuals/sampler/README.md).
 
 See [the retirement boundary and history](docs/research/capture-experiments-retired.md). Earlier successful pixel-delivery experiments do not establish a usable capture product.
 

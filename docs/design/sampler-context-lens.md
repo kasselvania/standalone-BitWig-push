@@ -72,20 +72,21 @@ The September 10 live layout run failed reliability: individual frames looked go
 
 The subsequent delivery repair passed a focused physical steady-image/context-return and controls/audio recheck, followed by byte-exact official recovery. [The exact run and remaining limitations](../../visuals/sampler/README.md#focused-repaired-run-september-10-approximately-21122115-utc) remain separate from final-product acceptance. One intermittent identity refusal and a small perceived return delay were retained. The repair did not change layout, Java, receiver, freshness or protocol.
 
-## Daily-use pass — commissioned September 10
+## Foreground utility — commissioned September 10
 
-Keep the approved presentation and controller owners. This pass makes the existing producer usable without an agent supplying a window ID or a timed command; it does not add Slice mode, Browser, image markers, a new capture backend or a general device framework.
+Keep the approved presentation and controller owners. One foreground command in an ordinary Terminal session runs without a window ID or duration. No installation, packaging, background service, login startup, status-file service or permission onboarding belongs to this slice. It does not add Slice mode, Browser, image markers, a new capture backend or a general device framework.
 
 Construction/runtime:
 
-1. A separately stoppable per-user producer starts through ordinary local service tooling. Its singleton lock and bounded status file are outside the accepted ingress directory. It neither launches Bitwig nor edits its preferences.
+1. The foreground process resolves an optional `--ffmpeg` path, otherwise the current Terminal PATH, validates a regular executable, and prints the selected path once. It neither launches Bitwig nor edits preferences, files or permissions.
 2. With no valid current V5A/Sampler notice, it remains idle with no FFmpeg child and no connection.
 3. Validate the manifest owner's PID, birth time and actual executable's Bitwig bundle identity using current kernel/filesystem facts. Do not make this synchronous command-line loop depend on AppKit's run-loop-updated running-application list.
 4. Select exactly one visible ordinary window of that verified PID. Titles, largest/first window and monitor position do not choose it. Missing/ambiguous ownership restores semantics; diagnostic explicit-window selection remains available.
 5. Current eligible context plus current unique source permits the existing synchronous FFmpeg/locator/fit/v1 path. Context loss closes capture and clears/disconnects; geometry/window/session changes invalidate old pixels and restart from current facts.
 6. Cached landmark geometry may survive a context exit only for the same source geometry. Every reused landmark still has to validate against newly acquired pixels before publication. Neither cached imagery nor a reused context ticket is allowed.
-7. Normal shutdown clears/disconnects and stops the owned FFmpeg child. Status/metrics storage remains bounded during an untimed run.
+7. Terminal state changes distinguish authority/context/window waiting, acquisition/first-frame waiting, locating, active image, geometry/occlusion loss, semantic fallback and source failure. No per-frame logging or status file is used. If the first complete frame has not arrived within five seconds, the foreground utility clears/closes, stops its child and exits with a bounded stderr excerpt; it does not repeat permission attempts indefinitely. This startup limit does not extend the 250-ms frame-freshness rule.
+8. Ctrl-C/SIGTERM or an optional diagnostic duration clears/disconnects, stops the owned child and prints bounded final in-memory metrics. The first 30 accepted sends per acquisition are warmup; each timing series retains at most 10,000 samples.
 
-The first unproved daily-use dependency is source/permission behavior when the producer is started through its installed user-service path rather than this development terminal. That must be verified explicitly, without permission resets or a new capture-family search. A build or service-process listing is not daily-use acceptance.
+The first unproved dependency is the no-argument foreground interaction through repeated real controller-context transitions. Generated tests exercise its real lifecycle with generated FFmpeg input and real protocol sockets, followed by one ordinary-Terminal physical session and exact official recovery. Existing capture permission is a fixture prerequisite; this slice never changes it. Repeated visible fallback under ordinary eligible use stops the run and is retained for a separate visual-continuity decision, not hidden by longer freshness or cached imagery.
 
 Shared code is limited to actual process/window lifetime, bounded transport, crop/fit, and controller-owned bindings/presentation. Sampler recognition and its eligibility notice remain device-specific. Device categories and future behavior-family designs do not impose inheritance trees or a public profile SDK.

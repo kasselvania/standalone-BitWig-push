@@ -18,7 +18,7 @@
 
 ## Current development
 
-[CURRENT_SLICE.md](../CURRENT_SLICE.md) points to the narrow [Sampler contextual lens](design/sampler-context-lens.md), its daily-use pass and [tests/evidence](../visuals/sampler/README.md). [The retirement record](research/capture-experiments-retired.md) remains the removal boundary for V2–V5B; those experiments are not resumed.
+[CURRENT_SLICE.md](../CURRENT_SLICE.md) points to the narrow [Sampler contextual lens](design/sampler-context-lens.md), its foreground-utility pass and [tests/evidence](../visuals/sampler/README.md). [The retirement record](research/capture-experiments-retired.md) remains the removal boundary for V2–V5B; those experiments are not resumed.
 
 ## Other references
 

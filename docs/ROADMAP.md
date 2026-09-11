@@ -10,7 +10,7 @@ V5A's generated-frame acceptance demonstrated physical Push control/audio contin
 
 The accumulated V2–V5B capture experiments are retired from current code and architectural structure. Their historical results remain inspectable, but they are not prerequisites or a reusable product framework.
 
-The maintainer subsequently commissioned the [Sampler contextual lens](design/sampler-context-lens.md). Its useful live image, colored encoder-slot LEDs, permanent values and retained button actions passed a focused physical check. The immediate job is dependable daily-use startup/context/loss/recovery for that same interaction, not another source framework.
+The maintainer subsequently commissioned the [Sampler contextual lens](design/sampler-context-lens.md). Its useful live image, colored encoder-slot LEDs, permanent values and retained button actions passed a focused physical check. The immediate job is dependable foreground startup/context/loss/recovery for that same interaction, not another source framework.
 
 After that passes, Sampler Slice mode is a concrete test of device-specific dynamic presentation. Device browsing is a separate controller workflow deserving its own design, not an instrument subclass. Shared mechanics should be extracted only where these real interactions demonstrate reuse; device category, remote-binding semantics, behavior family and device-specific state must not be conflated.
 

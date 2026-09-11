@@ -2,80 +2,109 @@
 
 Local implementation work for the maintainer's September 9, 2026 interaction request. **The repaired live producer passed a focused steady-image/context-return and controls/audio recheck; it is not yet final-product accepted.** Exact measurements, remaining limitations and official recovery are recorded below. [Interaction contract](../../docs/design/sampler-context-lens.md).
 
-September 10: the maintainer chose [layout A](presentation-prototype/README.md): four permanent remote readouts on each side, original action/navigation words retained. The disposable A/B simulator is removed after the decision; its code remains in Git history. The repaired image has since passed the focused physical check below; the new daily-use producer pass remains unqualified on hardware.
+September 10: the maintainer chose [layout A](presentation-prototype/README.md): four permanent remote readouts on each side, original action/navigation words retained. The disposable A/B simulator is removed after the decision; its code remains in Git history. The repaired image has since passed the focused physical check below; the new no-argument foreground utility remains unqualified on hardware.
 
 September 10: [controller-color trace and existing-setting diagnostic](controller-color-trace.md) separates Bitwig's remote mapping colors, DrivenByMoss text-theme settings, and physical button LEDs. No new controller or capture behavior is implemented by that investigation.
 
 The locator recognizes a constellation of Sampler controls, then measures the enclosing control-body border. It reports the body's center and current width/height. It does not use a stored desktop location, a normalized window crop, or a fixed device size. The measured body excludes the narrow device-name/power strip on the left; modulator exclusion is still not solved.
 
-## Installed-service check failed — September 10
+## Foreground utility — September 10
 
-Exact tested source `fb193c53ac15990773d55be675af7e0fe4edb87a`, tree `b6c09663743d65184177eec7276322f327cc8303`; executable and installed agent hashes match the table below. The ordinary per-user service started and stayed idle before controller authority. The first Bitwig launch had the existing ingress setting Off. The maintainer enabled it, restarted Bitwig and selected Sampler; current ingress/context files and a producer connection were then observed. At 22:37:00 UTC the producer reported one acquisition start, 383 delivery-timeout checks, **zero accepted frames and zero received-frame timing samples**. FFmpeg existed but delivered no complete frames. The maintainer confirmed no image on Push. This is a failed daily-use startup result, not a locator/composition pass or successful service-permission proof.
+The current slice starts at `2277be61cc45200c81b93874d005c92b13509724`, tree `68d3496d6f435d1f615015afc2e5566b98cf101b`. It preserves the approved presentation and the useful foreground lifecycle from `fb193c53ac15990773d55be675af7e0fe4edb87a`: no-argument execution, exactly-one-window selection, kernel-backed PID/start/executable validation, context tickets, fresh-frame refusal, bounded metrics and synchronous ownership. [Foreground contract](../../docs/design/sampler-context-lens.md#foreground-utility--commissioned-september-10).
 
-Read-only TCC messages attribute capture access to the installed `SamplerLive` path and show authorization-state activity. They do not establish the exact reason for zero frames. System Settings inspection through the computer-use tool was denied; no bypass or permission reset was attempted. No claim is made that the earlier working terminal route and this background route have equivalent authorization. The maintainer objected to the end-user setup approach and stopped further iteration. Production permission acquisition, understandable failure reporting and recovery are unresolved product gaps; the service code is retained as failed development work, not supported architecture.
+Removed: `SamplerService.swift`, `sampler-agent.plist`, `sampler-service.sh`, `TestSamplerService.sh`, their build/tests, producer singleton/status-file dependency, and current service instructions. The utility writes no runtime status files and does not install, launch, configure or restart Bitwig.
 
-The agent was unloaded and disabled at login. Subsequent readback verified producer, FFmpeg, Bitwig application/audio engine and port-45291 listener absence. At **22:40:50 UTC**, the unchanged derivative was moved intact outside scan paths and the untouched official artifact restored to the canonical filename. SHA-256: `98dc3195ad8d911526e18b1005f09f69a1aedcb965b080565474104654345c5a`; exactly one DrivenByMoss extension is scanned. Current manifest, capability and Sampler notice are absent; dormant ingress `owner.lock` remains. Installed producer files remain present but disabled. Bitwig was not relaunched for another physical official check after the maintainer stopped this session; byte-exact restoration and inactive-state readback are verified, fresh physical loadability is not claimed. No Java source or artifact was rebuilt, and no new PR or merge was made.
+### Build and ordinary foreground use
 
-## Daily-use producer pass — local preparation before the failed live check
-
-Scope: the already approved Sampler interaction, not Slice mode or Browser. Construction and ownership are in the [daily-use design](../../docs/design/sampler-context-lens.md#daily-use-pass--commissioned-september-10). Implementation basis `ccc781b000399239b54563193047c0f5598c3b7f`, tree `77efb4ea546b86fe5e37f483109dea2182854420`. The exact changed sources are identified by the commit containing this record; source and test hashes below tie the external build to that content without a self-referential commit hash.
-
-Changes:
-
-- No-argument `SamplerLive` runs until stopped, discovers current controller authority, and selects exactly one visible layer-zero window owned by that verified Bitwig PID. Missing/ambiguous windows abstain. A diagnostic `--window-id` override and bounded `--duration` remain available; neither is needed in ordinary mode.
-- No eligible Sampler context means no FFmpeg child and no connection. Context exit clears/closes both. Return reacquires current pixels under a fresh controller ticket. Same-source landmark signatures may survive the exit, but are revalidated on fresh pixels; no frame survives it. Geometry/window/display changes reset that cache.
-- Process birth and executable are read through `libproc`; executable bundle identity is checked against `com.bitwig.studio`. This removes dependence on AppKit's run-loop-updated running-application list in a synchronous CLI. [Apple documents that update behavior](https://developer.apple.com/documentation/appkit/nsrunningapplication). It is a plausible contributor to the earlier intermittent refusal, **not a proven historical root cause** and not yet a physically verified repair.
-- A failed connection known to precede HELLO can retry its unused ticket. Any attempted/partial HELLO still consumes it. V1 wire messages, sequence, destination, 250-ms message deadline and receiver are unchanged.
-- One producer lock and one overwritten status file live in `~/.pushwig/sampler-producer-v1`, outside Java's ingress/context directories. Eight timing series retain at most 10,000 samples each. Per-iteration autorelease pools bound autoreleased objects; no new capture worker, image store or FIFO is added. FFmpeg's native allocation remains separate and is not zero-copy.
-
-### Build and normal start/stop
+Run in an ordinary Terminal with the existing capture permission. Do not install anything:
 
 ```sh
 sampler_build=$(mktemp -d /tmp/pushwig-sampler-live.XXXXXX)
 sh visuals/sampler/build-live.sh "$sampler_build"
-
-sampler_package=$(mktemp -d /tmp/pushwig-sampler-package.XXXXXX)
-sh visuals/sampler/sampler-service.sh prepare "$sampler_build/SamplerLive" "$sampler_package"
-sh visuals/sampler/sampler-service.sh verify "$sampler_package"
+"$sampler_build/SamplerLive"
 ```
 
-Preparation installs and starts nothing. Once the exact build is ready for the controlled live check:
+The last line is the one foreground command. Start it before or after ordinary Bitwig. No window ID or duration is needed. It waits without FFmpeg until current V5A authority, a supported Sampler Device Parameters context and exactly one visible ordinary Bitwig-owned window exist. The development extension supplies that authority; the official extension intentionally does not. Extension custody remains a separate maintainer-managed fixture procedure, never a producer function.
 
-```sh
-sh visuals/sampler/sampler-service.sh install "$sampler_package"
-sh visuals/sampler/sampler-service.sh start
-sh visuals/sampler/sampler-service.sh status
-sh visuals/sampler/sampler-service.sh stop
-```
+FFmpeg resolves through the foreground PATH, or explicitly via `--ffmpeg /path/to/ffmpeg`. The resolved target must be an executable regular file; its path prints once. No implicit Homebrew executable fallback, installation, upgrade or permission manipulation occurs. Building still uses the installed Swift and Homebrew FFmpeg C libraries for the unchanged fit path. This is not a standalone distribution.
 
-Installation is deliberately disabled until `start`. It installs the producer below `~/.pushwig/sampler-producer-v1` and one per-user `~/Library/LaunchAgents/com.kasselvania.pushwig.sampler.plist`. `start` also enables future login startup; `stop` unloads it and disables future login startup. There is no root daemon, foreground capture application, Bitwig launcher, JVM-option injection, or preference editor. The installer refuses existing installations rather than silently overwriting them. Inspect/stop an old installation before a deliberately managed update; automatic updating is not implemented.
+Optional diagnostics: `--window-id ID`, `--duration seconds` (positive, at most 1800). Ctrl-C/SIGTERM stops the owned FFmpeg child, sends CLEAR where connected, disconnects and prints final metrics. It never quits Bitwig. The existing visible-screen envelope still requires the measured Sampler to be uncovered on one supported display.
 
-The agent does not auto-respawn on process failure; inspect status and explicitly start it again. Status is bounded to 16 KiB and refreshed approximately every five seconds; stdout/stderr go to `/dev/null` under launchd. A crash can leave the last snapshot (or an incomplete private status temporary file); **check `observedAt`, live PID and process birth, not a retained “Live” string, for liveness**. The snapshot contains no capability or pixels. `owner.lock` is dormant after exit and is not session authority.
+Terminal transitions separate missing V5A/ingress, missing context, zero/multiple windows, acquisition, first-frame wait, locating, active output and fallback reasons. “Ingress disabled or unavailable” is an observation of missing authority, not a claim to have read the preference. No per-frame logging is used; rapid frame-driven transitions are rate-limited to one terminal update per second and reason counters retain all occurrences.
 
-This exact service launch path has **not yet been capture-permission or physical-use qualified**. No agent is installed or loaded by preparation/tests. Do not infer TCC permission from a prior terminal capture, reset permissions, or repeatedly replace app identities to make it work. The next live check must establish ordinary permission behavior once. `SamplerLive` is a locally linker/ad-hoc-signed executable, not a notarized app; installed Homebrew FFmpeg libraries remain dependencies.
+FFmpeg stderr retains a bounded 4096-byte diagnostic tail (not per-frame showinfo). **No complete first frame within five seconds is a fatal source-startup failure:** clear, stop child, disconnect, exit nonzero with the excerpt. The locator is not blamed for absent frames. This does not extend the existing 250-ms visual freshness or socket-write deadlines. After completed-frame source failures, the runtime abstains under the existing current-ticket rules; it never retries a spent authentication ticket.
 
-The official extension cannot provide this development Sampler context. Live testing still uses the already-tested derivative under the save/quit/install/rollback procedure, not another Java build. The producer never replaces an extension itself.
+Eight metric series each retain at most 10,000 timings, with lifetime counts/maxima. They are metadata, not frame queues. One reusable source frame, fixed byte transport and existing fit output remain; native FFmpeg capture allocation is separate and not zero-copy.
 
-### Exact local result
+### Historical service result
 
-Apple Swift 6.3.1, target arm64 macOS 26; installed FFmpeg 9.0.1 (`libswscale.10`, `libavutil.61`). The complete affected runner passed **117 locator + 206 live-path checks**. These include 61 new daily-use checks exercising the actual production loop with generated FFmpeg source bytes, real fit/alpha conversion and a real loopback protocol peer: pre-context idle, pre-HELLO failure/retry, exactly one activation, context return, ambiguity, move/resize, recreation, context loss during processing, stale-frame refusal, new ingress generation, and idempotent shutdown. The generated peer is test-only; it adds no production receiver. The generated locator tests independently cover recognition; the lifecycle test supplies known body coordinates so it does not pretend to validate live OCR.
+The installed LaunchAgent reached controller context but FFmpeg delivered zero complete frames. The exact background permission/source cause was not established. The service was disabled and the official artifact restored exactly. This slice does not retry that approach. The complete failed implementation and evidence remain in Git history at `2277be61cc45200c81b93874d005c92b13509724`.
 
-The socket-backpressure regression exited at **250.484 ms** (one sample; not a performance campaign). After the full build, the focused package test passed **8 checks**, including no transient runtime arguments, output-log suppression, overwrite refusal and tamper refusal. One initial package attempt exposed that this installed `plutil -replace` inserts an array element; preparation now starts with an empty array and explicitly inserts one executable. The invalid staged package was never installed. The maintained runner includes this package test for subsequent builds.
+### Foreground qualification
 
-A two-second run of the exact executable with Bitwig closed exited normally with zero accepted/discarded frames, zero timing samples, and `capturing=false`. Four normal missing-authority polls were counted. It created only its private producer lock/status; no extension, capture permission, launch agent or Bitwig setting changed. This proves the idle executable path, **not installed-service capture or daily-use performance**.
+**SAMPLER_FOREGROUND_UTILITY_BLOCKED:** generated verification passed and automatic foreground entry/return worked physically, but normal note-name notifications suppress the Sampler image. The run stopped at that continuity limitation, and exact official rollback passed. Five fully qualified exit/return cycles, move/resize, producer-only restart and every candidate controls/audio row were not individually confirmed; do not claim the complete acceptance program passed. The retained earlier successful focused product checkpoint remains `ccc781b000399239b54563193047c0f5598c3b7f`. No new DrivenByMoss build or source change was made.
 
-| Artifact/source | SHA-256 |
+Final affected command: `sh visuals/sampler/build-live.sh /tmp/pushwig-sampler-foreground.3vGqyE`. Apple Swift 6.3.1, arm64 macOS 26, installed FFmpeg 9.0.1. Build products and compiler cache are outside the checkout. **117 locator checks + 222 live-path checks passed.** Focused iteration used `TestSamplerLive --foreground`; the final command reran the whole affected generated suite once. A mistaken initial test expected CLEAR without any prior image; the existing client correctly only disconnects in that case. No protocol change was made to satisfy that test.
+
+The actual runtime with a real generated FFmpeg source deliberately filtered to emit no frames stopped and reaped its child in **615.789 ms** against a shortened **500-ms test deadline**. Production uses **5000 ms**, checked during short reads (up to 50-ms poll granularity), followed by the existing at-most-one-second graceful-child wait before terminating an unresponsive owned child. No locator invocation, fabricated frame, reconnect loop or live child remained in the generated failure. Stalled protocol write: **250.715 ms**, one regression sample, not a new performance campaign. Tests also cover PATH/explicit executable selection, executable symlinks, non-executable/absent/directory refusal, option validation, zero/one/multiple windows, actual context/socket/acquisition lifecycle, fresh generations, stale-source refusal, idempotent shutdown, bounded timing storage and rate-limited terminal states.
+
+Executable: **357,720 bytes**, SHA-256 `f5c41b1bc7f673af9858b49892bb5812de69a054c5cb20fcb6e1244f7778aed3`; `codesign --verify --strict` passed. This is an ordinary local executable, not a packaged/signed-distribution application. Source identities:
+
+| File | SHA-256 |
 | --- | --- |
-| Exact `SamplerLive`, 329,976 bytes; `codesign --verify --strict` passed | `ea02b0bb5df7543c055e216460df416634c3423bbcfdd69605646948dbe6413d` |
-| Prepared agent plist (contains local installation path; not committed) | `34d65493846b95acddf62f1046d18c80dd3acc6baaf1872c46f1bbe66dfa6d32` |
-| `SamplerLive.swift` | `20a22b5d1bc5e0a588b89aa6ecece437bd62d5e47a8d632e4f6e4dcf2e4f77cd` |
-| `SamplerConnection.swift` | `117a72ea54c9e8126e911cd8873f039a75657a42b6d6ffd4696ff17217cfaeeb` |
-| `SamplerProcess.swift` | `8b61a861a0ce442f8c54a70cb0490eb1798a30ae728f1a9afc262b4f42602f68` |
-| `SamplerHost.c` | `bcb48bf24bd6b8781ba2c1933a21fd09b610f6da11df080484b2da7da6a138a0` |
-| `SamplerService.swift` | `d17759e7b25370e68e8061413829959bf894affc84ac0c1df68f50f71b0d673e` |
-| `TestSamplerRuntime.swift` | `3000946c642fdd956dd05dc6dab3753011d774da0d625de7b83714d3ee8d53a2` |
+| `SamplerLive.swift` | `eb731478575bf3c3fe830478a4cab12c79de89ed78890135981e84bf9c2a1466` |
+| `FFmpegSamplerStream.swift` | `29d8cb75454bfa8af4f261e6fa435e569b022ca08bc7209fa9337c37199f3786` |
+| `TestSamplerLive.swift` | `640eef3f0e04c054d1e5a67c954043400062035679a8955e60c46c9ce7998c97` |
+| `TestSamplerRuntime.swift` | `da8bc4078e6a73c065253e28b05ebc54e0fdaf52a3cba511aba5b0c29084be12` |
+| `build-live.sh` | `3698a7d594c2fc0078e1fba3b6d8aa0e3c1903ddc00a6e2268adaddfa0770360` |
 
-No new physical result, lower context-return latency, sustained RSS result or service-permission success is claimed. The known visible-screen/occlusion limitations, Expressions/modulator inclusion and unproved arbitrary same-index device replacement remain. Java head/tree and tested artifact below are unchanged; the official extension remains installed with SHA-256 `98dc3195ad8d911526e18b1005f09f69a1aedcb965b080565474104654345c5a`.
+Pre-fixture readback at **2026-09-10 23:17:46 UTC**: Bitwig, audio engine, producer, FFmpeg and port-45291 listener absent; current manifest/capability/Sampler notice absent; only dormant ingress `owner.lock` remained. Exactly one scanned DrivenByMoss artifact matched official SHA-256 `98dc3195ad8d911526e18b1005f09f69a1aedcb965b080565474104654345c5a`. The retained Sampler derivative matched `abe439c9813f879db51a7a6f69b9270ffeec33e9346a8e534f96d7fee2fe9dbd`. The old agent remained disabled; no permission, service or extension change was made during generated verification. These are custody/process observations, not a new physical acceptance result.
+
+### Focused physical result and safe stop
+
+The maintainer started the exact executable **without arguments in their ordinary iTerm/zsh session**, before Bitwig. At 23:21:44 UTC it was waiting, with no FFmpeg, Bitwig or listener. The official artifact was preserved intact outside scan paths and the retained derivative installed as the sole DrivenByMoss copy. Ordinary `open -a 'Bitwig Studio'`, without JVM options, created current V5A authority. At 23:23:22 UTC the context was null and the producer still had no FFmpeg. The maintainer entered Sampler Device Parameters and confirmed: **“Yes, image appears automatically.”** No window-ID entry or duration was used. One owned FFmpeg child and one producer connection were then observed.
+
+During the session, the maintainer reported an iTerm prompt about bypassing certain system settings and approved it, explicitly saying capture worked before approval. Exact dialog wording/permission identity and causal effect were not established. The agent did not open settings or manipulate TCC. This is not an unchanged-consent or permission-onboarding proof; the user-approved permission was not revoked during rollback.
+
+The maintainer subsequently reported that return works and the interaction otherwise worked very well, but temporary played-note cards such as C/D# make the Sampler image disappear. Read-only inspection of unchanged DrivenByMoss head `93fb2a48d1e35dfeb69f902a44d8035a0b7db557` found the blanket composition condition `!hasSemanticOverlay()` in `Push2Display.send()` (line 251). `AbstractGraphicDisplay.hasSemanticOverlay()` (lines 458–460) includes any retained notification or overlay. It is **not necessarily device-context revocation**: a valid sampler session can remain while the pipeline receives zero session/null presentation, discards the current display frame and returns semantics. This proves the suppression rule and supports the reported behavior; the precise note-event callback was not instrumented. Correcting that controller behavior is outside this foreground-only, no-DrivenByMoss-change slice. Do not disable the user's note-name display to manufacture a pass.
+
+The maintainer deliberately pressed Ctrl-C and supplied final metrics: **3,037 accepted / 637 discarded**, `failure=none`, `capturing=false`. The last reported state before stopping was locator temporarily unavailable in complete source frames. Six acquisition starts, four first complete frames and six context changes are counters, not proof of five complete physical cycles. Final reasons:
+
+| Reason | Count |
+| --- | ---: |
+| acquisitionStart | 6 |
+| authorityOrSourceFailure | 219 |
+| contextChange | 6 |
+| contextChangedDuringFrame | 2 |
+| deliveryTimeout | 1 |
+| firstCompleteFrame | 4 |
+| geometryChange | 1 |
+| geometryReacquisition | 3 |
+| locatorMissing | 572 |
+| occluded | 5 |
+| oldAtRead | 57 |
+| stateTransitions | 60 |
+
+Authority failures include deliberate pre-Bitwig missing-authority polling. Locator refusals are separate from the Java overlay rule; their temporal breakdown is unavailable, so they cannot all be attributed to normal steady use, resize or note cards. Acquisitions can be interrupted by context loss before a first frame; six starts/four deliveries alone do not establish startup failure. No fatal first-frame failure occurred. No longer freshness timeout, stale-frame replay, source rewrite or service retry was introduced.
+
+Final measured timings, milliseconds (rounded to six decimals):
+
+| Series | Samples | p50 | p95 | max |
+| --- | ---: | ---: | ---: | ---: |
+| Source interval | 3670 | 33.333000 | 33.334000 | 200.000000 |
+| Frame read | 3674 | 20.845416 | 30.345334 | 82.886416 |
+| Age at read | 3674 | 58.438583 | 152.898708 | 758.983458 |
+| Accepted processing | 2947 | 11.980083 | 15.920541 | 84.167458 |
+| Accepted capture-to-send | 2947 | 69.310958 | 77.892791 | 146.312291 |
+| Accepted locate | 2947 | 0.697250 | 0.953250 | 71.931667 |
+| Accepted fit | 2947 | 5.044708 | 6.360708 | 20.017125 |
+| Accepted socket send | 2947 | 0.064291 | 0.098500 | 0.848292 |
+
+Accepted-stage distributions exclude the first 30 sends per acquisition and all refused frames. Source interval is not publication cadence. This short run does not establish endurance, uninterrupted output, or a new allocation/performance qualification.
+
+**Rollback completed:** user Ctrl-C was followed by observed producer/FFmpeg absence. The maintainer quit Bitwig normally. At 23:33:15 UTC application/audio-engine/listener/session files were absent. The derivative was moved intact outside scan paths and the untouched official file restored; exactly one scanned copy matched `98dc3195ad8d911526e18b1005f09f69a1aedcb965b080565474104654345c5a`. Ordinary official Bitwig was relaunched and the maintainer confirmed standard display with no image, controls, Push audio/headphones, then normal quit. At **23:35:06 UTC**, final readback verified all Bitwig/producer/FFmpeg/listener processes absent, current manifest/capability/Sampler notice absent, dormant ingress `owner.lock` retained, official hash still exact, and old service still disabled.
+
+The foreground edits and this result remain local/uncommitted because the requested commit/push is gated on the complete physical pass. No final Sampler PR was opened. The next review must address the confirmed notification composition limitation and distinguish locator continuity from it, without pretending the entire foreground acceptance program is complete.
 
 ## Run locally
 
@@ -86,7 +115,7 @@ sampler_live_output=$(mktemp -d /tmp/pushwig-sampler-live.XXXXXX)
 sh visuals/sampler/build-live.sh "$sampler_live_output"
 ```
 
-The runner uses installed Swift and FFmpeg 9 libraries, builds outside the checkout, and runs generated locator, stream, crop/fit, private-schema and blocked-socket tests. It does not acquire the desktop or touch Bitwig/Push. Before the daily-use additions above, the focused delivery-repair build passed 117 locator checks and 145 live-path checks including 40 changing FFmpeg `testsrc` frames, padded stride, different crop pixels, output-buffer reuse, large-window storage, multiple-display selection, unrelated-window continuity versus actual coverage, EOF/close, an intentional consumer stall and a stalled-reader write failure at 250.921 ms (one timing sample, not a performance campaign). It also builds the opt-in generated `TestSamplerHandoff` benchmark below.
+The runner uses installed Swift and FFmpeg 9 libraries, builds outside the checkout, and runs generated locator, stream, crop/fit, private-schema and blocked-socket tests. It does not acquire the desktop or touch Bitwig/Push. Before the foreground lifecycle additions, the focused delivery-repair build passed 117 locator checks and 145 live-path checks including 40 changing FFmpeg `testsrc` frames, padded stride, different crop pixels, output-buffer reuse, large-window storage, multiple-display selection, unrelated-window continuity versus actual coverage, EOF/close, an intentional consumer stall and a stalled-reader write failure at 250.921 ms (one timing sample, not a performance campaign). It also builds the opt-in generated `TestSamplerHandoff` benchmark below.
 
 The separate DrivenByMoss branch `pushwig/sampler-context-render` is based on the physically passed, still-unmerged LED head `cf0e70ea9f2144a45c1dc6039a25c9b90a06b92b`. Its six affected suites cover settings/rendezvous/lifecycle, actual raster pipeline, actual DeviceParams mode data/touch and the native coordinator against fake API endpoints. Native endpoint tests are not real Bitwig API acceptance.
 

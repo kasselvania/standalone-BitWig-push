@@ -47,7 +47,7 @@ The V2–V5B helpers and their unimplemented resolver/camera/workspace structure
 
 The current [Sampler lens development](design/sampler-context-lens.md) uses FFmpeg AVFoundation visible-screen acquisition, a Sampler-specific locator, uniform fit and the existing ingress. DrivenByMoss retains context eligibility, button actions, remote values, touch and final presentation. This is not hidden-window capture, arbitrary-device recognition, permanent API support or Linux compatibility.
 
-Its daily-use producer owns only its own lifecycle/status and current image work. It remains idle without eligible controller authority. Reusable mechanisms are justified by actual shared responsibilities; native-device categories, behavior families, Sampler-specific behavior and Browser workflow are distinct concerns, not a speculative class hierarchy.
+Its foreground producer owns only its synchronous lifecycle and current image work; it has no service/status-file owner. It remains idle without eligible controller authority. Reusable mechanisms are justified by actual shared responsibilities; native-device categories, behavior families, Sampler-specific behavior and Browser workflow are distinct concerns, not a speculative class hierarchy.
 
 [Historical experiments and retirement](research/capture-experiments-retired.md) retain findings without granting them architectural authority.
 

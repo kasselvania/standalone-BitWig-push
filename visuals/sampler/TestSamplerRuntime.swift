@@ -7,6 +7,7 @@ private final class SamplerTestPeer {
     struct Message { let type: Int, session: Data, payload: Data }
     private let listener: Int32, lock = NSLock(), done = DispatchSemaphore(value:0)
     private var stopped = false, messages: [Message] = [], sockets: [Int32] = []
+    private var completed = 0
     let port: Int
     init() throws {
         listener = socket(AF_INET,SOCK_STREAM,0)
@@ -47,10 +48,11 @@ private final class SamplerTestPeer {
                 let message = Message(type:number(8),session:header.subdata(in:24..<40),payload:payload)
                 lock.lock(); messages.append(message); lock.unlock()
             }
-            lock.lock(); sockets.removeAll { $0 == fd }; Darwin.close(fd); lock.unlock()
+            lock.lock(); sockets.removeAll { $0 == fd }; Darwin.close(fd); completed += 1; lock.unlock()
         }
     }
     var received: [Message] { lock.lock(); defer { lock.unlock() }; return messages }
+    var closedConnections: Int { lock.lock(); defer { lock.unlock() }; return completed }
     func close() throws {
         lock.lock(); stopped = true
         for fd in sockets { shutdown(fd,SHUT_RDWR) }
@@ -61,13 +63,16 @@ private final class SamplerTestPeer {
 }
 
 extension TestSamplerLive {
-    static func dailyOptionsAndSelection() throws {
+    static func foregroundOptionsAndSelection() throws {
         let automatic = try SamplerOptions([])
-        try check(automatic.windowID == nil && automatic.duration == nil,"Ordinary invocation needs no transient window ID or time limit")
+        try check(automatic.windowID == nil && automatic.duration == nil && automatic.ffmpeg == nil,"Ordinary invocation needs no transient window ID, executable path or time limit")
+        let explicit = try SamplerOptions(["--ffmpeg","/usr/bin/true","--window-id","42","--duration","4"])
+        try check(explicit.ffmpeg == "/usr/bin/true" && explicit.windowID == 42 && explicit.duration == 4,"Named diagnostic overrides compose")
         let diagnostic = try SamplerOptions(["42","30"])
         try check(diagnostic.windowID == 42 && diagnostic.duration == 30,"Legacy bounded diagnostic retained")
         for args in [["--duration","nan"],["--duration","inf"],["--duration","0"],["--duration","1801"],
-                     ["--window-id","0"],["--window-id","1","--window-id","2"],["--duration","1","--duration","2"],["--unknown","1"],["--duration"]] {
+                     ["--window-id","0"],["--window-id","1","--window-id","2"],["--duration","1","--duration","2"],["--unknown","1"],["--duration"],
+                     ["--ffmpeg"],["--ffmpeg",""],["--ffmpeg","a","--ffmpeg","b"]] {
             try refuses { _ = try SamplerOptions(args) }
         }
         let a = SamplerWindow.Candidate(id:42,pid:123,layer:0,bounds:CGRect(x:30,y:40,width:1000,height:800))
@@ -87,6 +92,29 @@ extension TestSamplerLive {
         let summary = timing.summary
         try check(summary["samples"] as? Int == 10000 && summary["totalSamples"] as? Int == 25000,"Untimed metrics retain fixed last-10000 storage")
         try check(summary["maxMs"] as? Double == 24999 && summary["p50Ms"] as? Double == 19999,"Bounded metrics preserve declared quantiles/lifetime maximum")
+        var output: [String] = []
+        let console = SamplerConsole { output.append($0) }
+        for i in 0..<10000 { console.observe(i.isMultiple(of:2) ? "Active" : "Fallback",now:Double(i)/10000) }
+        try check(output.count == 1,"Frame-driven state alternation cannot emit per-frame terminal logs")
+        console.flush(now:2)
+        try check(output == ["Active","Fallback"],"Latest pending state remains observable without a status file")
+    }
+    static func ffmpegResolution() throws {
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("sampler-path-"+UUID().uuidString)
+        try FileManager.default.createDirectory(at:folder,withIntermediateDirectories:false)
+        defer { try? FileManager.default.removeItem(at:folder) }
+        let binary = folder.appendingPathComponent("ffmpeg")
+        try FileManager.default.copyItem(at:URL(fileURLWithPath:"/usr/bin/true"),to:binary)
+        try check(try SamplerFFmpeg.resolve(path:"/no-such-ffmpeg-directory:"+folder.path) == binary,"Current PATH supplies executable; no Homebrew fallback")
+        try check(try SamplerFFmpeg.resolve(explicit:"/usr/bin/true",path:"/absent").path == "/usr/bin/true","Explicit executable wins over PATH")
+        let link = folder.appendingPathComponent("ffmpeg-link")
+        try FileManager.default.createSymbolicLink(at:link,withDestinationURL:binary)
+        try check(try SamplerFFmpeg.resolve(explicit:link.path) == binary,"Executable symlink resolves to a validated regular file")
+        try refuses { _ = try SamplerFFmpeg.resolve(explicit:folder.path) }
+        try refuses { _ = try SamplerFFmpeg.resolve(explicit:"/no-such-ffmpeg") }
+        try refuses { _ = try SamplerFFmpeg.resolve(path:"/no-such-ffmpeg-directory") }
+        _ = chmod(binary.path,0o600)
+        try refuses { _ = try SamplerFFmpeg.resolve(explicit:binary.path) }
     }
     static func processAndCustody() throws {
         let current = try SamplerProcess.read(getpid())
@@ -95,34 +123,14 @@ extension TestSamplerLive {
         try refuses { try current.requireBitwig(started:current.started) }
         try refuses { try current.requireBitwig(started:current.started+1) }
         try check(SamplerProcess.bundleIdentifier(for:"/usr/bin/true") == nil,"Unbundled tool is not Bitwig")
-        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("sampler-custody-"+UUID().uuidString)
-        try FileManager.default.createDirectory(at:folder,withIntermediateDirectories:false,attributes:[.posixPermissions:0o700])
-        defer { try? FileManager.default.removeItem(at:folder) }
-        let fd = try SamplerAuthority.privateDirectory(folder); defer { Darwin.close(fd) }
-        let owner = try SamplerService(directory:fd)
-        defer { owner.close() }
-        try refuses { _ = try SamplerService(directory:fd) }
-        try owner.publish(["state":"generated","accepted":3])
-        let first = try SamplerAuthority.readFile(fd,"status.json",cap:16384)
-        let parsed = try JSONSerialization.jsonObject(with:first) as! [String:Any]
-        try check(parsed["state"] as? String == "generated" && parsed["producerPID"] as? Int32 == getpid(),"Private status identifies current producer without secrets")
-        for i in 0..<100 { try owner.publish(["accepted":i]) }
-        try check(Set(try FileManager.default.contentsOfDirectory(atPath:folder.path)) == ["owner.lock","status.json"],"Repeated status replacement does not accumulate files")
-        try refuses { try owner.publish(["oversized":String(repeating:"x",count:17000)]) }
-        owner.close(); owner.close()
-        try refuses { try owner.publish([:]) }
-        let restarted = try SamplerService(directory:fd); restarted.close()
-        try check(true,"Closed singleton lock can be reacquired")
-        try FileManager.default.removeItem(at:folder.appendingPathComponent("owner.lock"))
-        try FileManager.default.createSymbolicLink(atPath:folder.appendingPathComponent("owner.lock").path,withDestinationPath:"status.json")
-        try refuses { _ = try SamplerService(directory:fd) }
+
     }
     static func runtimeLifecycle() throws {
         let peer = try SamplerTestPeer(); defer { try? peer.close() }
         func authority(_ ticket: Int?, generation: String = String(repeating:"a",count:32)) -> SamplerAuthority {
             SamplerAuthority(generation:generation,session:ticket.map { String(format:"%032x",$0) },port:peer.port,pid:123,started:456,capabilityFile:"generated")
         }
-        var current = authority(nil), available = true, ambiguous = false, connections = 0, acquisitions = 0
+        var current = authority(nil), available = true, ambiguous = false, missing = false, connections = 0, acquisitions = 0
         var preHelloFailure = true, retainedLock: ObjectIdentifier?, returnedLock: ObjectIdentifier?
         let display = SamplerDisplay(id:5,index:0,bounds:CGRect(x:0,y:0,width:1600,height:1000),pixelWidth:1600,pixelHeight:1000)
         var source = SamplerWindow(id:42,pid:123,bounds:CGRect(x:50,y:50,width:320,height:160),occluders:[],display:display)
@@ -131,6 +139,7 @@ extension TestSamplerLive {
         inputs.authority = { try samplerRequire(available,"Generated absent controller"); return current }
         inputs.window = { pid,_ in
             try samplerRequire(pid == 123 && !ambiguous,"Generated ambiguity")
+            if missing { _ = try SamplerWindow.select([],ownerPID:pid) }
             return source
         }
         inputs.connect = { value in
@@ -141,12 +150,12 @@ extension TestSamplerLive {
             connections += 1
             return try SamplerConnection(value,capabilityReader:{ [UInt8](repeating:42,count:32) },authorityReader:{ current })
         }
-        inputs.acquire = { _ in
+        inputs.acquire = { _, executable in
             acquisitions += 1
             // Generated lavfi PTS may run ahead during -re catch-up. Stamp actual filter time,
             // converting Unix microseconds to the same host clock as the production reader.
             let offset = Int64((Date().timeIntervalSince1970-samplerClock()+(oldCapture ? 1 : 0))*1_000_000)
-            return try FFmpegSamplerStream(input:["-re","-f","lavfi","-i","color=c=red:size=320x160:rate=30"],filter:"settb=expr=1/1000000,setpts=RTCTIME-\(offset)")
+            return try FFmpegSamplerStream(input:["-re","-f","lavfi","-i","color=c=red:size=320x160:rate=30"],filter:"settb=expr=1/1000000,setpts=RTCTIME-\(offset)",executable:executable)
         }
         inputs.locate = { imageLock,_ in
             if connections == 1 { retainedLock = ObjectIdentifier(imageLock) }
@@ -168,9 +177,13 @@ extension TestSamplerLive {
         for _ in 0..<3 { _ = runtime.step() }
         try check(connections == 0 && acquisitions == 0 && !runtime.isCapturing,"Pre-context construction/polling produces neither socket nor capture")
         current = authority(1)
+        missing = true
+        try run(until:{ runtime.state.contains("visible Bitwig window") })
+        try check(acquisitions == 0 && connections == 0,"Eligible context with zero windows waits without FFmpeg or connection")
+        missing = false
         try run(until:{ runtime.accepted >= 3 })
         try check(connections == 1 && acquisitions == 1,"Current context starts exactly one real socket and FFmpeg child")
-        try check(runtime.reasons["authorityOrSourceFailure",default:0] == 1,"Actual pre-HELLO failure retries same unused ticket without deadlock")
+        try check(runtime.reasons["authorityOrSourceFailure",default:0] >= 2,"Missing window and actual pre-HELLO failure retry without deadlock")
         current = authority(nil)
         try run(until:{ !runtime.isCapturing })
         usleep(30_000)
@@ -215,7 +228,37 @@ extension TestSamplerLive {
         usleep(30_000)
         try check(peer.received.filter { $0.type == 1 }.count == 5,"Wire saw exactly the five current-ticket authentications")
     }
-    static func daily() throws {
-        try dailyOptionsAndSelection(); try processAndCustody(); try runtimeLifecycle()
+    static func noFirstFrame() throws {
+        let peer = try SamplerTestPeer(); defer { try? peer.close() }
+        let current = SamplerAuthority(generation:String(repeating:"a",count:32),session:String(repeating:"b",count:32),port:peer.port,pid:123,started:456,capabilityFile:"generated")
+        let display = SamplerDisplay(id:5,index:0,bounds:CGRect(x:0,y:0,width:1600,height:1000),pixelWidth:1600,pixelHeight:1000)
+        let source = SamplerWindow(id:42,pid:123,bounds:CGRect(x:50,y:50,width:320,height:160),occluders:[],display:display)
+        var inputs = SamplerRuntime.Inputs(), starts = 0, locates = 0, childPID: Int32 = 0
+        inputs.authority = { current }; inputs.window = { _,_ in source }
+        inputs.connect = { try SamplerConnection($0,capabilityReader:{ [UInt8](repeating:42,count:32) },authorityReader:{ current }) }
+        inputs.acquire = { _,executable in
+            starts += 1
+            // Real FFmpeg keeps acquiring generated input but deliberately emits no frame.
+            let stream = try FFmpegSamplerStream(input:["-re","-f","lavfi","-i","color=c=red:size=320x160:rate=30"],filter:"select=0",executable:executable,startupTimeout:0.5)
+            childPID = stream.processID; return stream
+        }
+        inputs.locate = { _,_ in locates += 1; return nil }
+        let runtime = try SamplerRuntime(inputs:inputs); defer { runtime.close() }
+        let began = samplerClock(), deadline = began+3
+        while !runtime.closed && samplerClock() < deadline { _ = runtime.step() }
+        print(String(format:"Generated no-first-frame failure + child shutdown: %.3f ms (test deadline 500 ms; production 5000 ms)",(samplerClock()-began)*1000))
+        try check(runtime.closed && samplerClock()-began < 2,"No-first-frame failure stops production runtime and child boundedly")
+        try check(runtime.failure?.contains("no complete first frame") == true && runtime.failure?.contains("lavfi") == true,"Failure distinguishes source delivery from locator and preserves actual bounded stderr")
+        try check(runtime.failure!.utf8.count < FFmpegSamplerStream.diagnosticCapacity+512,"Failure diagnostic is bounded")
+        try check(locates == 0 && runtime.accepted == 0 && runtime.reasons["deliveryTimeout"] == nil,"No source frame is never mislabeled locator failure or steady delivery timeout")
+        try check(kill(childPID,0) != 0 && errno == ESRCH,"FFmpeg child is reaped after first-frame deadline")
+        runtime.close(); _ = runtime.step()
+        try check(starts == 1 && !runtime.isCapturing,"Fatal source startup does not enter a background retry loop")
+        usleep(30000)
+        try check(peer.received.filter { $0.type == 2 }.isEmpty,"No fabricated publication during missing-frame startup")
+        try check(peer.received.filter { $0.type == 3 }.isEmpty && peer.closedConnections == 1,"No-image failure disconnects; existing client correctly omits redundant CLEAR")
+    }
+    static func foreground() throws {
+        try foregroundOptionsAndSelection(); try ffmpegResolution(); try processAndCustody(); try runtimeLifecycle(); try noFirstFrame()
     }
 }

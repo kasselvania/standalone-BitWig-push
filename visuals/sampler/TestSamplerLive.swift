@@ -15,11 +15,11 @@ import Foundation
         if CommandLine.arguments.count == 3 && CommandLine.arguments[1] == "--interop" {
             try interop(); return
         }
-        if CommandLine.arguments.dropFirst().elementsEqual(["--daily"]) {
-            try daily(); print("Sampler daily-use generated checks: PASS (\(checks))"); return
+        if CommandLine.arguments.dropFirst().elementsEqual(["--foreground"]) {
+            try foreground(); print("Sampler foreground generated checks: PASS (\(checks))"); return
         }
         try fit(); try authority(); try displays(); try sourceContinuity(); try stream(); try streamEOF(); try largeWindow(); try socketDeadline()
-        try daily()
+        try foreground()
         print("SamplerLive generated checks: PASS (\(checks)); no capture, Bitwig, Push or permission changes")
     }
     static func interop() throws {
